@@ -1,0 +1,21 @@
+AQUA — Last Playmate: R28 verification
+Build: 2026-10-16-R28
+File: Aqua-Last-Playmate-R28.html
+Size: 9416864 bytes
+SHA-256: 5d81c296922cb14ebeddfbeb1619260217affe8b2e8ad72be9cdc0ad38600550
+
+Visible identity: R28 on Aqua's battle HUD; BUILD 2026-10-16-R28 / FULL FIGHT and ITEMS USED n/10 in pause.
+
+Full-fight finale rule: no remaining healing items, at least ten actual item uses, positive HP at or below 18, and the existing earned queue and 35-TP purchase. The actual attack starter enforces the same gate. Finale-only practice retains its explicit shortcut.
+
+Exact named export tested through native Canvas/DOM app startup, using its actual packed HTML mode flag and installed Notebook adapter. A critical Notebook hit with ten supplies recalls Aqua at 1 HP without queuing/starting the finale. A forged queue/direct final starter is blocked. Empty stock with only nine recorded uses is blocked. The final actual item heals to 33 HP without finale entry; a later hit and paid TP charges unlock the final pattern.
+
+Additional passed checks: 135 finale-entry boundaries; supplies and recall at 25/60/120 FPS; all seven Seth skills; 72 pattern schedules; actual projectile ending fixture uses all ten items and wins in 34 exchanges / 111 hits / 17 completed waves. Native packed full/practice recall, TP controls and finale finishing hit passed. All 13 hub Notebook flows, 24 route launches and 15 exact offline payloads passed; other thirteen games remain unchanged.
+
+Scope: automated engine and native Canvas/DOM checks. No live browser/phone playtest or complete unprotected human balance clear is claimed.
+
+The user's original downloaded bytes were not available to compare. The recovered canonical file already included a supply check in the planner, while Claude reported an older HP-only gate. A separate direct starter bypass was reproduced and guarded in R28. This does not establish which file Claude received.
+
+Websites:
+https://aqua-last-playmate.lonesouls.chatgpt.site
+https://purple-underground.lonesouls.chatgpt.site
