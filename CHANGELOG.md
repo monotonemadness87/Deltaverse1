@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-10-21 — Gerson: phrased attacks and real impacts
+
+Reworked from the frame-by-frame reference study (`docs/reference-study/gerson-attacks-lookfeel.md`). Every turn keeps its exact length (16–25 s, finale 58 s) and all mechanics.
+
+- **Rhythm:** attacks follow phrases instead of fixed timers. Shield turns open with slow arrows, then left/right pulses, then same-side runs of 2–4 with real rests between. THE OLD GUARD widens from left/right to all four sides mid-turn. String and hybrid turns run in phases and build to their busiest stretch at the end.
+- **Finishers:** every turn ends on a readable finisher (a heavy blinking arrow, or a double hammer strike), then settles before the box leaves. Bullets are no longer deleted mid-flight, and no hammer winds up after its turn ends.
+- **Hammer strikes:** the lane fills like a fuse, flashes before landing, then lands with a white lane flash, after-images, dust, a small shake and a thud. Gerson swings on the strike frame.
+- **Box:** spins in and out quickly, and each mid-turn spin is caused by a visible swing (0.45 s, slight overshoot) instead of a slow drift. The first hazard comes ~0.55 s after the box is ready.
+- **Blocks:** white-then-purple shield flash, gold sparkles, a small recoil and a visible (capped) jolt.
+- **Readability:** arrows are amber so they no longer match the green shield, SOUL and box; the next arrow due turns red. Shells show a grey ghost before moving. Gerson gestures on each run and wall, breathes when idle, and stays on screen through the finale. The finale is five phases ending in a ring that closes with one opening, then bursts.
+- **Also fixed:** the SOUL no longer flickers at the start of every turn; the 7-lane box no longer covers the enemy HP bar; "+5 HP" no longer covers the SOUL; finale arrows always get their full warning time.
+- Reduced motion: no rotation, after-images, smear, shake or bursts.
+- Verified: god-mode bots win at turn 17 on every seed with no errors; normal-play bots now reach turn 17 on every seed (fewer deaths, because the rests are real); per-attack damage mostly within ±25% of before; a careful-play bot took 8 hits over the fight versus 17 before.
+
 ## 2026-10-21 — Aqua: Notebook panel clears the TP bars
 
 - **Aqua (full duel and finale practice):** the Torn Notebook panel was drawn across the inner edges of the SETH and AQUA TP bars, hiding them and their percentages while it was open. It is now narrowed to x 44–724, between the bars; the timing bar (x 67–701) still sits inside it.
