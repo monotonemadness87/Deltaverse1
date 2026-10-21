@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-10-21 — Location atmosphere
+
+Each fight now has a light, location-themed atmosphere behind the battle (`AmbientFX`, in the shared Notebook module). It is drawn right after the fight's own background, so the arena, text boxes and sprites paint over it. That means it never shows inside the box where it could be mistaken for a hazard; verified at full resolution during attacks.
+
+| Fight | Atmosphere |
+| --- | --- |
+| Encore | A warm stage light from above, with dust turning in it. Genocide: the light stutters and the dust greys out. |
+| Rift | Quiet snowfall under a cold light. Cataclysm: muted, and the snow drifts upward. |
+| Gerson | Waterfall's ceiling crystals twinkle cyan; a few motes drift up. |
+| Mettalot | Pink and white glitter rising through her spotlights. |
+| Sans, Sans + Alphys | Orange and blue CORE energy rising, with a heat glow from below. |
+| Ant Tenna + Spamson | Hotland embers and a flickering heat glow from below. |
+| Spamson NEO | A few neon pink and violet sparks hanging in the dark. |
+| Muffet | Purple spores drifting under a faint haze over the nest. |
+| Aqua | Ash settling in a cold light, with the odd cyan glint. |
+
+Flowey (already has its living vine layer) and Battle Lab are unchanged. The atmosphere freezes when paused, holds still under reduced motion, and is off on title, death and Game Over screens. Aqua builds re-stamped **R31**.
+
 ## 2026-10-21 — Phone landscape
 
 Phones (and tablets) held sideways now get a proper battle layout in every fight. The game fills the screen height, the D-pad sits in the left margin, and action buttons sit on the right. Before this, Mettalot, Muffet, Spamson NEO and Ant Tenna + Spamson had every control below the fold, both Sans fights rendered a 264×220 game, and Encore/Rift/Gerson scrolled.

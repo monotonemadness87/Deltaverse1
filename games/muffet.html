@@ -123,6 +123,7 @@ Promise.all([art.ready,document.fonts.load('20px Determination')]).then(()=>{rea
 const notebookVisual=new NotebookVisual(ctx,{enabled:()=>audio.active&&!audio.muted,paused:()=>game.paused,assetBase:'assets/',calm:()=>renderer.reduced});
 installNotebook(game,{kind:'muffet',target:g=>({muffet:{x:g.presence.position.x,y:g.presence.position.y},light:{x:129,y:250},aqua:{x:65,y:156},arm:{x:641,y:128},tenna:{x:690,y:215},spamson:{x:680,y:100},killTenna:{x:690,y:215},exit:{x:384,y:110}}[g.aimTarget]||{x:620,y:140}),event:(type,n)=>notebookVisual.event(type,n)});
 notebookVisual.fx.bind(game,{hurt:(fx,d)=>d?.actor==='seth'&&fx.hurt(),slam:fx=>fx.kick(.18,.5),capture:fx=>fx.kick(.35),cannon:fx=>fx.boom(.5),soulBreak:fx=>fx.kick(.55)});
+notebookVisual.atmosphere(game,'nest');
 const beforeNotebookRender=render;
 render=function(){game.notebookRender(beforeNotebookRender);notebookVisual.draw(game);};
 canvas.addEventListener('pointerdown',event=>{
@@ -1735,6 +1736,58 @@ class ImpactFX {
   c.restore();
  }
 }
+// Location atmosphere drawn behind each encounter. The arena and text boxes paint over it,
+// so it never reads as a hazard where the SOUL moves. Purely visual, like ImpactFX.
+const AMBIENT={
+ // Ruins theatre: one warm stage light with dust turning in it. Genocide: the light stutters, the room is emptier.
+ theatre:{count:42,dim:.5,mote:(R,w,h,s)=>({x:w*(.3+R()*.4),y:R()*h*.6,vx:(R()-.5)*6*s,vy:(R()-.5)*4*s,size:Math.max(1,Math.round((R()<.3?2:1)*s)),alpha:.18+R()*.3,tw:.7+R()*1.6,phase:R()*6.3,color:'#fff1cf',alt:'#a9a4a0'}),
+  move:(m,dt,t,alt,s)=>{m.x+=m.vx*dt;m.y+=m.vy*dt+Math.sin(t*.6+m.phase)*2*s*dt;},
+  light:(c,w,h,s,t,alt)=>{const flick=alt?.35+.65*Math.max(0,Math.sin(t*7.3)*Math.sin(t*2.1)):1,g=c.createLinearGradient(0,0,0,h*.62);g.addColorStop(0,`rgba(255,240,205,${.09*flick})`);g.addColorStop(1,'rgba(255,240,205,0)');c.fillStyle=g;c.beginPath();c.moveTo(w*.42,0);c.lineTo(w*.58,0);c.lineTo(w*.8,h*.62);c.lineTo(w*.2,h*.62);c.closePath();c.fill();}},
+ // Snowdin boundary: quiet snowfall. Cataclysm: the snow falls the wrong way and the colour drains.
+ snow:{count:56,mote:(R,w,h,s)=>({x:R()*w,y:R()*h,vx:0,vy:(16+R()*24)*s,size:Math.max(1,Math.round((R()<.25?2:1)*s)),alpha:.22+R()*.3,tw:.4+R()*.8,phase:R()*6.3,color:'#e4edff',alt:'#b9a7c9'}),
+  move:(m,dt,t,alt,s)=>{m.y+=(alt?-.55:1)*m.vy*dt;m.x+=Math.sin(t*1.3+m.phase)*9*s*dt;},
+  light:(c,w,h,s,t,alt)=>{const g=c.createLinearGradient(0,0,0,h*.5);g.addColorStop(0,alt?'rgba(150,120,180,.05)':'rgba(170,200,255,.05)');g.addColorStop(1,'rgba(170,200,255,0)');c.fillStyle=g;c.fillRect(0,0,w,h*.5);}},
+ // Waterfall: crystals in the cavern ceiling, twinkling, with a few motes drifting up.
+ glimmer:{count:34,mote:(R,w,h,s,i)=>i<24?{x:R()*w,y:R()*h*.4,vx:0,vy:0,size:Math.max(1,Math.round(2*s)),alpha:.25+R()*.45,tw:1.2+R()*2.6,phase:R()*6.3,color:i%3?'#8fe3ff':'#d8f7ff'}:{x:R()*w,y:R()*h,vx:0,vy:-(5+R()*8)*s,size:Math.max(1,Math.round(s)),alpha:.2+R()*.2,tw:.8,phase:R()*6.3,color:'#7fd8ff'},
+  move:(m,dt,t,alt,s)=>{m.y+=m.vy*dt;},
+  light:(c,w,h)=>{const g=c.createLinearGradient(0,0,0,h*.45);g.addColorStop(0,'rgba(80,190,255,.06)');g.addColorStop(1,'rgba(80,190,255,0)');c.fillStyle=g;c.fillRect(0,0,w,h*.45);}},
+ // Mettalot's concert: glitter rising through the spotlights.
+ stage:{count:30,mote:(R,w,h,s,i)=>({x:R()*w,y:R()*h,vx:0,vy:-(6+R()*12)*s,size:Math.max(1,Math.round((R()<.3?2:1)*s)),alpha:.25+R()*.35,tw:2+R()*3,phase:R()*6.3,color:i%3?'#ffb6e6':'#ffffff'}),
+  move:(m,dt,t,alt,s)=>{m.y+=m.vy*dt;m.x+=Math.sin(t*1.7+m.phase)*6*s*dt;}},
+ // The CORE: orange and blue energy rising from the machinery below.
+ core:{count:34,mote:(R,w,h,s,i)=>({x:R()*w,y:R()*h,vx:0,vy:-(18+R()*30)*s,size:Math.max(1,Math.round((R()<.3?2:1)*s)),alpha:.22+R()*.3,tw:3+R()*4,phase:R()*6.3,color:i%2?'#ff9c3d':'#4fd3ff'}),
+  move:(m,dt,t,alt,s)=>{m.y+=m.vy*dt;m.x+=Math.sin(t*2.1+m.phase)*5*s*dt;},
+  light:(c,w,h)=>{const g=c.createLinearGradient(0,h,0,h*.55);g.addColorStop(0,'rgba(255,140,50,.07)');g.addColorStop(1,'rgba(255,140,50,0)');c.fillStyle=g;c.fillRect(0,h*.55,w,h*.45);}},
+ // Hotland: embers drifting up from the heat below.
+ hotland:{count:28,mote:(R,w,h,s,i)=>({x:R()*w,y:R()*h,vx:0,vy:-(14+R()*22)*s,size:Math.max(1,Math.round((R()<.3?2:1)*s)),alpha:.25+R()*.3,tw:4+R()*4,phase:R()*6.3,color:i%3?'#ff7a2f':'#ffcf6b'}),
+  move:(m,dt,t,alt,s)=>{m.y+=m.vy*dt;m.x+=Math.sin(t*2.6+m.phase)*7*s*dt;},
+  light:(c,w,h,s,t)=>{const g=c.createLinearGradient(0,h,0,h*.5);g.addColorStop(0,`rgba(255,96,40,${.08+.02*Math.sin(t*1.7)})`);g.addColorStop(1,'rgba(255,96,40,0)');c.fillStyle=g;c.fillRect(0,h*.5,w,h*.5);}},
+ // Spamson NEO's dark deal: a few neon sparks hanging in the dark.
+ neon:{count:22,mote:(R,w,h,s,i)=>({x:R()*w,y:R()*h,vx:(R()-.5)*5*s,vy:-(3+R()*6)*s,size:Math.max(1,Math.round(s)),alpha:.25+R()*.35,tw:5+R()*5,phase:R()*6.3,color:i%2?'#ff5fb8':'#b46bff'}),
+  move:(m,dt,t,alt,s)=>{m.x+=m.vx*dt;m.y+=m.vy*dt;}},
+ // Muffet's nest: spores drifting in the purple dark.
+ nest:{count:32,mote:(R,w,h,s,i)=>({x:R()*w,y:R()*h,vx:(R()-.5)*8*s,vy:(R()-.5)*8*s,size:Math.max(1,Math.round((R()<.25?2:1)*s)),alpha:.2+R()*.25,tw:.6+R()*1.2,phase:R()*6.3,color:i%3?'#b07ad8':'#7b4fa0'}),
+  move:(m,dt,t,alt,s)=>{m.x+=(m.vx+Math.sin(t*.7+m.phase)*5*s)*dt;m.y+=(m.vy+Math.cos(t*.5+m.phase)*5*s)*dt;},
+  light:(c,w,h)=>{const g=c.createRadialGradient(w/2,h*.22,0,w/2,h*.22,w*.55);g.addColorStop(0,'rgba(150,70,200,.09)');g.addColorStop(1,'rgba(150,70,200,0)');c.fillStyle=g;c.fillRect(0,0,w,h);}},
+ // New Home: ash settling, the odd cyan glint.
+ ash:{count:38,mote:(R,w,h,s,i)=>({x:R()*w,y:R()*h,vx:0,vy:(8+R()*12)*s,size:Math.max(1,Math.round((R()<.3?2:1)*s)),alpha:.2+R()*.25,tw:.5+R()*1,phase:R()*6.3,color:i%9?'#8d969c':'#6ff0ff'}),
+  move:(m,dt,t,alt,s)=>{m.y+=m.vy*dt;m.x+=Math.sin(t*.9+m.phase)*7*s*dt;},
+  light:(c,w,h)=>{const g=c.createLinearGradient(0,0,0,h*.5);g.addColorStop(0,'rgba(200,225,235,.05)');g.addColorStop(1,'rgba(200,225,235,0)');c.fillStyle=g;c.fillRect(0,0,w,h*.5);}},
+};
+class AmbientFX {
+ constructor(ctx,kind,{calm=()=>false,paused=()=>false,active=()=>true,variant=()=>false}={}){this.ctx=ctx;this.preset=AMBIENT[kind];this.calm=calm;this.paused=paused;this.active=active;this.variant=variant;this.t=0;this.last=0;this.motes=null;}
+ draw(){
+  const P=this.preset;if(!P||!this.active())return;
+  const c=this.ctx,w=c.canvas.width,h=c.canvas.height,s=w/640,still=this.calm(),now=performance.now(),dt=this.last?Math.min(.05,(now-this.last)/1000):0,step=still||this.paused()?0:dt,alt=!!this.variant();this.last=now;this.t+=step;
+  if(!this.motes){this.motes=[];for(let i=0;i<P.count;i++)this.motes.push(P.mote(Math.random,w,h,s,i));}
+  c.save();c.setTransform(1,0,0,1,0,0);c.imageSmoothingEnabled=false;c.globalAlpha=1;P.light?.(c,w,h,s,this.t,alt);
+  for(const m of this.motes){
+   P.move(m,step,this.t,alt,s);m.x=(m.x%w+w)%w;if(m.y>h+4)m.y=-4;else if(m.y<-4)m.y=h+4;
+   c.globalAlpha=Math.min(.9,m.alpha*1.7*(alt?P.dim??1:1)*(still?1:.55+.45*Math.sin(this.t*m.tw+m.phase)));c.fillStyle=alt&&m.alt?m.alt:m.color;c.fillRect(Math.round(m.x),Math.round(m.y),m.size,m.size);
+  }
+  c.restore();
+ }
+}
 class NotebookVisual {
  constructor(ctx,{enabled=()=>true,paused=()=>false,assetBase='',calm=()=>false}={}){
   this.ctx=ctx;this.enabled=enabled;this.paused=paused;this.fx=new ImpactFX(ctx,{paused,calm});this.white=new Image();this.gold=new Image();
@@ -1748,6 +1801,8 @@ class NotebookVisual {
  mark(n){const stop=n.stops?.at(-1);if(!stop||stop.missed||!this.geo)return;const {bx,span,cy,s}=this.geo,x=bx+stop.position*span;if(stop.quality>=.94){this.fx.burst(x,cy,{count:10,colors:['#ffe600','#fff6a8'],speed:150,life:.35,gravity:300});this.fx.ring(x,cy,{color:'#ffe600',radius:26,life:.22,width:3});}else this.fx.ring(x,cy,{color:'#c49bff',radius:16,life:.18,width:2});}
  event(type,n){if(type==='hit')this.impact(n);if(type==='mark')this.mark(n);if(['cancel','end','pause'].includes(type)){for(const s of Object.values(this.sounds))s.pause();return;}if(type==='hit')this.sounds.spin.pause();const audio=this.sounds[type];if(audio&&this.enabled()&&!this.paused()){audio.pause();audio.currentTime=0;audio.play().catch(()=>{});}}
  book(x,y,size=88,frame=0,perfect=false){const c=this.ctx,im=perfect?this.gold:this.white;if(!im.width)return;c.save();c.imageSmoothingEnabled=false;c.drawImage(im,frame*44,0,44,44,Math.round(x-size/2),Math.round(y-size/2),size,size);c.restore();}
+ // Gives an encounter its location atmosphere; the encounter draws it right after its background.
+ atmosphere(game,kind,{variant}={}){game.locationFX=new AmbientFX(this.ctx,kind,{calm:this.fx.calm,paused:this.paused,variant,active:()=>!['dead','dying','title','fatalGrin'].includes(game.state)});}
  draw(game){this.drawNotebook(game);this.fx.frame();}
  drawNotebook(game){game.notebookEnsure?.();const n=game.notebook;for(const f of n?.impacts||[])this.book(f.x,f.y,88,6+Math.min(2,Math.floor(f.age/.174)));const interrupted=n?.phase==='interrupted'&&game.state==='cheat';if(!n?.active&&!interrupted||['dead','title'].includes(game.state))return;if(game.paused||!this.enabled()){this.event('pause',n);this.suspended=true;}else if(this.suspended){this.suspended=false;const a=this.sounds[n.phase==='impact'?'hit':n.phase];if(a){a.currentTime=n.phaseAge;a.play().catch(()=>{});}}if(n.active)n.target={...(n.follow?.()||n.target)};const c=this.ctx,w=c.canvas.width,h=c.canvas.height,s=w/640;
   const x=24*s,y=game.notebookPanelY??(h-480*s)+249*s,bw=592*s,bh=game.notebookPanelH??140*s,top=y+(bh-140*s)/2;c.save();c.imageSmoothingEnabled=false;
@@ -2114,7 +2169,7 @@ class NestRenderer{
  render(g){
   g.presence.reduced=this.reduced;const c=this.c;c.save();c.imageSmoothingEnabled=false;
   if(g.state==='fatalGrin'){c.fillStyle='#000';c.fillRect(0,0,768,576);c.restore();return;}
-  if(g.state==='dying'||g.state==='dead'){this.death(g);c.restore();return;}if(g.shake&&!this.reduced)c.translate(Math.sin(g.clock*95)*4,Math.cos(g.clock*110)*3);this.background(g);
+  if(g.state==='dying'||g.state==='dead'){this.death(g);c.restore();return;}if(g.shake&&!this.reduced)c.translate(Math.sin(g.clock*95)*4,Math.cos(g.clock*110)*3);this.background(g);g.locationFX?.draw();
   if(g.state==='title'){this.title(g);c.restore();return;}
   this.captives(g);
   if(g.state==='attack'||['dying','captured','smashed','fatalGrin','dead'].includes(g.state)){this.web(g);this.darkLight(g);this.hands(g);this.face(g);this.hazards(g);this.souls(g);this.teaWash(g);}
