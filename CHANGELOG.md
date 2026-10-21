@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-21 — Animation pass: typewriter wrap and Mettalot's sway
+
+Stepped every fight frame by frame on a fixed 60 fps virtual clock (rAF and `performance.now` driven by hand). Captured four 48-frame bursts per fight (menus, dialogue, attacks), then scanned them for one-frame flicker (pixels going A→B→A, with shakes and flashes excluded), sprite pops and anchor jumps, and reviewed motion strips by eye.
+
+- **Typewriter text no longer jumps lines (all 13 fights).** Every typewriter wrapped only the part typed so far, so a word reaching the end of a line was typed there and then jumped to the next line once it no longer fit ("almost n" → "almost / no"). Each fight now lays out the whole line with its own wrap rules and then reveals the first characters, so every word is typed where it ends up. A shared `typedLines` helper in each page maps characters back through the wrap. It was checked against every reveal length for greedy, indented (Battle Lab) and whitespace-collapsing (Ant Tenna + Spamson) wraps: lines only grow, never move. Muffet keeps measuring its smart-quote/ellipsis substitutions as drawn.
+- **Mettalot's ghost, gloves, Blooky and stage glow swayed unevenly.** They were animated straight from the music element's clock, which in Chromium advances 9–27 ms per 16.7 ms frame, so the beat-driven motion sped up and slowed down every frame and the gloves stepped back and forth. They now follow a frame-rate clock eased toward the song: frame steps 16.67 ± 0.3 ms (was ± 4.2), within −0.7 ms of the music on average, snapping on pause, loop and restart. The rhythm notes still schedule from the real music time, so timing is unchanged.
+- **Checked and fine:** idle loops and pose changes in every fight (no anchor pops or one-frame sprite drops), Encore's leaps (smooth, about 17 px per frame), Notebook timing bars, hurt shakes and flashes, Muffet's hands, Flowey's vines, the falling knives and blasters.
+
 ## 2026-10-21 — Pixel pass 3: broken Tenna head
 
 - **Tenna's "determined" head was cut off mid-mouth.** Decoded all 228 images embedded in the fifteen games; one is damaged: `tenna-determined.png` (Spamtenna, Flowey, Muffet) stops after 169 of its 242 rows. It was already damaged in the original v60 hub, and no intact copy or source atlas exists anywhere in the project. Chromium draws the surviving rows, so Tenna appeared with the bottom of his head sliced off: for 0.7 s on every other wave cue in Ant Tenna + Spamson, and often during Flowey's Spamson NEO memory. The expression now uses Tenna's intact **cocky** head (the nearest face: a confident toothy grin), with a note in the sprite config. The damaged data is left in place. Muffet never shows this face, so its change is config only.
