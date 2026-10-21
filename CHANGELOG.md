@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-21 — Pixel pass 2: Encore
+
+- **Encore's expression overlay drew a black rectangle.** To swap in the authored expression, both of Encore's draw paths painted a solid black box over the face and then pasted the portrait crop, including a grey sliver of the hat band. The box was bigger than the face, so it cut through the hat brim, feather and collar. The expression is now cut out as the face itself: the connected face shape plus the eyes and mouth inside it, unioned with the neutral face shape so the old face is always fully replaced. The lifted-mask "void" expression becomes face-shaped darkness with eyes.
+- **Encore's moving poses** were 1/3-scale sprites enlarged 1.27× times the animated boss scale, so pixels were uneven and crawled as the scale changed. They are now built at exactly their on-screen size with Encore's own coverage rule (cached per size) and drawn on whole pixels, with the face overlay aligned to the same pixels.
+- Tried and rejected: area-averaging Encore's standing pose washed out its thin black interior lines (eyes, buttons, seams), so that pose keeps its original sampling.
+
 ## 2026-10-21 — Pixel pass 1: even pixels and crisp line art
 
 Audited every sprite draw in every fight: smoothing state, effective scale, stretch, source rectangles and call site. Then inspected each boss at its native canvas resolution, enlarged 3–12× with hard pixel edges. No fight upscaled with smoothing on. The problems were uneven pixels from fractional enlargements, and soft source art sampled too sparsely.
