@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-21 — Bug and balance hunt, simulation harness
+
+- Added `tools/sim/`: a Node harness that loads each fight's engine straight from `games/*.html` and plays it with bots (chaos/progress bot, balance probe), plus an in-browser bot for Muffet. See its README.
+- Ran ~40 simulated hours of bot play across all 12 engines, Muffet's engine in the browser, a balance probe of every fight, and ~9,500 random key presses against the real exported pages. **No crashes, invalid numbers, soft-locks or page errors.** Every fight was completed in god mode.
+- Found three balance/design questions, reported for a decision and not changed: a camping hole in Ant Tenna + Spamson's "THE FALLING PUNCHLINE", Spamson NEO's "crossfire" being safe for a still player, and Ant Tenna + Spamson's unusually harsh opening turn. Full details are in [docs/Bug-and-Balance-Report-2026-10-21.md](docs/Bug-and-Balance-Report-2026-10-21.md).
+
+No game files changed in this step.
+
 ## 2026-10-21 — Location atmosphere
 
 Each fight now has a light, location-themed atmosphere behind the battle (`AmbientFX`, in the shared Notebook module). It is drawn right after the fight's own background, so the arena, text boxes and sprites paint over it. That means it never shows inside the box where it could be mistaken for a hazard; verified at full resolution during attacks.

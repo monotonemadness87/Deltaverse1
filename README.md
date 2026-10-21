@@ -12,6 +12,7 @@ Undertale-style browser boss encounters: Seth (Purple SOUL) and Aqua (Cyan SOUL)
 | `hub/Purple-The-Underground.shell.html` | The launcher with its embedded game pack replaced by a `__PACK__` placeholder. |
 | `tools/build_hub.py` | Packs `games/` into the shell → `dist/Purple-The-Underground.html` (the full offline hub). |
 | `tools/extract_hub.py` | The reverse: pulls exact game HTMLs out of a built hub. |
+| `tools/sim/` | Bots that play the fights in Node (and Muffet in headless Chromium) to find crashes, soft-locks, invalid numbers and balance outliers. |
 | `docs/` | Continuity log, dialogue/lore guide, Aqua R28 verification report, Claude's dialogue rewrite ZIP. |
 | `references/` | The four Aqua design reference images (inspiration, not replacement art). |
 
