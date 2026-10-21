@@ -36,9 +36,11 @@ Every fight is completable. In god mode the bots reached:
 
 ## Findings for a decision
 
-Nothing below has been changed. These are balance and design calls.
+Item 1 was fixed as recommended. Items 2 and 3 are left as designed unless you decide otherwise.
 
-### 1. Ant Tenna + Spamson — "THE FALLING PUNCHLINE" can be won by standing still
+### 1. Ant Tenna + Spamson — "THE FALLING PUNCHLINE" can be won by standing still — FIXED
+
+**Fixed 2026-10-21.** Drops now land on eleven staggered slots spanning the whole floor, shifted half a slot on alternate waves. The column formula also had an aliasing bug: `(w*2 + k*3) % 6` put the third anvil in the same column as the first, so each wave had only two distinct drops. Now each wave has three distinct drops (two with BRACE). Over 40 waves every floor position is threatened except a 4 px wall margin. The standing-still bot now takes 40 damage/min (was 0); a random dodger takes 60/min, in line with the other comic patterns. Original finding:
 
 Its anvils only ever drop into six fixed columns (centres at x = 169, 247, 325, 403, 481, 559; 46 px wide; 24 px with BRACE). The arena spans x = 104–664, so:
 - x = 104–146 at the left wall and x = 582–664 at the right wall are never hit;

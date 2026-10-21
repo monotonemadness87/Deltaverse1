@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-21 — Punchline camping fix
+
+- **Ant Tenna + Spamson, THE FALLING PUNCHLINE** (and ONE LAST LITTLE THING, which shares its drops): anvils now land on eleven staggered slots across the whole floor, shifted half a slot on alternate waves, so standing in a wall band or a column gap no longer avoids every drop. This also fixes the column formula repeating the first anvil's column for the third, so each wave now really has three distinct drops (two with BRACE). Warnings, timing, speed and damage are unchanged. Verified: still bot 0 → 40 damage/min, random dodger 60/min; god-mode bots still reach victory at turn 27 with no errors.
+
 ## 2026-10-21 — Bug and balance hunt, simulation harness
 
 - Added `tools/sim/`: a Node harness that loads each fight's engine straight from `games/*.html` and plays it with bots (chaos/progress bot, balance probe), plus an in-browser bot for Muffet. See its README.

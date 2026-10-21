@@ -186,7 +186,10 @@ class LobbyBattle{
   this.nextWave=this.time+(pat==='spring'?1.2:pat==='domino'?2.1:pat==='scenery'?1.6:2.0)*easy+(this.flags.laugh?.25:0);const radius=this.flags.brace?7:12;
   if(pat==='spring'||pat==='chain'){for(let k=0;k<(pat==='chain'&&!this.flags.laugh?3:2);k++){const x=side==='left'?a.x+15:a.x+a.w-15,b=this.free('hammer',x,a.y+a.h-10,side==='left'?285:-285,-380-k*90,{delay:.7+k*.12,r:radius,source:'comic',life:3});b.gravity=850;b.floorBounce=1;this.effects.push({kind:'spring',lane:n-1,side,life:.7});}}
   if(pat==='domino'||pat==='chain'){const count=this.flags.laugh?3:5;for(let k=0;k<count;k++){const x=a.x+25+((w%2?k:count-1-k))*112;this.localHazard('domino',x,a.y+28,this.flags.brace?22:35,a.h-45,{delay:.9+k*.22,duration:.24,source:'comic'});if(pat==='domino'){const b=this.free('orb',x,this.laneY((w+k)%n),w%2?290:-290,-130,{delay:1.14+k*.22,source:'comic',r:this.flags.brace?5:8});b.gravity=430;b.floorBounce=1;}}}
-  if(pat==='scenery'||pat==='chain'){for(let k=0;k<(this.flags.brace?2:3);k++){const x=a.x+65+((w*2+k*3)%6)*78,width=this.flags.brace?24:46;this.localHazard('drop',x-width/2,a.y,width,a.h,{delay:.9+k*.18,duration:.25,telegraphOnly:true,source:'comic'});const b=this.free('anvil',x,a.y-25,0,0,{delay:.9+k*.18,r:width/2,life:2,source:'comic'});b.gravity=1250;}}
+  if(pat==='scenery'||pat==='chain'){
+   // Drops land on eleven staggered slots spanning the whole floor, shifted half a slot on alternate waves, so no spot is permanently safe and each wave's anvils fall in distinct places.
+   const width=this.flags.brace?24:46,slots=11,step=(a.w-width-8)/(slots-1),shift=(w%2)*step/2,first=(w*7)%slots;
+   for(let k=0;k<(this.flags.brace?2:3);k++){const x=Math.min(a.x+a.w-4-width/2,a.x+4+width/2+((first+k*4)%slots)*step+shift);this.localHazard('drop',x-width/2,a.y,width,a.h,{delay:.9+k*.18,duration:.25,telegraphOnly:true,source:'comic'});const b=this.free('anvil',x,a.y-25,0,0,{delay:.9+k*.18,r:width/2,life:2,source:'comic'});b.gravity=1250;}}
   return;
  }
  }
