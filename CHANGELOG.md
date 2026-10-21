@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-21 — Aqua: Notebook panel clears the TP bars
+
+- **Aqua (full duel and finale practice):** the Torn Notebook panel was drawn across the inner edges of the SETH and AQUA TP bars, hiding them and their percentages while it was open. It is now narrowed to x 44–724, between the bars; the timing bar (x 67–701) still sits inside it.
+- The shared Notebook module (all 13 builds) gains optional `game.notebookPanelX` / `game.notebookPanelW`, alongside the existing Y/H overrides. Every other fight keeps the default position.
+- Aqua builds re-stamped **R33**.
+
 ## 2026-10-21 — Tenna's "determined" face redrawn
 
 - The truncated `tenna-determined.png` (see Pixel pass 3) is now complete, so the expression shows its own face again instead of borrowing the cocky head. Rows 0–168 are the original pixels, unchanged. Rows 169–241 are a redraw that continues the surviving lines: the teeth box's sides and its two tooth separators run down to a rounded bottom edge parallel to the smile line (a wide, gritted grin), the left cheek mark is finished, and a matching right one is added. The chin outline is Tenna's own, taken from the clenched head (the same depth below the mouth) and fitted to this head's width. The fill is sampled from the original lavender (the same color and grain to within a level). The sprite config notes which rows are redrawn. Spamtenna, Flowey and Muffet carry the same file.
@@ -141,4 +147,4 @@ Automated headless Chromium only: scripted input, screenshots, layout measuremen
 ### Known, not yet addressed
 
 - Phone **landscape** still scrolls in Mettalot, Muffet, Spamson NEO and Ant Tenna + Spamson (unchanged from before this pass).
-- In Aqua the Notebook panel covers the TP bars while it is open.
+- In Aqua the Notebook panel covers the TP bars while it is open. (Fixed in R33.)
