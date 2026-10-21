@@ -6,33 +6,33 @@
   },
   {
     "file": "aqua-final.html",
-    "bytes": 9417839,
-    "sha256": "e25d6e783e90c942d406ef2ffc7db84959269f02a1936492fbe62b1ce54ddf17"
+    "bytes": 9418273,
+    "sha256": "d07dd09390f6a1d50bd3fd6a57fe1f7dbb2a5690506acc835899c438be97bc64"
   },
   {
     "file": "aqua.html",
-    "bytes": 9417856,
-    "sha256": "45a34d950b732a907b06dee0142c2ff507764252b81a825b5a7bcb7f4a50f35e"
+    "bytes": 9418290,
+    "sha256": "8ded3e46b33859fd2a7cf95f593d41aa520f299450ef4f8c62164380b4de2a8c"
   },
   {
     "file": "encore.html",
-    "bytes": 12418200,
-    "sha256": "0db4e779c92ceae39d38d72680c88d927decb6cc42361c54256ba1749c4e75f2"
+    "bytes": 12418634,
+    "sha256": "899fd3e3bbea71ff3e1ca58b1b5483d1fb50460e6de922103ff0e9e747a0f738"
   },
   {
     "file": "flowey.html",
-    "bytes": 23331401,
-    "sha256": "931d36aee25a90b525f1cdc258c032a9c8be914e812347201c3a70581930d7b1"
+    "bytes": 23331835,
+    "sha256": "f5f07464e20367a59db108bfecd8ce699a1e5697f93117fb70fd77486c4f4983"
   },
   {
     "file": "gerson.html",
-    "bytes": 11475208,
-    "sha256": "ed93c88384983ddc91a3cf0aa3b3d2ce8ccf315e25c0969d5ffb015e1e71473a"
+    "bytes": 11475830,
+    "sha256": "ed5a55a8b5ee73fd4be02161b5292ddb88a450899b0cb91c3e3808c25404ceea"
   },
   {
     "file": "lab.html",
-    "bytes": 312921,
-    "sha256": "a77c6a5f93aa7fce9f7ca6aca5fccb54a75b1aebcdbe0d81299362f33440e954"
+    "bytes": 313355,
+    "sha256": "15ae845303a9064928206751d666e2efff946116a9516f6be91709de33813cef"
   },
   {
     "file": "lastbell.html",
@@ -41,37 +41,37 @@
   },
   {
     "file": "mettalot.html",
-    "bytes": 3665922,
-    "sha256": "6dbfd701b01bb414b2de87da565a83c974743d44366dd3b775fc95e7f8ad48fb"
+    "bytes": 3667067,
+    "sha256": "330ba2f8b61f7cf7661bc59afdff9afac36d3b6d109baed580076a1c99b2d7d9"
   },
   {
     "file": "muffet.html",
-    "bytes": 24294551,
-    "sha256": "fa774b30e108d3a5a595cb0c13d74a7ba9c0f9eb31d78f2b252420ebd1b1a2a8"
+    "bytes": 24295087,
+    "sha256": "be5c759c8a7743f43e4dcc860186b910be1280b63bab5805c5a4014c60e726da"
   },
   {
     "file": "rift.html",
-    "bytes": 7989356,
-    "sha256": "5bfffc365960c25c84816c806dcc4d6c5eca03672c0b4dc6c4bd9fe6ec0111f2"
+    "bytes": 7989790,
+    "sha256": "338c8468417bf1f1c4b96b114f8882f7e99f533cc42b27137daa6aa2c13fc318"
   },
   {
     "file": "sans-genocide.html",
-    "bytes": 11698614,
-    "sha256": "ad1a25b23263bf4c1b93cd55f21cb46d5811d17b3547046a41fbbd466424d009"
+    "bytes": 11699274,
+    "sha256": "19dc3db0866bf0ae8889d96a0f777c842acf07d2ebdd7d308312e537ff52d49e"
   },
   {
     "file": "sans.html",
-    "bytes": 4867418,
-    "sha256": "b74623f372c71ea94cc61983aa2252e9c4f3adb36789b0b5d3d88677d7e4701b"
+    "bytes": 4868078,
+    "sha256": "9a0a22dcd146f21e47add8a3257f726af393a957209319b4070fbc95c9d827b6"
   },
   {
     "file": "spamson-neo.html",
-    "bytes": 9174065,
-    "sha256": "d9da355284c28cc022340715a350377f9ba17deabab728f0906e9ab65cd22fed"
+    "bytes": 9174652,
+    "sha256": "757a215fd6413f68ecf4c5626c356868617ab3e776a6ac4621cf0cdde21a72d1"
   },
   {
     "file": "spamtenna.html",
-    "bytes": 18162333,
-    "sha256": "4339df4f9ac2ebd86d93dbfd22d968cb04a8b9c9d31071ad4229b5521743f7b8"
+    "bytes": 18162900,
+    "sha256": "fcd1c6286e9a35a4546512f6296d0ba7794a061ad7e18d785368fc98f1313545"
   }
 ]
