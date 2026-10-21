@@ -36,7 +36,7 @@ Every fight is completable. In god mode the bots reached:
 
 ## Findings for a decision
 
-Item 1 was fixed as recommended. Items 2 and 3 are left as designed unless you decide otherwise.
+Item 1 was fixed as recommended. Items 2 and 3 were confirmed as intended and are left as designed.
 
 ### 1. Ant Tenna + Spamson — "THE FALLING PUNCHLINE" can be won by standing still — FIXED
 
@@ -49,11 +49,15 @@ Its anvils only ever drop into six fixed columns (centres at x = 169, 247, 325, 
 
 The standing-still bot took zero damage for the whole turn. **Proposed fix:** shift the column set by half a spacing on alternate waves and extend it across the full arena width, so every spot is threatened at some point and the telegraphs have to be read. (Every other pattern in the collection hit a player who stands still, apart from item 2 and the Battle Lab test patterns.)
 
-### 2. Spamson NEO — "crossfire" is safe for a player who doesn't move
+### 2. Spamson NEO — "crossfire" is safe for a player who doesn't move — INTENDED
+
+**Confirmed 2026-10-21:** a deliberate "don't move" pattern; unchanged.
 
 Both fans are aimed 20 px above and 20 px below the SOUL (`{x:s.x, y:s.y±20}`), so holding still threads between them by construction. This looks like a deliberate "don't move" pattern (like Undertale's blue attacks). Is that the intent? If not, aiming one fan at the SOUL itself would close it.
 
-### 3. Ant Tenna + Spamson — the opening turn is the harshest opener in the collection
+### 3. Ant Tenna + Spamson — the opening turn is the harshest opener in the collection — INTENDED
+
+**Confirmed 2026-10-21:** the difficulty is intended; unchanged.
 
 "WARM-UP PHRASE" lasts 18 s against Seth's 30 HP. The random dodger took ~44 damage in it (11 hits), and even the standing-still bot took 24. It was the only opening turn the normal-play bot never survived in 80 simulated minutes; in every other fight the same bot cleared several turns. Bots aren't players, but for a turn named "warm-up" in a pacifist boss rush that's worth a look.
 

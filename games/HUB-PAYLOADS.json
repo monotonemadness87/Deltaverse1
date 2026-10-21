@@ -21,8 +21,8 @@
   },
   {
     "file": "flowey.html",
-    "bytes": 23344955,
-    "sha256": "0e60be2bc4ff28aea8cdd536b47e00ec298756aaec3f94c9a0d978967edb35fd"
+    "bytes": 23366831,
+    "sha256": "1b909f41323f1114caee4554e89bdd9feb4ce8c0b9842b95b5fa95f4eb8d228e"
   },
   {
     "file": "gerson.html",
@@ -46,8 +46,8 @@
   },
   {
     "file": "muffet.html",
-    "bytes": 24309759,
-    "sha256": "f4eeac4e45743978ee9cbde67aa9b779ffaa2632bcb1b95c8dab5cd7b79aee6f"
+    "bytes": 24331635,
+    "sha256": "9dc0b2da1ba9acbd079e93a4d7eec31116a8e6dfb2b051a7d10f2ebe96e7611f"
   },
   {
     "file": "rift.html",
@@ -71,7 +71,7 @@
   },
   {
     "file": "spamtenna.html",
-    "bytes": 18177513,
-    "sha256": "9242e6b673c3e07e65ec1c4b6fd75c65918feff004f83fa98f77a984067c69b4"
+    "bytes": 18199389,
+    "sha256": "5acf8ac8c3cf0ba7874ea7dee5ca78e5b8744137bb4cc58d1821ea9ae2b93c19"
   }
 ]

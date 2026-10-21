@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-21 — Tenna's "determined" face redrawn
+
+- The truncated `tenna-determined.png` (see Pixel pass 3) is now complete, so the expression shows its own face again instead of borrowing the cocky head. Rows 0–168 are the original pixels, unchanged. Rows 169–241 are a redraw that continues the surviving lines: the teeth box's sides and its two tooth separators run down to a rounded bottom edge parallel to the smile line (a wide, gritted grin), the left cheek mark is finished, and a matching right one is added. The chin outline is Tenna's own, taken from the clenched head (the same depth below the mouth) and fitted to this head's width. The fill is sampled from the original lavender (the same color and grain to within a level). The sprite config notes which rows are redrawn. Spamtenna, Flowey and Muffet carry the same file.
+- Balance items 2 (Spamson NEO crossfire) and 3 (the Ant Tenna + Spamson warm-up turn) stay as designed, as confirmed.
+
 ## 2026-10-21 — Animation pass: typewriter wrap and Mettalot's sway
 
 Stepped every fight frame by frame on a fixed 60 fps virtual clock (rAF and `performance.now` driven by hand). Captured four 48-frame bursts per fight (menus, dialogue, attacks), then scanned them for one-frame flicker (pixels going A→B→A, with shakes and flashes excluded), sprite pops and anchor jumps, and reviewed motion strips by eye.
