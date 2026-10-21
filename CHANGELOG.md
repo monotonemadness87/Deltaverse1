@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-21 — Pixel pass 3: broken Tenna head
+
+- **Tenna's "determined" head was cut off mid-mouth.** Decoded all 228 images embedded in the fifteen games; one is damaged: `tenna-determined.png` (Spamtenna, Flowey, Muffet) stops after 169 of its 242 rows. It was already damaged in the original v60 hub, and no intact copy or source atlas exists anywhere in the project. Chromium draws the surviving rows, so Tenna appeared with the bottom of his head sliced off: for 0.7 s on every other wave cue in Ant Tenna + Spamson, and often during Flowey's Spamson NEO memory. The expression now uses Tenna's intact **cocky** head (the nearest face: a confident toothy grin), with a note in the sprite config. The damaged data is left in place. Muffet never shows this face, so its change is config only.
+- Not redrawn: completing the lost rows would be new art. Ask if a redrawn "determined" face is wanted.
+
 ## 2026-10-21 — Pixel pass 2: Encore
 
 - **Encore's expression overlay drew a black rectangle.** To swap in the authored expression, both of Encore's draw paths painted a solid black box over the face and then pasted the portrait crop, including a grey sliver of the hat band. The box was bigger than the face, so it cut through the hat brim, feather and collar. The expression is now cut out as the face itself: the connected face shape plus the eyes and mouth inside it, unioned with the neutral face shape so the old face is always fully replaced. The lifted-mask "void" expression becomes face-shaped darkness with eyes.
