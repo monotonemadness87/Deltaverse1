@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-21 — Pixel pass 1: even pixels and crisp line art
+
+Audited every sprite draw in every fight: smoothing state, effective scale, stretch, source rectangles and call site. Then inspected each boss at its native canvas resolution, enlarged 3–12× with hard pixel edges. No fight upscaled with smoothing on. The problems were uneven pixels from fractional enlargements, and soft source art sampled too sparsely.
+
+- **Aqua (portraits and battle poses):** were reduced to 128 px and then enlarged 1.05–1.53×, so outlines alternated between 1 and 2 pixels thick and broke into dots. They are now reduced straight from the full sheet to their on-screen height with area averaging, then snapped to the same flat palette: one even pixel per canvas pixel, continuous outlines, clearer eyes, mouth and bow. Props (knife, bow, clock, …) already used whole-number scaling and are unchanged.
+- **Rift (Hollow Crown and its props):** were nearest-sampled from a 1536 px sheet at about 0.1×, catching scattered soft edge pixels, so the crown's white outlines came out thin, grey and broken. Now area-averaged to the exact size and snapped to white-on-black: solid, crisp lines.
+- **Mettalot, Blooky and the gloves:** were 64 px frames enlarged 2.44× (mixing 2- and 3-pixel columns). Frames are now rebuilt at the exact number of game pixels they show (78 for the 156 px ghost) and enlarged by a whole number: the same size and chunky style, with every pixel even and the outline continuous.
+- **Torn Notebook sprite (all 13 Notebook builds):** the 44 px frames were drawn at 2.4–2.58× in the 768 px fights. They now snap to whole-number scales: 2× while spinning (the size the 640 px fights already used), 3× on impact.
+- **Checked and left as is:** Encore, Gerson, Sans, the blasters, Muffet, Spamtenna's moth and the in-battle SOUL were already crisp. Spamson NEO's softness is mostly its black anti-aliased outline against black; the alternatives tried were not clearly better, so it is unchanged.
+- Aqua builds re-stamped **R32**.
+
 ## 2026-10-21 — Punchline camping fix
 
 - **Ant Tenna + Spamson, THE FALLING PUNCHLINE** (and ONE LAST LITTLE THING, which shares its drops): anvils now land on eleven staggered slots across the whole floor, shifted half a slot on alternate waves, so standing in a wall band or a column gap no longer avoids every drop. This also fixes the column formula repeating the first anvil's column for the third, so each wave now really has three distinct drops (two with BRACE). Warnings, timing, speed and damage are unchanged. Verified: still bot 0 → 40 damage/min, random dodger 60/min; god-mode bots still reach victory at turn 27 with no errors.

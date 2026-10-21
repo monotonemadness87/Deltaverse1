@@ -340,7 +340,8 @@ class NotebookVisual {
  // Each timing stop answers the press: a gold spark for a perfect stop, a soft ring otherwise.
  mark(n){const stop=n.stops?.at(-1);if(!stop||stop.missed||!this.geo)return;const {bx,span,cy,s}=this.geo,x=bx+stop.position*span;if(stop.quality>=.94){this.fx.burst(x,cy,{count:10,colors:['#ffe600','#fff6a8'],speed:150,life:.35,gravity:300});this.fx.ring(x,cy,{color:'#ffe600',radius:26,life:.22,width:3});}else this.fx.ring(x,cy,{color:'#c49bff',radius:16,life:.18,width:2});}
  event(type,n){if(type==='hit')this.impact(n);if(type==='mark')this.mark(n);if(['cancel','end','pause'].includes(type)){for(const s of Object.values(this.sounds))s.pause();return;}if(type==='hit')this.sounds.spin.pause();const audio=this.sounds[type];if(audio&&this.enabled()&&!this.paused()){audio.pause();audio.currentTime=0;audio.play().catch(()=>{});}}
- book(x,y,size=88,frame=0,perfect=false){const c=this.ctx,im=perfect?this.gold:this.white;if(!im.width)return;c.save();c.imageSmoothingEnabled=false;c.drawImage(im,frame*44,0,44,44,Math.round(x-size/2),Math.round(y-size/2),size,size);c.restore();}
+ // The 44-pixel frames only scale evenly by whole numbers, so the requested size snaps to the nearest multiple.
+ book(x,y,size=88,frame=0,perfect=false){const c=this.ctx,im=perfect?this.gold:this.white;if(!im.width)return;const d=44*Math.max(1,Math.round(size/44));c.save();c.imageSmoothingEnabled=false;c.drawImage(im,frame*44,0,44,44,Math.round(x-d/2),Math.round(y-d/2),d,d);c.restore();}
  // Gives an encounter its location atmosphere; the encounter draws it right after its background.
  atmosphere(game,kind,{variant}={}){game.locationFX=new AmbientFX(this.ctx,kind,{calm:this.fx.calm,paused:this.paused,variant,active:()=>!['dead','dying','title','fatalGrin'].includes(game.state)});}
  draw(game){this.drawNotebook(game);this.fx.frame();}
