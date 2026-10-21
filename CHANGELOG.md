@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-10-21 — Spectacle pass 1: impact and feedback
+
+A shared effects layer (`ImpactFX`, inside the shared `notebook-visual.js` module in all 13 Notebook builds) runs as the last step of every frame. It re-blits the finished frame for camera shake (slightly enlarged so no bare edge shows), then draws shockwave rings, pixel shards and flashes. It is purely visual and never touches encounter state, timing, hitboxes or damage.
+
+- **Torn Notebook impact:** strength scales with timing quality. Perfect strikes get gold shards, a stronger shake, a warm flash and a second shockwave ring. Ordinary shots that land on Aqua get a light version.
+- **Timing stops:** each press answers on the bar: a gold spark burst for a perfect stop, a soft purple ring otherwise.
+- **Seth hurt:** a short jolt plus a red glow pressing in from the screen edges, layered on each fight's existing hurt shake.
+- **Set pieces, per fight** (via `fx.bind(game, map)` on each fight's own event names):
+  - Gerson: hammer landing, shatter, vine-wall break, Aqua stealing the kill; a tiny tick on shield blocks.
+  - Ant Tenna + Spamson: the explosion, transformation, menu blast, cannon shots and impacts.
+  - Spamson NEO: the injection (pink flash), transformation, menu blast, cannon shots.
+  - Muffet: slams, captures, the cannon, soul break. Only Seth's damage triggers the hurt effect, not Aqua's.
+  - Sans / Sans + Alphys: blasters firing, gravity slams, gate breaks, CORE beams, Aqua's slashes.
+  - Flowey: blaster blasts, control-warp flashes.
+  - Aqua: Seth's special skills landing, her assault, parry ticks.
+  - Every fight: a hard jolt on Game Over.
+- **Fairness guard:** effects triggered by hazards during dodging (blasters, cannon fire, beams, slams) are capped to a gentle shake, so they never make the arena hard to read.
+- **Reduced motion:** each fight's own "reduce flashes/motion" toggle is honoured (Encore, Rift, Flowey, Gerson, Aqua, both Spamson builds, Muffet), as is the system reduce-motion preference everywhere. With it on there is no shake, and flashes drop to 30%.
+- Aqua full and finale practice re-stamped **R30**.
+
+Verified with no page errors in any build, the hurt effect captured firing in all 12 Notebook fights, impact and timing-stop effects captured frame by frame, and all 17 hub entries launching.
+
 ## 2026-10-21 — Polish pass 1: visual defects and screen fit
 
 Found by playing every build headlessly at desktop (1280×800) and phone (390×844) sizes and reviewing the frames. No mechanics, damage, timing, dialogue or art were changed.

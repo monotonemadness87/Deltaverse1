@@ -120,8 +120,9 @@ if(document.modelContext?.registerTool){
 Promise.all([art.ready,document.fonts.load('20px Determination')]).then(()=>{ready=true;loading.hidden=true;render();sync();requestAnimationFrame(frame);}).catch(error=>{loading.textContent='The sprites could not load. Reload the fight.';console.error(error);});
 
 // Seth's supplied weapon: two timed strikes, spin, then a single resolved impact.
-const notebookVisual=new NotebookVisual(ctx,{enabled:()=>audio.active&&!audio.muted,paused:()=>game.paused,assetBase:'assets/'});
+const notebookVisual=new NotebookVisual(ctx,{enabled:()=>audio.active&&!audio.muted,paused:()=>game.paused,assetBase:'assets/',calm:()=>renderer.reduced});
 installNotebook(game,{kind:'muffet',target:g=>({muffet:{x:g.presence.position.x,y:g.presence.position.y},light:{x:129,y:250},aqua:{x:65,y:156},arm:{x:641,y:128},tenna:{x:690,y:215},spamson:{x:680,y:100},killTenna:{x:690,y:215},exit:{x:384,y:110}}[g.aimTarget]||{x:620,y:140}),event:(type,n)=>notebookVisual.event(type,n)});
+notebookVisual.fx.bind(game,{hurt:(fx,d)=>d?.actor==='seth'&&fx.hurt(),slam:fx=>fx.kick(.18,.5),capture:fx=>fx.kick(.35),cannon:fx=>fx.boom(.5),soulBreak:fx=>fx.kick(.55)});
 const beforeNotebookRender=render;
 render=function(){game.notebookRender(beforeNotebookRender);notebookVisual.draw(game);};
 canvas.addEventListener('pointerdown',event=>{
@@ -1687,22 +1688,73 @@ module.exports={MuffetGame,BOSS,NORMAL,FULL,INVENTORY,FIGHT_TARGETS,TITLES};
 },
 "src/notebook-visual.cjs":(module,exports,require)=>{
 // Sprite frames extracted from the supplied Torn Notebook reference GIF.
+// Spectacle layered over the finished frame: camera shake, flashes, pixel shards and shockwaves.
+// Purely visual. It never reads input or changes encounter state, timing, hitboxes or damage.
+class ImpactFX {
+ constructor(ctx,{paused=()=>false,calm=()=>false}={}){
+  const prefers=typeof matchMedia==='function'?matchMedia('(prefers-reduced-motion: reduce)'):null;
+  this.ctx=ctx;this.paused=paused;this.calm=()=>!!(calm()||prefers?.matches);this.trauma=0;this.time=0;this.last=0;this.flashes=[];this.parts=[];this.rings=[];this.buffer=null;
+ }
+ kick(amount,cap=1){if(this.trauma<cap)this.trauma=Math.min(cap,this.trauma+amount);}
+ flash(color,alpha=.25,life=.14,edge=false){this.flashes.push({color,alpha,life,edge,age:0});}
+ burst(x,y,{count=18,colors=['#fff'],speed=240,life=.55,size=4,gravity=520}={}){const s=this.ctx.canvas.width/640;for(let i=0;i<count;i++){const a=Math.random()*Math.PI*2,v=speed*(.35+Math.random()*.65)*s;this.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-speed*.3*s,gravity:gravity*s,size:Math.max(1,Math.round(size*(.6+Math.random()*.9)*s)),color:colors[i%colors.length],life:life*(.6+Math.random()*.6),age:0});}}
+ ring(x,y,{color='#fff',radius=72,life=.32,width=4,delay=0}={}){this.rings.push({x,y,color,radius,life,width,age:-delay});}
+ // Seth's weapon landing. Power is the Notebook timing quality; light hits are ordinary shots.
+ impact(x,y,{power=.5,perfect=false,light=false}={}){
+  if(light){this.kick(.12,.4);this.burst(x,y,{count:8,colors:['#fff','#d9c2ff'],speed:170,life:.4});this.ring(x,y,{radius:34,life:.22,width:3});return;}
+  const colors=perfect?['#ffe600','#fff6a8','#ffffff']:['#ffffff','#e6e6e6','#c49bff'];
+  this.kick(.32+power*.4+(perfect?.22:0));this.flash(perfect?'#fff3a6':'#ffffff',(perfect?.3:.16)*(.6+power*.4),perfect?.2:.12);
+  this.burst(x,y,{count:Math.round(14+power*18+(perfect?12:0)),colors,speed:210+power*170});this.ring(x,y,{color:perfect?'#ffe600':'#ffffff',radius:58+power*52});
+  if(perfect)this.ring(x,y,{color:'#ffffff',radius:128,life:.44,width:2,delay:.07});
+ }
+ // Seth taking damage: a short jolt and a red glow pressing in from the screen edges.
+ hurt(power=.5){this.kick(.3+power*.24,.75);this.flash('#ff1a1a',.3+power*.25,.34,true);}
+ // Big set pieces: explosions, transformations, final blows.
+ boom(power=.6,color='#ffffff'){this.kick(.3+power*.6);this.flash(color,.12+power*.22,.18+power*.12);}
+ // Lets an encounter map its own event names to effects without editing encounter code.
+ bind(game,map){const emit=game.emit.bind(game);game.emit=(type,...args)=>{const result=emit(type,...args);try{map[type]?.(this,...args);}catch(error){console.warn(error);}return result;};}
+ frame(){
+  const now=performance.now(),dt=this.last?Math.min(.05,(now-this.last)/1000):0,frozen=this.paused(),step=frozen?0:dt;this.last=now;
+  this.time+=step;this.trauma=Math.max(0,this.trauma-step*1.7);
+  for(const p of this.parts){p.age+=step;p.vy+=p.gravity*step;p.vx*=1-2*step;p.x+=p.vx*step;p.y+=p.vy*step;}this.parts=this.parts.filter(p=>p.age<p.life);
+  for(const r of this.rings)r.age+=step;this.rings=this.rings.filter(r=>r.age<r.life);
+  for(const f of this.flashes)f.age+=step;this.flashes=this.flashes.filter(f=>f.age<f.life);
+  if(!this.trauma&&!this.parts.length&&!this.rings.length&&!this.flashes.length)return;
+  const c=this.ctx,w=c.canvas.width,h=c.canvas.height,s=w/640,calm=this.calm(),shake=calm||frozen?0:this.trauma*this.trauma*12*s;
+  c.save();c.setTransform(1,0,0,1,0,0);c.imageSmoothingEnabled=false;c.globalAlpha=1;
+  if(shake>.5){
+   // Re-blit the finished frame offset and very slightly enlarged so no bare edge shows.
+   if(!this.buffer)this.buffer=document.createElement('canvas');const b=this.buffer;if(b.width!==w||b.height!==h){b.width=w;b.height=h;}
+   const bc=b.getContext('2d');bc.clearRect(0,0,w,h);bc.drawImage(c.canvas,0,0);
+   const t=this.time*60,dx=shake*Math.sin(t*1.7+Math.sin(t*.9)),dy=shake*Math.cos(t*2.3+Math.sin(t*1.3)),z=1+2*Math.max(Math.abs(dx)/w,Math.abs(dy)/h);
+   c.drawImage(b,(w-w*z)/2+dx,(h-h*z)/2+dy,w*z,h*z);
+  }
+  for(const r of this.rings){if(r.age<0)continue;const u=r.age/r.life,grow=1-(1-u)**3;c.globalAlpha=1-u;c.strokeStyle=r.color;c.lineWidth=Math.max(1,r.width*(1-u)*s);c.beginPath();c.arc(r.x,r.y,r.radius*grow*s,0,Math.PI*2);c.stroke();}
+  for(const p of this.parts){const u=p.age/p.life;c.globalAlpha=u<.6?1:1-(u-.6)/.4;c.fillStyle=p.color;c.fillRect(Math.round(p.x-p.size/2),Math.round(p.y-p.size/2),p.size,p.size);}
+  for(const f of this.flashes){const u=f.age/f.life,a=f.alpha*(1-u)*(1-u)*(calm?.3:1);if(a<.01)continue;c.globalAlpha=a;if(f.edge){const g=c.createRadialGradient(w/2,h/2,Math.min(w,h)*.3,w/2,h/2,Math.hypot(w,h)/2);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,f.color);c.fillStyle=g;}else c.fillStyle=f.color;c.fillRect(0,0,w,h);}
+  c.restore();
+ }
+}
 class NotebookVisual {
- constructor(ctx,{enabled=()=>true,paused=()=>false,assetBase=''}={}){
-  this.ctx=ctx;this.enabled=enabled;this.paused=paused;this.white=new Image();this.gold=new Image();
+ constructor(ctx,{enabled=()=>true,paused=()=>false,assetBase='',calm=()=>false}={}){
+  this.ctx=ctx;this.enabled=enabled;this.paused=paused;this.fx=new ImpactFX(ctx,{paused,calm});this.white=new Image();this.gold=new Image();
   const source=name=>typeof window!=='undefined'&&window.MUFFET_ASSETS?.[name]||(/^data:/.test(name)?name:assetBase+name);
   this.white.src=source('torn-notebook.png');this.gold.src=source('torn-notebook-gold.png');
   this.sounds={mark:new Audio(source('torn-notebook-select.mp3')),spin:new Audio(source('torn-notebook-spin.mp3')),hit:new Audio(source('torn-notebook-strike.mp3'))};for(const sound of Object.values(this.sounds)){sound.preload='auto';sound.volume=.65;}
   this.ready=Promise.all([this.white.decode?.(),this.gold.decode?.()]);this.lastPhase='';
  }
- event(type,n){if(['cancel','end','pause'].includes(type)){for(const s of Object.values(this.sounds))s.pause();return;}if(type==='hit')this.sounds.spin.pause();const audio=this.sounds[type];if(audio&&this.enabled()&&!this.paused()){audio.pause();audio.currentTime=0;audio.play().catch(()=>{});}}
+ impact(n){const live=n.phase==='impact',at=live?n.target:n.impacts?.at(-1);if(at)this.fx.impact(at.x,at.y,live?{power:n.quality??.5,perfect:!!n.perfect}:{light:true});}
+ // Each timing stop answers the press: a gold spark for a perfect stop, a soft ring otherwise.
+ mark(n){const stop=n.stops?.at(-1);if(!stop||stop.missed||!this.geo)return;const {bx,span,cy,s}=this.geo,x=bx+stop.position*span;if(stop.quality>=.94){this.fx.burst(x,cy,{count:10,colors:['#ffe600','#fff6a8'],speed:150,life:.35,gravity:300});this.fx.ring(x,cy,{color:'#ffe600',radius:26,life:.22,width:3});}else this.fx.ring(x,cy,{color:'#c49bff',radius:16,life:.18,width:2});}
+ event(type,n){if(type==='hit')this.impact(n);if(type==='mark')this.mark(n);if(['cancel','end','pause'].includes(type)){for(const s of Object.values(this.sounds))s.pause();return;}if(type==='hit')this.sounds.spin.pause();const audio=this.sounds[type];if(audio&&this.enabled()&&!this.paused()){audio.pause();audio.currentTime=0;audio.play().catch(()=>{});}}
  book(x,y,size=88,frame=0,perfect=false){const c=this.ctx,im=perfect?this.gold:this.white;if(!im.width)return;c.save();c.imageSmoothingEnabled=false;c.drawImage(im,frame*44,0,44,44,Math.round(x-size/2),Math.round(y-size/2),size,size);c.restore();}
- draw(game){game.notebookEnsure?.();const n=game.notebook;for(const f of n?.impacts||[])this.book(f.x,f.y,88,6+Math.min(2,Math.floor(f.age/.174)));const interrupted=n?.phase==='interrupted'&&game.state==='cheat';if(!n?.active&&!interrupted||['dead','title'].includes(game.state))return;if(game.paused||!this.enabled()){this.event('pause',n);this.suspended=true;}else if(this.suspended){this.suspended=false;const a=this.sounds[n.phase==='impact'?'hit':n.phase];if(a){a.currentTime=n.phaseAge;a.play().catch(()=>{});}}if(n.active)n.target={...(n.follow?.()||n.target)};const c=this.ctx,w=c.canvas.width,h=c.canvas.height,s=w/640;
+ draw(game){this.drawNotebook(game);this.fx.frame();}
+ drawNotebook(game){game.notebookEnsure?.();const n=game.notebook;for(const f of n?.impacts||[])this.book(f.x,f.y,88,6+Math.min(2,Math.floor(f.age/.174)));const interrupted=n?.phase==='interrupted'&&game.state==='cheat';if(!n?.active&&!interrupted||['dead','title'].includes(game.state))return;if(game.paused||!this.enabled()){this.event('pause',n);this.suspended=true;}else if(this.suspended){this.suspended=false;const a=this.sounds[n.phase==='impact'?'hit':n.phase];if(a){a.currentTime=n.phaseAge;a.play().catch(()=>{});}}if(n.active)n.target={...(n.follow?.()||n.target)};const c=this.ctx,w=c.canvas.width,h=c.canvas.height,s=w/640;
   const x=24*s,y=game.notebookPanelY??(h-480*s)+249*s,bw=592*s,bh=game.notebookPanelH??140*s,top=y+(bh-140*s)/2;c.save();c.imageSmoothingEnabled=false;
   // The timing display remains below the target and fades while the weapon spins.
   // After the strike resolves, the empty panel clears quickly so it never sits over the encounter's next panel.
   const panel=n.phase==='impact'&&!interrupted&&!['encore','rift','duo'].includes(n.kind)?Math.max(0,1-n.phaseAge/.14):1;c.globalAlpha=panel;if(panel){c.fillStyle='#000';c.fillRect(x,y,bw,bh);c.strokeStyle='#eee';c.lineWidth=3*s;c.strokeRect(x,y,bw,bh);}c.globalAlpha=n.phase==='timing'||interrupted?1:n.phase==='spin'?.55:0;if(c.globalAlpha){c.strokeStyle='#eee';c.lineWidth=3*s;c.strokeRect(x,y,bw,bh);
-   const bx=56*s,by=top+48*s,span=528*s,cy=by+28*s;c.strokeStyle='#d8d735';c.lineWidth=2*s;c.beginPath();c.ellipse(w/2,cy,span/2,29*s,0,0,Math.PI*2);c.stroke();
+   const bx=56*s,by=top+48*s,span=528*s,cy=by+28*s;this.geo={bx,span,cy,s};c.strokeStyle='#d8d735';c.lineWidth=2*s;c.beginPath();c.ellipse(w/2,cy,span/2,29*s,0,0,Math.PI*2);c.stroke();
    for(let i=0;i<25;i++){const px=bx+span*i/24,v=1-Math.abs(i-12)/12;c.fillStyle=Math.abs(i-12)<2?'#20dd44':i<5||i>19?'#b52b2b':'#b8b635';c.fillRect(Math.round(px),Math.round(cy-(9+v*21)*s),2*s,(18+v*42)*s);}c.fillStyle='#16ee3b';c.fillRect(w/2-4*s,by-6*s,8*s,68*s);
    for(let i=0;i<2;i++){if(!interrupted&&n.age<i*n.stagger&&!n.stops[i])continue;const stop=n.stops[i],pos=interrupted?n.blockedLines[i].position:stop?.position??n.position(i);let px=bx+pos*span,py=by-8*s;c.fillStyle=interrupted?'#42d9ff':stop?stop.quality>=.94?'#ffe600':'#7a57e8':'#fff';if(interrupted){const u=game.cheatProgress;if(game.cheatType==='gravity'){px+=(i?1:-1)*u*110*s;py-=u*90*s;}else c.globalAlpha=Math.max(0,1-u*2);}c.fillRect(Math.round(px-2*s),py,5*s,74*s);if(interrupted){c.globalAlpha=1;c.strokeStyle='#ff7745';c.lineWidth=3*s;c.beginPath();c.moveTo(px-9*s,py+25*s);c.lineTo(px+9*s,py+47*s);c.moveTo(px+9*s,py+25*s);c.lineTo(px-9*s,py+47*s);c.stroke();}}
    if(interrupted&&game.cheatType==='blast'&&game.cheatFired&&game.time<.95){c.globalAlpha=.7;c.fillStyle='#fff';c.fillRect(bx,by,span,56*s);c.globalAlpha=1;}
