@@ -16,8 +16,8 @@
   },
   {
     "file": "encore.html",
-    "bytes": 12424391,
-    "sha256": "14412afc81cf87dbbc725d28b2787abb40bcc53dd9023ad00f688107014713a0"
+    "bytes": 12425490,
+    "sha256": "1e0723c6980f9cc0ae3ee9281a3fc2fa9d06274222f7d2f57cc71278d54a1f2d"
   },
   {
     "file": "flowey.html",
@@ -26,8 +26,8 @@
   },
   {
     "file": "gerson.html",
-    "bytes": 11481693,
-    "sha256": "ea8fb7a4a30ff5b56c37f084df84ad996dd8330fcc99adfbe66802bc2bc4b4ea"
+    "bytes": 11482600,
+    "sha256": "2f600ad14c457639350d61b3ebf7c3533ec3465223a8e011ab5f47ebc3173579"
   },
   {
     "file": "lab.html",
@@ -41,37 +41,37 @@
   },
   {
     "file": "mettalot.html",
-    "bytes": 3672782,
-    "sha256": "37ae24ebd535965b7afb980b952f4f57e8f16cbb7d69da08e3018bb05f4248e7"
+    "bytes": 3673639,
+    "sha256": "1f4df7b42ed45def34baffb00c73405a53585ae57a810ed4dd29ec1a85e21ac9"
   },
   {
     "file": "muffet.html",
-    "bytes": 24300949,
-    "sha256": "072e24f0953ccc99fae54af15c10cb82f3a96e7268c3a03c2ea0a592d390e712"
+    "bytes": 24302463,
+    "sha256": "45bc8de9bdf198d17227731b718cbced3640c83283b9f32cbb0004d203e91904"
   },
   {
     "file": "rift.html",
-    "bytes": 7995547,
-    "sha256": "d97f58da1828e65c346e19663685c227cebe4686af51ff3a5f66b6e331edc2d1"
+    "bytes": 7996646,
+    "sha256": "0bbbe29471bfb6bbcc90b6699b152aada83cc1e55fac828f09c4c39157d604af"
   },
   {
     "file": "sans-genocide.html",
-    "bytes": 11705171,
-    "sha256": "ac925c70502a1b597453732cacbd8ad87ed974e2aa77073852e81b3e89ddf537"
+    "bytes": 11705998,
+    "sha256": "2ed4e009256df373c4534d0cf1a1ccd91ab4d50b5450461818d2a92b8869a45b"
   },
   {
     "file": "sans.html",
-    "bytes": 4873886,
-    "sha256": "a57c319e3115c4c77bba44a35898ccba5e56f224d1ca252878289a20d357a761"
+    "bytes": 4874713,
+    "sha256": "059db4695aa2e63ce1ed46f1942fed085963a8b9db4842f7b2ec39804145711d"
   },
   {
     "file": "spamson-neo.html",
-    "bytes": 9180537,
-    "sha256": "3240c735b5c7403b4a71254e55de313aa8745857d48f036ba2bd662b2788e554"
+    "bytes": 9181581,
+    "sha256": "9df3718bfed69e71f8fb0e3334fc47b5b051b2351ce3161de40615ae062136a1"
   },
   {
     "file": "spamtenna.html",
-    "bytes": 18168816,
-    "sha256": "4a0aa4e009335012e4f8a60709f5dbafe0846a2b2115aa258d36faeae00104fc"
+    "bytes": 18169865,
+    "sha256": "a6fdbe1d05d0c749f3dea1013c0772dae0690be70d9dbdc0287be894ed1009e1"
   }
 ]

@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-10-21 — Phone landscape
+
+Phones (and tablets) held sideways now get a proper battle layout in every fight. The game fills the screen height, the D-pad sits in the left margin, and action buttons sit on the right. Before this, Mettalot, Muffet, Spamson NEO and Ant Tenna + Spamson had every control below the fold, both Sans fights rendered a 264×220 game, and Encore/Rift/Gerson scrolled.
+
+- **Sans, Sans + Alphys, Mettalot:** controls float in the side margins; the Z button is large, with X beside it and ♪/Ⅱ/↻ above.
+- **Ant Tenna + Spamson, Spamson NEO:** D-pad left, X and FIRE stacked right, PAUSE/SOUND in the top corners; the footnote is hidden in landscape.
+- **Muffet:** three columns. Left: toolbar and D-pad. Centre: the arena. Right: the action panel (FIGHT/ACT/ITEM/MERCY and choice lists, scrollable if long), with BACK/CONFIRM below it.
+- **Encore, Rift:** title and PACIFIST/GENOCIDE on the left, toolbar on the right, D-pad and X/Z in the bottom corners.
+- **Gerson:** MOVE pad left, SHIELD pad and utilities right.
+- On small phones (667×375, 740×360) the arena shrinks just enough for the side controls to fit, rather than overflowing.
+- Landscape pages no longer scroll at all.
+
+Applies only to `(pointer:coarse) and (orientation:landscape)`, so desktop and portrait layouts are unchanged (re-measured). Verified at 667×375, 740×360, 844×390, 932×430 and 1180×820: nothing off-screen, and tapping the on-screen confirm button advances every fight. Aqua and Flowey already had this layout and are unchanged.
+
 ## 2026-10-21 — Spectacle pass 1: impact and feedback
 
 A shared effects layer (`ImpactFX`, inside the shared `notebook-visual.js` module in all 13 Notebook builds) runs as the last step of every frame. It re-blits the finished frame for camera shake (slightly enlarged so no bare edge shows), then draws shockwave rings, pixel shards and flashes. It is purely visual and never touches encounter state, timing, hitboxes or damage.
