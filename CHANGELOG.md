@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-10-22 — Aqua R34: readable knives, staged beams, parry callouts
+
+Reworked from the reference study (`docs/reference-study/aqua-attacks-lookfeel.md`). Every wave keeps its length, and all mechanics and prices are unchanged. Both builds (full duel and finale practice) are re-stamped **R34**.
+
+- **Warnings you can see:** knives that start outside the box now show their warning there, with a ghost that firms up and a glint just before launch, and a cyan bracket where a wall knife will cut in. Before, side cuts, curtains, fans and the STOP walls arrived with no visible warning.
+- **Knives strike:** aimed knives hover, pull back slightly, then accelerate, arriving at exactly the same moment as before. Fans and multi-knife casts spread along the wall instead of stacking, and knives have a thin dark inner line so overlaps stay readable.
+- **Beams:** a flickering warning line with edge lines at the true width, then a live beam that opens, swings slightly and thins, drawn from Aqua's hand. Its drawing and hitbox match. Her pose points while it aims and slashes when it fires.
+- **Aqua reacts:** she reaches when casting, guards when parrying and flinches when hit.
+- **Parries:** a "PARRY n/3" callout ("LAST PARRY" on the third) pops up at the parry for 0.7 s on a black plate, with a cyan ring and a brief freeze of her SOUL. The HUD counter blinks red when she's out.
+- **Arena:** the battle box tweens into and out of each arena instead of snapping.
+- **Rhythm:** each phrase opens with a faint cyan tell, casts speed up within a phrase, phrases are separated by short lulls, and the wave builds overall. Most waves end on one warned finisher slash.
+- **Finale (ONE MORE TIME):** a hard cut, a ~2 s close-up card with HP still visible, chapter breaks with a flash and an empty-box hold, and a closing cyan "HOLD STILL" ring. By the cyan rule, the ring only cuts a moving SOUL.
+- **Also fixed:** a cast-order bug introduced mid-rework, which would have changed which casts carry beams; the finale ring now has real hitboxes matching what is drawn; the wave title no longer crosses the close-up; Aqua's body follows box tweens; the HOLD STILL text no longer overlaps the rotated box.
+- Reduced motion: steady warning lines, no chapter flashes, no kicks.
+- Verified: god-mode bots win every seed in both builds, passing the finale gate, with no errors; normal-play deaths match the original. Per-pattern damage (12 runs per pattern, old → new): every pattern is within ±50%. The largest changes: ribbon +49% for a player standing still, reverse +40% for a randomly moving player, mirror and scare +32%.
+
 ## 2026-10-21 — Gerson: phrased attacks and real impacts
 
 Reworked from the frame-by-frame reference study (`docs/reference-study/gerson-attacks-lookfeel.md`). Every turn keeps its exact length (16–25 s, finale 58 s) and all mechanics.
