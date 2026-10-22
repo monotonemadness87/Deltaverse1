@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-22 — Sans + Alphys: faster, sparser skull rings
+
+- Skull rings chain 45 ms apart (was 75 ms) and use fewer skulls: ring waves build 3 → 4 → 6 (was 4 → 6 → 8), the closing double ring is 4 + 4 (was 6 + 6), and cover rings have at most 4. The open lanes between beams are now easy to read, and a player standing still can no longer be hit several times by one ring.
+- Damage per minute against the original, pre-rework fight, standing still / moving: wave 33 39 → 42 / 47 → 35; wave 34 90 → 127 / 63 → 64; wave 37 108 → 138 / 86 → 65; wave 39 30 → 45 / 41 → 32. All are within ±50%, where the first rework had pushed waves 33, 34 and 39 past it for a player standing still. Other ring waves dropped 10–30% from the first rework.
+- Flowey's save labels no longer repeat over the SOUL inside the box; the top banner already shows them.
+
 ## 2026-10-22 — Sans + Alphys: phrased waves, chained skulls, visible machinery
 
 Reworked from the reference study (`docs/reference-study/sans-alphys-attacks-lookfeel.md`). All 40 waves keep their lengths, the finale is still 75 s, the charged-skull gates are still required, and every mechanic in the contract is unchanged. Our lock lines, `!` markers, ghost bones and dashed core lines stay.
@@ -13,7 +19,7 @@ Reworked from the reference study (`docs/reference-study/sans-alphys-attacks-loo
 - **Polish:** box resizes ease; world labels stack instead of overlapping; hit shake is capped to once per 0.5 s; Flowey's first wave opens with a burst of static and vine shadows.
 - **Also fixed:** box slam kick now respects reduced motion; near-miss sparkle no longer awarded off a burnt-out after-image; the THREE STRINGS cue clears on mode change.
 - Reduced motion: no spin, tremble, box easing or tremor; black cuts become a dim.
-- Verified: no errors in bots or the browser; god-mode bots win at least as often as before (5/6 seeds vs 4/6). For a moving player every wave is within ±50% of its old damage. For a player standing still, waves 33 (+131%), 39 (+79%), 34 (+63%) and 37 (+50%) rose because chained rings spread their beams over ~0.9 s, so a SOUL that doesn't move can be hit 2–3 times per ring. Left as is pending the designer's decision.
+- Verified: no errors in bots or the browser; god-mode bots win at least as often as before (5/6 seeds vs 4/6). For a moving player every wave is within ±50% of its old damage. For a player standing still, waves 33 (+131%), 39 (+79%), 34 (+63%) and 37 (+50%) rose because chained rings spread their beams over ~0.9 s, so a SOUL that doesn't move can be hit 2–3 times per ring. Resolved the same day by faster, sparser rings (see above).
 
 ## 2026-10-22 — Aqua R34: readable knives, staged beams, parry callouts
 
