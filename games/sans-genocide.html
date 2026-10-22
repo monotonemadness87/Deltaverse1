@@ -806,23 +806,24 @@ function buildWave(g){
  const bigHop=(i,speed=280)=>{const b=a(),left=i%2===0,x=left?b.x-100:b.x+b.w+15,group=g.boneGroupSerial=(g.boneGroupSerial||0)+1;[24,38,50,38,24].forEach((h,j)=>{g.bone(x+j*20,g.gravity>0?b.y+b.h-h:b.y,14,h,left?speed:-speed,0,'white',.45,b.w/speed+1.5);Object.assign(g.hazards.at(-1),{group,formation:'hill'});});g.announce('BIG ONE · FULL JUMP',1);};
  const arches=(i,speed=265)=>{const b=a(),x=b.x+b.w+18,gap=[72,80,88][i%3],bottom=[22,38,28][i%3];g.bone(x,b.y,14,b.h-gap-bottom,-speed,0,'white',.38,b.w/speed+1.4);g.bone(x,b.y+b.h-bottom,14,bottom,-speed,0,'white',.38,b.w/speed+1.4);};
  const curtain=i=>{const b=a(),safe=i%3,left=i%2===0;for(let lane=0;lane<3;lane++)if(lane!==safe)g.boneGroup('trio',i,{x:left?b.x-76:b.x+b.w+15,y:g.laneY(lane)+16,height:32,vx:left?290:-290,warn:.4,life:b.w/290+1.4});g.announce('OPEN STRING '+(safe+1),1);};
- // Skull rings fire as one chain sweeping round the box (75 ms per skull) instead of a single
- // strobe. Each skull still locks .17 s before its own shot, so the cyan-to-yellow lines read in order.
- const ring=(i,count=8,{dir=i%2?1:-1,step=.075,radius=0,scale=.62,delay=0,offset=0}={})=>{
+ // Skull rings fire as one quick chain sweeping round the box (45 ms per skull) instead of a single
+ // strobe, with few enough skulls that the open gaps between beams are easy to see. Each skull still locks .17 s before its own shot, so the cyan-to-yellow lines read in order.
+ const ring=(i,count=6,{dir=i%2?1:-1,step=.045,radius=0,scale=.62,delay=0,offset=0}={})=>{
   const b=a(),cx=b.x+b.w/2,cy=b.y+b.h/2,start=(i*3)%count;
   for(let j=0;j<count;j++){const t=(j/count)*Math.PI*2+(i%3)*.16+offset,order=((j-start)*dir%count+count)%count;g.blaster(cx+Math.cos(t)*(b.w/2+44+radius),cy+Math.sin(t)*(b.h/2+48+radius),null,.86+delay+order*step,{track:true,target:g.allyActive&&j%2?'aqua':'seth',width:22,scale,lockLead:.17,trackRate:4.8,live:.5});}
  };
  // The set-piece close: an inner chain, then a larger outer chain turning the other way.
- const doubleRing=(i,{step=.075}={})=>{ring(i,6,{dir:1,step});ring(i+1,6,{dir:-1,step,radius:46,scale:.8,delay:.5,offset:Math.PI/6});g.announce('DOUBLE RING',1);};
- // Ring waves build 4 -> 6 -> 8 skulls, hold a breath, then close on the double ring at `last`.
- const ringPhrase=(s,last,{double=true,flip=0,step=.075,tight=1}={})=>{
+ const doubleRing=(i,{step=.045}={})=>{ring(i,4,{dir:1,step});ring(i+1,4,{dir:-1,step,radius:46,scale:.8,delay:.5,offset:Math.PI/6});g.announce('DOUBLE RING',1);};
+ // Ring waves build 3 -> 4 -> 6 skulls, hold a breath, then close on the double ring at `last`.
+ const ringPhrase=(s,last,{double=true,flip=0,step=.045,tight=1}={})=>{
   const end=double?last-1.5:last,span=Math.max(.1,end-s);let t=s,k=0;
-  while(t<=end+1e-6){const i=k,f=(t-s)/span,count=f<.3?4:f<.68?6:8;at(t,()=>ring(i,count,{dir:(i+flip)%2?1:-1,step}));t+=(count===4?.9:count===6?1:1.05)*tight;k++;}
+  while(t<=end+1e-6){const i=k,f=(t-s)/span,count=f<.3?3:f<.68?4:6;at(t,()=>ring(i,count,{dir:(i+flip)%2?1:-1,step}));t+=(count===3?.9:count===4?1:1.05)*tight;k++;}
   if(double)at(last,()=>doubleRing(k,{step}));
  };
  const quad=i=>{const b=a(),cx=b.x+b.w/2,cy=b.y+b.h/2;for(let j=0;j<8;j++){const t=j*Math.PI/4+(i%2)*Math.PI/8;g.blaster(cx+Math.cos(t)*(b.w/2+52),cy+Math.sin(t)*(b.h/2+52),t+Math.PI,.9+(j%2)*.04,{width:22,scale:.62,live:.48});}};
  const floor=(s,e,step=1.05)=>every(s,e,step,i=>g.floorBones(i));
- const cover=(s,e,count=6,step=2.1)=>every(s,e,step,i=>ring(i,count));
+ // Cover rings stay at four skulls at most so the escape routes read at a glance.
+ const cover=(s,e,count=4,step=2.1)=>every(s,e,step,i=>ring(i,Math.min(count,4)));
  // Slams tighten from `p0` to `p1` seconds; while the gaps are still long, a small ripple of bone
  // runs along the landing wall (it sinks back into the wall before the next throw).
  const slams=(s,e,{p0=1.5,p1=1,ripple=true,finisher=true}={})=>{room('blue','compact');const dirs=['up','right','down','left'];let t=s,k=0;
@@ -909,8 +910,8 @@ function buildWave(g){
   ward:()=>{room('red');g.rootStyle='ward';ringPhrase(.4,15.6,{flip:1});},
   seeds:()=>{room('red');g.rootStyle='seed';phrase(.4,17.4,1.15,(i,last)=>last?weaveFinish(i):weave(i),{squeeze:0});},
   // The two other ring waves vary from 31: a quicker reversed chain and a slower one.
-  decoy:()=>{room('red');g.rootStyle='decoy';ringPhrase(.4,17.6,{flip:1,step:.06});},
-  pin:()=>{room('yellow');g.rootStyle='pin';ringPhrase(.4,17.6,{step:.09,tight:1.05});},
+  decoy:()=>{room('red');g.rootStyle='decoy';ringPhrase(.4,17.6,{flip:1,step:.035});},
+  pin:()=>{room('yellow');g.rootStyle='pin';ringPhrase(.4,17.6,{step:.055,tight:1.05});},
   rootGate:()=>{room('yellow');g.rootStyle='hack';phrase(.4,11.2,1.9,i=>relay(i,true));at(13,()=>g.beginBlockade(6));}
  };
  g.afterBreak=null;
@@ -927,7 +928,7 @@ function buildWave(g){
   cutTo(17.1,.1,()=>room('yellow'));at(17.5,()=>{g.slam('left');const b=a(),r=g.relay(b.x+b.w-30,g.soul.y);g.coreLaser(Math.PI/2,'white',1,14,b.x+b.w*.5,b.y+b.h*.5,{controller:r,live:.7});g.announce('THROWN LEFT · YELLOW SHOTS FACE RIGHT',1.5);});
   cutTo(19.3,.1,()=>room('yellow'));every(19.7,26.8,1.4,i=>g.cellRow(i));cover(20.3,26.6,6,2.1);
  }
- if(type==='push'){g.rootStyle='petals';runCorridor(.6,9);cutTo(11.75,.3,()=>{g.camera=0;room('yellow');});at(12.1,()=>floor(12.6,26));phrase(12.4,24.6,1.6,(i,last)=>last?doubleRing(i):i%2?relay(i):ring(i,8),{squeeze:.1});}
+ if(type==='push'){g.rootStyle='petals';runCorridor(.6,9);cutTo(11.75,.3,()=>{g.camera=0;room('yellow');});at(12.1,()=>floor(12.6,26));phrase(12.4,24.6,1.6,(i,last)=>last?doubleRing(i):i%2?relay(i):ring(i,6),{squeeze:.1});}
  if(type==='final'){
   // Six sections separated by black cuts (0.4 s, then 0.1 s), a held breath, then the required gate.
   slams(.5,8.3,{p0:1.25,p1:1,ripple:false,finisher:false});
@@ -1208,7 +1209,7 @@ class Battle extends Base{
  blockHit(actor){if(aquaIntercept(this,actor))return true;const isSeth=actor===this,key=isSeth?'ward':'aquaWard',sourceKey=isSeth?'floweyWard':'floweyAquaWard';let label=null;
   if(this[key]){const fromFlowey=this[sourceKey],fromSeth=!isSeth&&this.sethCover;this[key]=0;this[sourceKey]=false;if(!isSeth)this.sethCover=false;if(!fromFlowey||this.spendInterest(6,'SHIELD SAVE'))label=fromFlowey?'FLOWEY · SHIELD SAVE':fromSeth?'SETH · COVERED AQUA':'GUARD · HIT BLOCKED';}
   if(!label&&this.floweyActive&&this.spendInterest(8,'EMERGENCY SAVE')){label='FLOWEY · EMERGENCY SAVE';this.vines.push({x:this.arena.x-12,y:this.arena.y+this.arena.h,tx:actor.soul.x,ty:actor.soul.y,age:0,type:'save',struck:true});this.emit('vine');}
-  if(!label)return false;actor.invulnerability=.35;this.supportFX.push({x:actor.soul.x,y:actor.soul.y,age:0,label});this.supportEvents.push({type:'absorb',at:this.time,who:isSeth?'seth':'aqua',label});this.announce(label,1.5);this.emit('armor');return true;
+  if(!label)return false;actor.invulnerability=.35;this.supportFX.push({x:actor.soul.x,y:actor.soul.y,age:0,label,quiet:true});this.supportEvents.push({type:'absorb',at:this.time,who:isSeth?'seth':'aqua',label});this.announce(label,1.5);this.emit('armor');return true;
  }
  awardGraze(){if(!this.moving||this.invulnerability>0||this.modeGrace>0)return;const p=this.soul;let close=null;
   for(const h of this.hazards){if(h.gone||h.tpGrazed||h.controller?.gone||h.age<h.warn||h.age>=h.life||!this.colorHurts(h.color))continue;let d=999;if(h.coreBeam){const b=coreBeam(h),dx=p.x-b.x,dy=p.y-b.y,t=dx*Math.cos(b.angle)+dy*Math.sin(b.angle);if(b.live&&b.width>=1&&t>=(b.ray?0:-b.length/2)&&t<=b.length)d=Math.abs(dx*Math.sin(b.angle)-dy*Math.cos(b.angle))-b.width/2;}else if(h.kind==='bone')d=Math.hypot(Math.max(h.x-p.x,0,p.x-h.x-h.w),Math.max(h.y-p.y,0,p.y-h.y-h.h));else if(h.kind==='bomb'&&h.age<h.warn+h.live)d=Math.hypot(p.x-h.x,p.y-h.y)-h.r;if(d>3&&d<18){close=h;break;}}
@@ -2128,7 +2129,9 @@ function arena(){const a=game.arena,v=viewBox(),cx=a.x+a.w/2,cy=a.y+a.h/2,sc=sca
   if(game.allyActive){const mood=game.aquaMood();ctx.strokeStyle=mood.id==='berserk'?'#ff6f8a':mood.id==='resentful'?'#ffab61':mood.id==='hurt'?'#ffe57b':'#6ce5f5';ctx.lineWidth=mood.id==='berserk'?3:1;ctx.globalAlpha=mood.needs?.6+.4*Math.sin(uiClock*7):.8;ctx.beginPath();ctx.arc(game.ally.soul.x,game.ally.soul.y,mood.id==='berserk'?24:16,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;heart(game.ally.soul.x,game.ally.soul.y,18/sc,game.mode==='red'?'purple':game.mode,game.ally.soulAngle,game.ally.invulnerability>0&&Math.floor(uiClock*18)%2?.3:1);rect(game.ally.soul.x-11/sc,game.ally.soul.y-11/sc,22/sc,22/sc,'#6ce5f5',false,1/sc);text('A',game.ally.soul.x,game.ally.soul.y-13/sc,13/sc,'#6ce5f5','center');}
   heart(game.soul.x,game.soul.y,18/sc,game.mode==='red'?'purple':game.mode,game.soulAngle,game.invulnerability>0&&Math.floor(uiClock*18)%2?.3:1);ctx.restore();
   const placed=[];
-  for(const f of game.supportFX){const life=f.life||1.8;ctx.save();ctx.globalAlpha=Math.min(1,Math.max(0,(life-f.age)/(life<1?.2:.4)));ctx.strokeStyle=f.slash?'#6ce5f5':'#a4ed68';ctx.lineWidth=3;if(f.slash&&f.age<.35){ctx.beginPath();ctx.moveTo(f.x-23,f.y+20);ctx.lineTo(f.x+23,f.y-20);ctx.moveTo(f.x-18,f.y-20);ctx.lineTo(f.x+18,f.y+20);ctx.stroke();}ctx.beginPath();ctx.arc(f.x,f.y,12+Math.min(1,f.age/.3)*22,0,Math.PI*2);ctx.stroke();let lx=clamp(f.x,100,668),ly=clamp(f.y+36-f.age*10,358,460);ctx.font='18px Determination, monospace';const lw=ctx.measureText(f.label).width;if(!placed.some(p=>p.label===f.label&&Math.abs(p.x-lx)<lw&&Math.abs(p.y-ly)<18)){for(let n=0;n<8&&placed.some(p=>Math.abs(p.x-lx)<(p.w+lw)/2+4&&Math.abs(p.y-ly)<17);n++)ly-=17;placed.push({x:lx,y:ly,w:lw,label:f.label});text(f.label,lx,ly,18,f.slash?'#6ce5f5':'#a4ed68','center');}ctx.restore();}
+  for(const f of game.supportFX){const life=f.life||1.8;ctx.save();ctx.globalAlpha=Math.min(1,Math.max(0,(life-f.age)/(life<1?.2:.4)));ctx.strokeStyle=f.slash?'#6ce5f5':'#a4ed68';ctx.lineWidth=3;if(f.slash&&f.age<.35){ctx.beginPath();ctx.moveTo(f.x-23,f.y+20);ctx.lineTo(f.x+23,f.y-20);ctx.moveTo(f.x-18,f.y-20);ctx.lineTo(f.x+18,f.y+20);ctx.stroke();}ctx.beginPath();ctx.arc(f.x,f.y,12+Math.min(1,f.age/.3)*22,0,Math.PI*2);ctx.stroke();let lx=clamp(f.x,100,668),ly=clamp(f.y+36-f.age*10,358,460);ctx.font='18px Determination, monospace';const lw=ctx.measureText(f.label).width;
+  // Saves already show their text as the top banner, so only the ring is drawn at the SOUL.
+  if(!f.quiet&&!placed.some(p=>p.label===f.label&&Math.abs(p.x-lx)<lw&&Math.abs(p.y-ly)<18)){for(let n=0;n<8&&placed.some(p=>Math.abs(p.x-lx)<(p.w+lw)/2+4&&Math.abs(p.y-ly)<17);n++)ly-=17;placed.push({x:lx,y:ly,w:lw,label:f.label});text(f.label,lx,ly,18,f.slash?'#6ce5f5':'#a4ed68','center');}ctx.restore();}
   if(game.coreActive)machinery(a,v);
   for(const b of game.blasters){art.blaster(ctx,b);if(b.pinned){rect(b.x-36,b.y-20,72,40,'#72c84b',false,4);}if(b.decoy&&b.trackingSoul){text('✦',b.trackingSoul.x,b.trackingSoul.y,28,'#a4ed68','center');}if(game.mode==='yellow'&&b.age<b.warm){for(let i=0;i<b.maxHP;i++)rect(b.x-(b.maxHP*8)/2+i*8,b.y-61*(b.drawScale??1),5,5,i<b.hp?(b.age<b.entry?'#9da6b6':YELLOW):'#353541',true);}}
   // Incoming edge markers expose hazards before they enter the clipped arena.
