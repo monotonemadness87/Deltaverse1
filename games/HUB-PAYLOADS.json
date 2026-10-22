@@ -6,13 +6,13 @@
   },
   {
     "file": "aqua-final.html",
-    "bytes": 9431913,
-    "sha256": "44a068bf92098fbe5c3b88a1169965fc0c73afbb9501cdd0b88c6d7d910a582a"
+    "bytes": 9445766,
+    "sha256": "e26c8d338806a5ecf92e9cef5b5595435247bbb34742f860d99d9ea07ef981fc"
   },
   {
     "file": "aqua.html",
-    "bytes": 9431930,
-    "sha256": "227bc4f6ff8618ff8e5fdfdca9aa23a6d6476bd9ac49e4bfe5a576c685a47b5b"
+    "bytes": 9445783,
+    "sha256": "9d01a86df6a7c7d4d6c70d2c4d07a3ce2ae010baceddf269a8b09c49fe3172f9"
   },
   {
     "file": "encore.html",
@@ -56,8 +56,8 @@
   },
   {
     "file": "sans-genocide.html",
-    "bytes": 11713238,
-    "sha256": "3f37464911cfa3baa0d3445746218a5a1e64808a74432a15135a78f3c9bdd608"
+    "bytes": 11731308,
+    "sha256": "baee0676ed36038f5544132f5b3d26945af6a1e05e5bab11229bac1ede042517"
   },
   {
     "file": "sans.html",

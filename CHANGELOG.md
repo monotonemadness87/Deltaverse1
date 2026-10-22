@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-10-22 — Sans + Alphys: phrased waves, chained skulls, visible machinery
+
+Reworked from the reference study (`docs/reference-study/sans-alphys-attacks-lookfeel.md`). All 40 waves keep their lengths, the finale is still 75 s, the charged-skull gates are still required, and every mechanic in the contract is unchanged. Our lock lines, `!` markers, ghost bones and dashed core lines stay.
+
+- **Rhythm:** waves tighten, take a short breath and end on their biggest beat instead of running at one steady interval. Empty-box time dropped sharply (wave 1: 28% → 6%; wave 40's empty tail: 7.8 s → 0.7 s). Slam waves speed up from 1.5 s to 1.0 s between slams, with a light ripple of bones filling the early gaps.
+- **Skull rings** fire one skull after another instead of all at once, growing 4 → 6 → 8, then closing on a double ring.
+- **Skulls:** one shared lifecycle (spin in, hold, tremble, open the jaw on the fire frame, beam widens from a thin line, recoil, narrowing grey fade); set-piece skulls are larger. Beam damage width-time is unchanged. Beams outside the box are drawn at half strength so Sans and the HUD stay readable.
+- **Slam bones** show an outline, then grow out of the wall and pull back.
+- **Alphys's machinery has bodies:** carriages on the box rim, projectors for lit zones, a hopper for falling cells and a cabled rotor. Her console keys light when a device fires.
+- **Finale:** sections are separated by black cuts. If the gate breaks early, slams keep coming until 75 s, so the fight never ends on an empty box.
+- **Polish:** box resizes ease; world labels stack instead of overlapping; hit shake is capped to once per 0.5 s; Flowey's first wave opens with a burst of static and vine shadows.
+- **Also fixed:** box slam kick now respects reduced motion; near-miss sparkle no longer awarded off a burnt-out after-image; the THREE STRINGS cue clears on mode change.
+- Reduced motion: no spin, tremble, box easing or tremor; black cuts become a dim.
+- Verified: no errors in bots or the browser; god-mode bots win at least as often as before (5/6 seeds vs 4/6). For a moving player every wave is within ±50% of its old damage. For a player standing still, waves 33 (+131%), 39 (+79%), 34 (+63%) and 37 (+50%) rose because chained rings spread their beams over ~0.9 s, so a SOUL that doesn't move can be hit 2–3 times per ring. Left as is pending the designer's decision.
+
 ## 2026-10-22 — Aqua R34: readable knives, staged beams, parry callouts
 
 Reworked from the reference study (`docs/reference-study/aqua-attacks-lookfeel.md`). Every wave keeps its length, and all mechanics and prices are unchanged. Both builds (full duel and finale practice) are re-stamped **R34**.
