@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-23 — Flowey: act three is big canon Flowey
+
+The designer rejected the original TV-headed creature. Inside him, Flowey is now his own canon battle sprite at 5×: talking, with his hurt face, and tearing into offset bands more often as his health drops. Thorned vines reach out from behind him. During boss replays he dims, and the boss appears in front of him. The HOWDY, INSIDE attacks now come from his own eyes, face and vines.
+
 ## 2026-10-23 — Flowey, second pass: his voice, a real body, and FIGHT that pays off (until he rigs it)
 
 The designer found the first redo short of the other fights, his talking weird, and the sprites weak. They supplied his voice blip, his evil blip, his hurt cry and his evil laugh.

@@ -41,6 +41,6 @@ Every replayed boss comes from the pacifist route. The old fight also replayed S
 
 ## Sprites
 
-The 90 frames on the sheet were cut at native size: an exact 2× grid, zero mismatched pixels. They form one 56×56-cell atlas with the eyes and mouth kept opaque. Flowey's twelve story faces map to canon frames, each with a talking frame. The giant face in the barrages is the same frames scaled up and dimmed. Every expression has a talking frame that only opens the mouth. Inside him, he has an original pixel-art body: a television head that plays these canon faces, with petals, a jaw, eye stalks and vine arms.
+The 90 frames on the sheet were cut at native size: an exact 2× grid, zero mismatched pixels. They form one 56×56-cell atlas with the eyes and mouth kept opaque. Flowey's twelve story faces map to canon frames, each with a talking frame. The giant face in the barrages is the same frames scaled up and dimmed. Every expression has a talking frame that only opens the mouth. Inside him, he is the same canon sprite at 5×, with thorned vines behind him.
 
-No Undertale Yellow art was copied. The chase rooms, vines and the act-three body are original. His voice blips, hurt cry and laugh are the designer's supplied sounds.
+No Undertale Yellow art was copied. The chase rooms and the vines are original. His voice blips, hurt cry and laugh are the designer's supplied sounds.
