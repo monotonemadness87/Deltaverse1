@@ -130,11 +130,11 @@ class NeoBattle{
  drain(){return this.events.splice(0);}
  reset(checkpoint=false){
   this.paused=false;this.clock=0;this.timer=0;this.turn=0;this.phaseTurn=0;this.hp=this.maxHP=48;this.lv=8;this.items=copy(ITEMS);this.phase=checkpoint?this.checkpoint:1;this.enemyMax=this.phase===1?36:60;this.enemyHP=this.phase===3?12:this.enemyMax;this.injections=this.phase===1?0:1;this.injected=this.phase>1;this.melted=false;this.hitCount=0;this.blindFinish=false;this.captureStarted=false;this.won=false;this.bullets=[];this.shots=[];this.effects=[];this.selected=0;this.option=0;this.actName='';this.charge=0;this.fireHeld=false;this.burst=0;this.shotCD=0;this.burstCD=0;this.shotFlash=0;this.invuln=0;this.laneCD=0;this.exposed=false;this.read=false;this.bait=false;this.cutWires=false;this.totalRelays=0;this.totalDamage=0;this.attackCount=0;this.attackAge=0;this.face=6;this.bark='';this.barkAge=0;this.boss={x:384,y:243,angle:Math.PI/2};this.plan=[];this.planAt=0;this.narrow=false;this.lastInput={};this.setupArena(this.phase>1?'vertical':'horizontal');this.emit('reset');
-  if(this.phase===3){this.startFinal();this.emit('neoStart');}else if(this.phase===2){this.dialogue([['s','THE SECOND ACT IS STILL MINE.'],REVIVAL.at(-1)],'menu');this.emit('neoStart');}else this.dialogue(INTRO,'menu');
+  if(this.phase===3){this.startFinal();this.emit('neoStart');}else if(this.phase===2){this.dialogue([['s','THE SECOND ACT IS STILL MINE.',6],REVIVAL.at(-1)],'menu');this.emit('neoStart');}else this.dialogue(INTRO,'menu');
  }
  setupArena(orientation,final=false){this.orientation=orientation;this.arena=final?{x:92,y:88,w:584,h:390}:orientation==='vertical'?{x:112,y:252,w:544,h:232}:{x:104,y:276,w:560,h:168};this.lanes=orientation==='vertical'?5:3;this.lane=2>=this.lanes?1:2;const a=this.arena;this.soul={x:orientation==='vertical'?this.coord(this.lane):a.x+a.w*.48,y:orientation==='vertical'?a.y+a.h-28:this.coord(this.lane)};}
  coord(i){const a=this.arena;return this.orientation==='vertical'?a.x+a.w*(i+.5)/this.lanes:a.y+a.h*(i+.5)/this.lanes;}
- dialogue(rows,next='menu'){this.pages=rows.map(([speaker,text])=>({speaker,text}));this.page=0;this.displayChars=0;this.afterDialogue=next;this.state='dialogue';this.timer=0;this.bullets=[];this.shots=[];}
+ dialogue(rows,next='menu'){this.pages=rows.map(([speaker,text,face])=>({speaker,text,face}));this.page=0;this.displayChars=0;this.afterDialogue=next;this.state='dialogue';this.timer=0;this.bullets=[];this.shots=[];}
  get current(){return this.pages?.[this.page]||{speaker:'n',text:''};}
  say(text,face=6){this.bark=text;this.barkAge=2;this.face=face;}
  menu(){this.state='menu';this.timer=0;this.bullets=[];this.shots=[];this.charge=0;this.selected=0;}
@@ -149,7 +149,7 @@ class NeoBattle{
   if(this.state==='timing'){this.strike();return;}
   if(this.state==='act'){this.act(this.option);return;}
   if(this.state==='item'){this.useItem(this.option);return;}
-  if(this.state==='mercy'){this.dialogue([['s',this.option?'THAT ROAD GOES THROUGH ME, KID.':'TENNA DOESN’T GET TO COME BACK. WHY SHOULD YOU?']],'attackReady');return;}
+  if(this.state==='mercy'){this.dialogue([['s',this.option?'THAT ROAD GOES THROUGH ME, KID.':'TENNA DOESN’T GET TO COME BACK. WHY SHOULD YOU?',8]],'attackReady');return;}
   if(this.state==='finishPrompt'){this.state='finishAttempt';this.timer=0;this.emit('revealMusic');return;}
  }
  strike(){const precision=Math.max(0,1-Math.abs(this.timer%1.6-.8)/.8),raw=Math.round(6+12*precision);let damage=this.phase===1?raw:Math.max(1,Math.round(raw*(this.exposed?1:.22)));this.exposed=false;this.damageBoss(damage);this.emit('gentleStrike');this.effects.push({type:'damage',x:this.boss.x,y:145,text:String(damage),life:1.2});if(this.state==='timing'){this.say(this.phase===1?'THAT’S ALL YOU BROUGHT?':'STILL. STANDING.',8);this.beginAttack();}}
@@ -163,10 +163,10 @@ class NeoBattle{
   if(i===1){this.read=true;text='* You watch the barrel and wing signals. The next attack warns longer.';}
   if(i===2){this.bait=true;text='* You challenge him to aim the cannon himself. He commits to wider, slower sweeps.';}
   if(i===3){this.cutWires=true;text='* You cut a dangling control lead. Wing crossfire shuts down for the next attack.';}
-  this.dialogue([['n',text],['s',['STILL COUNTING, KID?','THEN WATCH CLOSELY.','I DON’T NEED A CO-HOST TO AIM!','HEY! THAT WAS A RENTAL!'][i]]],'attackReady');
+  this.dialogue([['n',text],['s',['STILL TAKING INVENTORY, KID?','THEN WATCH CLOSELY.','I DON’T NEED A CO-HOST TO AIM!','HEY! THAT WAS A RENTAL!'][i],[4,6,8,1][i]]],'attackReady');
  }
- useItem(i){const item=this.items[i];if(!item?.count){this.dialogue([['n','* There is none left.']],'menu');return;}item.count--;this.hp=Math.min(this.maxHP,this.hp+item.heal);this.emit('heal');this.dialogue([['n','* You eat '+item.name+'. '+item.heal+' HP restored.'],['s','I PACKED SOMETHING TOO. FOR LATER.']],'attackReady');}
- beginAttack(){this.state='attack';this.timer=0;this.attackAge=0;this.bullets=[];this.shots=[];this.attackCount++;this.turn++;this.phaseTurn++;this.patternIndex=this.phase===1?(this.turn-1)%4:4+(this.turn-1)%6;this.pattern=PATTERNS[this.patternIndex];this.duration=this.phase===1?11.5:14.5;this.castIndex=0;this.laneCD=0;this.charge=0;this.fireHeld=false;this.burst=0;this.shotCD=0;this.burstCD=0;this.cutBark=false;this.narrow=this.pattern==='gauntlet';this.plan=this.buildPlan(this.pattern,this.duration);this.planAt=0;this.say(BARKS[this.phase][(this.turn-1)%BARKS[this.phase].length],[6,8,7,11,1,5][this.turn%6]);}
+ useItem(i){const item=this.items[i];if(!item?.count){this.dialogue([['n','* There is none left.']],'menu');return;}item.count--;this.hp=Math.min(this.maxHP,this.hp+item.heal);this.emit('heal');this.dialogue([['n','* You eat '+item.name+'. '+item.heal+' HP restored.'],['s','I PACKED SOMETHING TOO. FOR LATER.',7]],'attackReady');}
+ beginAttack(){this.state='attack';this.timer=0;this.attackAge=0;this.bullets=[];this.shots=[];this.attackCount++;this.turn++;this.phaseTurn++;this.patternIndex=this.phase===1?(this.turn-1)%4:4+(this.turn-1)%6;this.pattern=PATTERNS[this.patternIndex];this.duration=this.phase===1?11.5:14.5;this.castIndex=0;this.laneCD=0;this.charge=0;this.fireHeld=false;this.burst=0;this.shotCD=0;this.burstCD=0;this.cutBark=false;this.narrow=this.pattern==='gauntlet';this.plan=this.buildPlan(this.pattern,this.duration);this.planAt=0;this.say(...BARKS[this.phase][(this.turn-1)%BARKS[this.phase].length]);}
  startFinal(){this.phase=3;this.state='overdrive';this.timer=0;this.checkpoint=3;this.bullets=[];this.shots=[];this.narrow=false;this.menuPieces=Array.from({length:4},(_,i)=>({x:48+i*184,y:541,vx:(i-1.5)*190,vy:-150-i*15}));this.say('THE FEATURE PRESENTATION. FOR YOU, TENNA.',9);this.emit('menuBlast');this.setupArena('vertical',true);this.finalAge=0;this.castIndex=0;this.pattern='last';this.duration=52;this.fireHeld=false;this.charge=0;this.burst=0;this.shotCD=0;this.burstCD=0;this.climax=false;this.plan=this.buildFinalAct(0);this.planAt=0;}
  spawn(b){this.bullets.push({age:0,life:7,r:6,vx:0,vy:0,delay:0,color:'#fff',...b});return this.bullets.at(-1);}
  projectile(x,y,vx,vy,extra={}){return this.spawn({kind:'bullet',x,y,vx,vy,...extra});}
@@ -228,7 +228,7 @@ class NeoBattle{
    if(b.kind==='laneBeam'&&b.age>=b.warning&&b.age<=b.warning+b.live&&Math.abs((this.orientation==='vertical'?s.x:s.y)-this.coord(b.lane))<12)this.hurt();
    if(b.kind==='sweep'&&b.age>=b.warning&&b.age<=b.warning+b.live&&!this.safeLane(b)){const k=clamp((b.age-b.warning)/b.live,0,1),theta=b.start+(b.end-b.start)*k,dist=Math.abs(-(s.x-b.x)*Math.sin(theta)+(s.y-b.y)*Math.cos(theta)),forward=(s.x-b.x)*Math.cos(theta)+(s.y-b.y)*Math.sin(theta);if(dist<b.width/2+4&&forward>0)this.hurt();}
   }
-  for(const shot of this.shots){shot.x+=shot.vx*dt;shot.y+=shot.vy*dt;shot.life-=dt;for(const b of this.bullets){if(shot.gone||b.gone||!b.shootable)continue;if(Math.hypot(shot.x-b.x,shot.y-b.y)<shot.r+b.r){b.hp-=shot.damage;shot.gone=true;b.kick=.1;this.emit('armorHit');if(b.hp<=0){b.gone=true;this.emit('targetHit');this.effects.push({type:'break',x:b.x,y:b.y,life:.4});if(b.kind==='relay'){this.totalRelays++;this.exposed=true;this.effects.push({type:'laneFlash',lane:b.lane,life:.1});this.emit('relayBreak');this.say('HE BUILT THAT FOR OUR FEATURE PRESENTATION!',1);}}}}
+  for(const shot of this.shots){shot.x+=shot.vx*dt;shot.y+=shot.vy*dt;shot.life-=dt;for(const b of this.bullets){if(shot.gone||b.gone||!b.shootable)continue;if(Math.hypot(shot.x-b.x,shot.y-b.y)<shot.r+b.r){b.hp-=shot.damage;shot.gone=true;b.kick=.1;this.emit('armorHit');if(b.hp<=0){b.gone=true;this.emit('targetHit');this.effects.push({type:'break',x:b.x,y:b.y,life:.4});if(b.kind==='relay'){this.totalRelays++;this.exposed=true;this.effects.push({type:'laneFlash',lane:b.lane,life:.1});this.emit('relayBreak');this.say('THAT RELAY WASN’T EVEN PAID OFF!',1);}}}}
   }
   this.bullets=this.bullets.filter(b=>!b.gone&&b.age<b.life&&(!Number.isFinite(b.x)||b.x>a.x-160&&b.x<a.x+a.w+160)&&(!Number.isFinite(b.y)||b.y>a.y-180&&b.y<a.y+a.h+180));this.shots=this.shots.filter(b=>!b.gone&&b.life>0&&b.x<790&&b.y>-15);
  }
@@ -251,7 +251,7 @@ class NeoBattle{
   const final=this.state==='final',prevAge=this.finalAge;
   this.attackAge+=dt;if(final)this.finalAge+=dt;if(this.state==='attack')this.narrowBox();this.move(dt,input);this.fire(dt,input);this.boss.x+=(384-this.boss.x)*Math.min(1,dt*.5);this.boss.angle+=(Math.PI/2-this.boss.angle)*Math.min(1,dt*.5);
   const now=final?this.finalAge:this.attackAge;while(this.planAt<this.plan.length&&now>=this.plan[this.planAt].t)this.run(this.plan[this.planAt++]);
-  if(final&&Math.floor(this.finalAge/13)!==Math.floor(prevAge/13)&&this.finalAge<51){this.bullets=[];this.shots=[];this.setupArena(this.orientation==='vertical'?'horizontal':'vertical',true);this.plan=this.buildFinalAct(Math.floor(this.finalAge/13));this.planAt=0;this.say(this.orientation==='vertical'?'UP, KID! KEEP LOOKING UP!':'THEN TAKE THE SCENIC ROUTE!',8);this.emit('transform');}
+  if(final&&Math.floor(this.finalAge/13)!==Math.floor(prevAge/13)&&this.finalAge<51){this.bullets=[];this.shots=[];this.setupArena(this.orientation==='vertical'?'horizontal':'vertical',true);this.plan=this.buildFinalAct(Math.floor(this.finalAge/13));this.planAt=0;this.say(this.orientation==='vertical'?'EYES UP, KID! THE GOOD STUFF’S ON THE TOP SHELF!':'THEN TAKE THE SCENIC ROUTE!',8);this.emit('transform');}
   // The last 3 s: no new casts; his heart pulses three times, then a white frame before he falls.
   if(final){if(this.finalAge>=49&&!this.climax){this.climax=true;this.emit('climax');}for(const beat of [49.1,49.9,50.7])if(prevAge<beat&&this.finalAge>=beat)this.emit('heartbeat');if(prevAge<51.7&&this.finalAge>=51.7)this.emit('whiteout');}
   this.hazards(dt);if(this.state==='dead')return;
@@ -493,77 +493,79 @@ const SPRITES={"version":1,"units":"source pixels; desiredScale multiplies sourc
 Object.assign(exports,{SPRITES});
 };
 modules["story.js"]=(exports,require)=>{
+// Optional third value on a row: the speaker's face index for that line (Spamson: art expression index; Muffet: face-sheet cell).
 const INTRO=[
  ['n','* Hotland is empty. The barricades leave one road open.'],
- ['s','THERE YOU ARE, KID. RIGHT ON CUE.'],
- ['s','THE SENSATION OF YOUR SCREEN, THE SHOW THAT MAKES YOU SCREAM.'],
- ['s','THAT WAS HIS INTRO. EVERY NIGHT. RIGHT THROUGH MY WALL.'],
- ['s','SAY IT.'],
+ ['s','THERE YOU ARE, KID. RIGHT ON CUE.',8],
+ ['s','THE SENSATION OF YOUR SCREEN. THE SHOW THAT MAKES YOU SCREAM.',10],
+ ['s','THAT WAS HIS INTRO. EVERY NIGHT. RIGHT THROUGH MY WALL.',7],
+ ['s','SAY IT.',8],
  ['n','* He waits for a name.'],
- ['s','MR. ANT TENNA. OUR HOST. MY PARTNER. THE FEATURE PRESENTATION.'],
- ['s','YOU TOOK HIM. NOW NOBODY TELLS ME WHEN I’M ON.'],
- ['s','TWO NAMES ON THE MARQUEE. SAME SIZE LETTERS. HE INSISTED.'],
- ['s','A LADY OFFERED ME A CONTRACT. YOUR CAPTURE. HIS REVENGE. I SIGNED WITHOUT READING IT.'],
- ['s','SHE KNEW YOUR ROAD. YOUR FACE. EVEN THE COLOR OF YOUR SOUL.'],
- ['s','I BORROWED AN ARM AND SOME WINGS FROM THE SCIENTIST. NO DEPOSIT REQUIRED.'],
- ['s','HE’D TELL ME TO READ THE SMALL PRINT. HE ALWAYS DID THE READING.'],
+ ['s','MR. ANT TENNA. OUR HOST. MY PARTNER. THE FEATURE PRESENTATION.',6],
+ ['s','YOU TOOK HIM. NOW NOBODY TELLS ME WHEN I’M ON.',8],
+ ['s','TWO NAMES ON THE MARQUEE. SAME SIZE LETTERS. HE INSISTED.',10],
+ ['s','A LADY OFFERED ME A CONTRACT. YOUR CAPTURE. HIS REVENGE. I SIGNED WITHOUT READING IT.',7],
+ ['s','SHE KNEW YOUR ROAD. YOUR FACE. EVEN THE COLOR OF YOUR SOUL.',4],
+ ['s','I BORROWED AN ARM AND SOME WINGS FROM THE SCIENTIST. NO DEPOSIT REQUIRED.',11],
+ ['s','HE’D TELL ME TO READ THE SMALL PRINT. HE ALWAYS DID THE READING.',10],
  ['n','* Purple strings hold your movement. UP / DOWN changes strings. Shoot RIGHT with Z.'],
  ['n','* Gold outlines can be shot. Tap for three-shot bursts; hold and release for a charge.'],
- ['s','TONIGHT’S FEATURE PRESENTATION: THE HUMAN WHO NEVER LEAVES.']
+ ['s','TONIGHT ONLY: THE HUMAN WHO NEVER LEAVES. ADMISSION IS FREE. THE EXIT ISN’T.',6]
 ];
 const REVIVAL=[
- ['s','TENNA? ...NO. NO. DON’T CALL THE CURTAIN YET.'],
- ['s','ONE LITTLE FREE SAMPLE. SOMEBODY LEFT IT ON A SHELF.'],
- ['s','ONE MORE CHANCE TO FINISH HIS SHOW. THAT’S ALL. THAT’S ALL I ASKED FOR.'],
- ['s','THE SENSATION OF YOUR SCREEN. THE SHOW THAT MAKES YOU SCREAM.'],
- ['s','SAY IT. SAY HIS NAME WHILE THERE’S STILL SOMEBODY HERE TO HEAR IT.'],
- ['s','BEHOLD, THE POWER OF NEO!'],
+ ['s','TENNA? ...NO. NO. DON’T CALL THE CURTAIN YET.',9],
+ ['s','ONE LITTLE FREE SAMPLE. SOMEBODY LEFT IT ON A SHELF.',7],
+ ['s','ONE MORE CHANCE TO FINISH HIS SHOW. THAT’S ALL. THAT’S ALL I ASKED FOR.',10],
+ ['s','THE SENSATION OF YOUR SCREEN. THE SHOW THAT MAKES YOU SCREAM.',6],
+ ['s','SAY IT. SAY HIS NAME WHILE THERE’S STILL SOMEBODY HERE TO HEAR IT.',8],
+ ['s','BEHOLD, THE POWER OF NEO!',6],
  ['n','* His body holds together. The wings ignite. He is still Spamson.'],
  ['n','* The strings turn vertical. LEFT / RIGHT changes strings; UP / DOWN travels along them.'],
  ['n','* You shoot UP. Generators take FIVE shots or ONE charged shot. Break one to expose Spamson for your next FIGHT.'],
  ['n','* You can leave generators intact. Their lasers spare the green-marked string.']
 ];
 const INTERCEPT=[
- ['s','TENNA. I... I MISSED MY CUE.'],
- ['m','Ahuhuhu~ Such a devoted little performer.'],
- ['s','YOU! THE CONTRACT! I CAN STILL FINISH IT!'],
- ['m','Oh, dearie. You already gave me everything I wanted.'],
- ['s','THAT’S MY GOOD ARM. WAIT. THE CANNON ISN’T—'],
- ['m','I watched every step. Every shot. Every delicious little mistake.'],
- ['s','YOU SAID WE HAD A DEAL! A SIGNED DEAL!'],
- ['m','You promised me dinner, dearie. You never asked what was on the menu~'],
- ['s','TENNA... I’M SORRY. I COULDN’T HOLD THE SHOW.']
+ ['s','TENNA. I... I MISSED MY CUE.',10],
+ ['m','Ahuhuhu~ Such a devoted little performer.',0],
+ ['s','YOU! THE CONTRACT! I CAN STILL FINISH IT!',9],
+ ['m','Oh, dearie. You already gave me everything I wanted.',1],
+ ['s','THAT’S MY GOOD ARM. WAIT. THE CANNON ISN’T—',1],
+ ['m','I watched every step. Every shot. Every delicious little mistake.',2],
+ ['s','YOU SAID WE HAD A DEAL! A SIGNED DEAL!',8],
+ ['m','You promised me dinner, dearie. You never asked what was on the menu~',5],
+ ['s','TENNA... I’M SORRY. I COULDN’T HOLD THE SHOW.',10]
 ];
 const ENDING=[
- ['m','Ahuhuhu~ One little delivery, signed for.'],
- ['m','And the main course is walking to my table all by itself~'],
+ ['m','Ahuhuhu~ One little delivery, signed for.',0],
+ ['m','And the main course is walking to my table all by itself~',1],
  ['n','* The silk drags him past the barricade. His arm is still intact.'],
  ['n','* You never land the finishing blow.'],
  ['n','* Somewhere deeper in the dark, something laughs back.'],
  ['n','* The only open road leads into the nest.']
 ];
+// Each bark is [text, Spamson face index].
 const BARKS={
-1:['SAY HIS NAME.','THE SHOW THAT MAKES YOU SCREAM.','HE WAS THE FEATURE PRESENTATION.','OUR NAMES. SAME SIZE LETTERS.','NO. HIS SPOTLIGHT STAYS ON.'],
-2:['THE SENSATION OF YOUR SCREEN!','YOU WILL REMEMBER MR. ANT TENNA.','HE’D HAVE CALLED THIS THE ENCORE.','LOOK, TENNA. I KEPT THE CAMERA ROLLING.','OUR FEATURE PRESENTATION ISN’T OVER.','HE PROMISED WE’D BOTH BE BIG SHOTS.','I CAN STILL HEAR YOUR CUE, PARTNER.','SAY IT. SAY IT LOUD ENOUGH FOR HIM.'],
-3:['TONIGHT’S FEATURE PRESENTATION!','THE SHOW GOES ON, TENNA!','LOOK AT ME, PARTNER!','THE SHOW THAT MAKES YOU—']};
+1:[['SAY HIS NAME.',8],['THE SHOW THAT MAKES YOU SCREAM.',6],['HE WAS THE HEADLINER. I WAS JUST THE SPONSOR.',10],['OUR NAMES. SAME SIZE LETTERS.',10],['NO. HIS SPOTLIGHT STAYS ON.',8]],
+2:[['THE SENSATION OF YOUR SCREEN!',6],['YOU WILL REMEMBER MR. ANT TENNA.',8],['HE’D HAVE CALLED THIS THE ENCORE.',10],['LOOK, TENNA. I KEPT THE CAMERA ROLLING.',0],['OUR FEATURE PRESENTATION ISN’T OVER.',6],['HE PROMISED WE’D BOTH BE BIG SHOTS.',10],['I CAN STILL HEAR YOUR CUE, PARTNER.',7],['SAY IT. SAY IT LOUD ENOUGH FOR HIM.',8]],
+3:[['TONIGHT’S FEATURE PRESENTATION!',6],['THE SHOW GOES ON, TENNA!',5],['LOOK AT ME, PARTNER!',9],['THE SHOW THAT MAKES YOU—',1]]};
 const TURN_LINES={
 1:[
- [['s','I USED TO BANG ON THE WALL WHEN HE PRACTICED THAT INTRO.'],['s','NOW I’D PAY FULL PRICE TO HEAR IT AGAIN.']],
- [['s','THE SENSATION OF YOUR SCREEN. THE SHOW THAT MAKES YOU SCREAM.'],['s','YOU KNOW THE WORDS, KID. DON’T PRETEND YOU DON’T.']],
- [['s','HE WANTED THE MARQUEE. I WANTED THE SALES.'],['s','THEN HE PUT MY NAME NEXT TO HIS. JUST LIKE THAT. NO COMMISSION.']],
- [['s','THE CONTRACT LADY SAID SHE COULD HELP ME FIND YOU.'],['s','I DIDN’T HAVE ANYBODY ELSE LEFT TO ASK.']]
+ [['s','I USED TO BANG ON THE WALL WHEN HE PRACTICED THAT INTRO.',7],['s','NOW I’D PAY FULL PRICE TO HEAR IT AGAIN.',10]],
+ [['s','THE SENSATION OF YOUR SCREEN. THE SHOW THAT MAKES YOU SCREAM.',6],['s','YOU KNOW THE WORDS, KID. DON’T PRETEND YOU DON’T.',8]],
+ [['s','HE WANTED THE MARQUEE. I WANTED THE SALES.',7],['s','THEN HE PUT MY NAME NEXT TO HIS. JUST LIKE THAT. NO COMMISSION.',10]],
+ [['s','THE CONTRACT LADY SAID SHE COULD HELP ME FIND YOU.',7],['s','I DIDN’T HAVE ANYBODY ELSE LEFT TO ASK.',10]]
 ],
 2:[
- [['s','I CAN FEEL EVERYTHING THAT SHOULD HAVE BROKEN.'],['s','HE ALWAYS SAID THE SHOW HAS TO HOLD TOGETHER. WELL? IT’S HOLDING.']],
- [['s','SAY IT.'],['s','MR. ANT TENNA. NOT “THAT LITTLE GUY.” NOT “THE OTHER ONE.”']],
- [['s','HE ONCE ANNOUNCED ME TO THREE PEOPLE AND A BROKEN MAILBOX.'],['s','MADE IT SOUND LIKE THE WHOLE UNDERGROUND SHOWED UP.']],
- [['s','THE WINGS PULL. THE ARM FIRES. NOBODY’S HERE TO BRACE ME.'],['s','HE WOULD HAVE BEEN. EVEN IF I TOLD HIM TO RUN.']],
- [['s','BREAK THE GENERATORS. CUT THE WIRES. GO AHEAD.'],['s','HIS NAME IS STILL ON THE SIGN. YOU DON’T GET TO TAKE THAT TOO.']],
- [['s','I DIDN’T ASK WHAT WAS IN THE SAMPLE.'],['s','I ASKED IF IT COULD GET ME THROUGH ONE MORE FEATURE PRESENTATION.']],
- [['s','SHE LAUGHED WHEN I SAID THIS WAS FOR TENNA.'],['s','I THOUGHT SHE UNDERSTOOD. EVERYBODY LIKED HIM. EVERYBODY.']],
- [['s','THE SENSATION OF YOUR SCREEN. THE SHOW THAT MAKES YOU SCREAM.'],['s','THERE. THAT’S YOUR CUE, PARTNER. ...PARTNER?']],
- [['s','HE PROMISED WE’D BE THE TWO HEROES WHO CAUGHT THE HUMAN.'],['s','I’LL TAKE HALF THE BILLING. JUST LET ME FINISH HIS HALF.']],
- [['s','I ALWAYS HAD SOMETHING TO SELL. HE ALWAYS HAD SOMETHING TO SAY.'],['s','SO I’M SAYING IT. UNTIL YOU REMEMBER.']]
+ [['s','I CAN FEEL EVERYTHING THAT SHOULD HAVE BROKEN.',8],['s','HE ALWAYS SAID THE SHOW HAS TO HOLD TOGETHER. WELL? IT’S HOLDING.',6]],
+ [['s','SAY IT.',8],['s','MR. ANT TENNA. NOT “THAT LITTLE GUY.” NOT “THE OTHER ONE.”',6]],
+ [['s','HE ONCE ANNOUNCED ME TO THREE PEOPLE AND A BROKEN MAILBOX.',0],['s','MADE IT SOUND LIKE THE WHOLE UNDERGROUND SHOWED UP.',10]],
+ [['s','THE WINGS PULL. THE ARM FIRES. NOBODY’S HERE TO BRACE ME.',8],['s','HE WOULD HAVE BEEN. EVEN IF I TOLD HIM TO RUN.',10]],
+ [['s','BREAK THE GENERATORS. CUT THE WIRES. GO AHEAD.',11],['s','HIS NAME IS STILL ON THE SIGN. YOU DON’T GET TO TAKE THAT TOO.',8]],
+ [['s','I DIDN’T ASK WHAT WAS IN THE SAMPLE.',7],['s','I ONLY ASKED IF IT WOULD LAST THROUGH ONE MORE SHOW.',10]],
+ [['s','SHE LAUGHED WHEN I SAID THIS WAS FOR TENNA.',7],['s','I THOUGHT SHE UNDERSTOOD. EVERYBODY LIKED HIM. EVERYBODY.',10]],
+ [['s','THE SENSATION OF YOUR SCREEN. THE SHOW THAT MAKES YOU SCREAM.',6],['s','THERE. THAT’S YOUR CUE, PARTNER. ...PARTNER?',10]],
+ [['s','HE PROMISED WE’D BE THE TWO HEROES WHO CAUGHT THE HUMAN.',6],['s','I’LL TAKE HALF THE BILLING. JUST LET ME FINISH HIS HALF.',10]],
+ [['s','I ALWAYS HAD SOMETHING TO SELL. HE ALWAYS HAD SOMETHING TO SAY.',7],['s','SO I’M SAYING IT. UNTIL YOU REMEMBER.',8]]
 ]};
 
 Object.assign(exports,{INTRO,REVIVAL,INTERCEPT,ENDING,BARKS,TURN_LINES});
@@ -585,9 +587,9 @@ const rect=(x,y,w,h,c='#fff',width=3)=>{ctx.strokeStyle=c;ctx.lineWidth=width;ct
 function typedLines(lines,str,n){if(!(n<str.length))return lines;let at=0;return lines.map(l=>{const lead=l.length-l.trimStart().length;let seen=false;const words=l.slice(lead).split(' ').map(w=>{const s=str.indexOf(w,at);if(s<0)return w;at=s+w.length;if(s<n)seen=true;return w.slice(0,Math.max(0,n-s));});return seen?l.slice(0,lead)+words.join(' ').trimEnd():'';});}
 function wrapped(s,x,y,width,size=1,color='#fff',line=22,shown=Infinity){const rows=[];let row='';for(const word of s.split(' ')){const next=row?row+' '+word:word;if(text.measure(next,size)>width&&row){rows.push(row);row=word;}else row=next;}if(row)rows.push(row);typedLines(rows,s,shown).forEach((r,i)=>text(r,x,y+i*line,size,color));return Math.max(1,rows.length);}
 function wingSprite(x,y,power,scale=1){const im=images['wings.webp'];if(!im.width)return;ctx.save();ctx.globalCompositeOperation='screen';ctx.globalAlpha*=power;ctx.filter='grayscale(1)';ctx.drawImage(im,x-159*scale,y-145*scale,318*scale,318*scale);ctx.restore();}
-function expression(){if(g.state!=='dialogue'||g.current.speaker!=='s')return g.face;if(g.captureStarted)return[9,1,3,7,9,8,1,10][g.page%8];if(g.phase===1)return[6,8,10,7,8,11,4,9,8,6,6,6][g.page%12];return[11,8,6,5,9,7,3,4,0,1,2,10][(g.page+g.phaseTurn)%12];}
+function expression(){if(g.state!=='dialogue'||g.current.speaker!=='s')return g.face;if(g.current.face!=null)return g.current.face;if(g.captureStarted)return[9,1,3,7,9,8,1,10][g.page%8];if(g.phase===1)return[6,8,10,7,8,11,4,9,8,6,6,6][g.page%12];return[11,8,6,5,9,7,3,4,0,1,2,10][(g.page+g.phaseTurn)%12];}
 function boss({x=g.boss.x,bottom=243,angle=g.boss.angle,scale=1,alpha=1,wings=1,track=true}={}){const inject=g.state==='injection',captured=g.state==='captured',fall=captured?g.captureAge:0,dx=captured?fall*145:0,dy=captured?fall*55:0;ctx.save();ctx.globalAlpha=alpha;if(g.phase>1||inject&&g.injected){const pulse=g.settings.reduceMotion?.85:.72+.24*Math.sin(g.clock*20);wingSprite(x+dx,bottom+dy-100*Math.max(1,wings*.8),pulse*(captured?Math.max(0,1-fall*.7):1),wings);}const result=art.character('spamson',x+dx,bottom+dy,{scale,alpha,clock:g.clock,face:['collapse','injection'].includes(g.state)?9:g.state==='finishPrompt'||g.captureStarted?10:expression(),speaking:g.state==='dialogue'&&g.current.speaker==='s',cannon:true,cannonAngle:angle,tilt:captured?fall*.3:g.state==='collapse'?clamp(g.timer*.12,0,.18):0,steady:g.settings.reduceMotion});if(inject&&images['determination.png'].width){const k=clamp(g.timer/1.4,0,1);ctx.save();ctx.translate(x-25-k*20,bottom-110);ctx.rotate(-.1);ctx.drawImage(images['determination.png'],-(1-k)*40,-12,88,29);ctx.restore();text(g.injected?'DETERMINATION':'ITEM / STOLEN SAMPLE',x-120,bottom+15,1,g.injected?'#ff5568':'#d8c2df');}ctx.restore();if(track)pose={x,bottom,scale,angle,muzzle:result?.muzzle||null,wingX:x,wingY:bottom-100*Math.max(1,wings*.8),wing:wings};return result;}
-function muffet(){const im=images['muffet-faces.png'];if(!im.width)return;const speaking=g.state==='dialogue'&&g.current.speaker==='m',face=g.state==='won'?5:g.state==='captured'?2:g.state==='dialogue'?([0,1,2,3,4,1,0,5][g.page%8]):1,sw=im.width/3,sh=im.height/2,x=596+(g.settings.reduceMotion?0:Math.sin(g.clock*1.5)*8),y=132;ctx.save();ctx.globalAlpha=1;ctx.drawImage(im,(face%3)*sw,Math.floor(face/3)*sh,sw,sh,x-78,y-78-(speaking?Math.sin(g.clock*7)*2:0),156,156);ctx.restore();}
+function muffet(){const im=images['muffet-faces.png'];if(!im.width)return;const speaking=g.state==='dialogue'&&g.current.speaker==='m',face=g.state==='won'?5:g.state==='captured'?2:g.state==='dialogue'?(speaking&&g.current.face!=null?g.current.face:[0,1,2,3,4,1,0,5][g.page%8]):1,sw=im.width/3,sh=im.height/2,x=596+(g.settings.reduceMotion?0:Math.sin(g.clock*1.5)*8),y=132;ctx.save();ctx.globalAlpha=1;ctx.drawImage(im,(face%3)*sw,Math.floor(face/3)*sh,sw,sh,x-78,y-78-(speaking?Math.sin(g.clock*7)*2:0),156,156);ctx.restore();}
 function strings(){const a=g.arena;rect(a.x,a.y,a.w,a.h,'#f5edf6',3);for(let i=0;i<g.lanes;i++){ctx.strokeStyle=i===g.lane?'#ad65d2':'#673585';ctx.lineWidth=1;ctx.beginPath();if(g.orientation==='vertical'){ctx.moveTo(g.coord(i),a.y);ctx.lineTo(g.coord(i),a.y+a.h);}else{ctx.moveTo(a.x,g.coord(i));ctx.lineTo(a.x+a.w,g.coord(i));}ctx.stroke();}}
 // Where hazards come from. Points are measured on the NEO sprite (scale 1, relative to his feet) and follow the drawn pose.
 const reduceQuery=typeof matchMedia==='function'?matchMedia('(prefers-reduced-motion: reduce)'):null;
