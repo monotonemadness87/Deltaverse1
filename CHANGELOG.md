@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-23 — Sans — No Promises: phrased attacks and the Sans + Alphys lessons
+
+Every attack keeps its 18 s and the final its 68 s. All mechanics stay (lock lines, `!` markers, ghost bones, the rotating rig, break-a-blaster gates).
+
+- **Rhythm:** attacks build, tighten, breathe and end on their biggest beat (a full-jump BIG ONE hill, a blue string chasing the last curtain, a DOUBLE RING).
+- **Nothing is deleted mid-flight:** gate breaks, gravity flips and section changes no longer wipe live bones; unfired skulls pull back and fade, firing beams finish.
+- **Skull rings:** fast, sparse chains (45 ms apart, rings of 4 or 6, double ring 4 + 4) that all meet at the lock point, replacing 12 skulls 95 ms apart.
+- **Skull look:** spin in, hold, tremble, open the jaw on the fire frame; beams start thin, widen, recoil and fade grey. Beams outside the box are drawn at half strength.
+- **Ceiling:** gravity flips are thrown slams with bones growing out of the wall, closing on faster slams and "LAST DROP". A player who never jumps takes about 50% more damage here (40 → 60 per minute), the largest change in the fight.
+- **Black cuts** before the final's skull section, and a 0.45 s stretch into the corridor instead of a snap. Hit shake at most every 0.5 s; one `!` per bone formation.
+- **Dialogue:** three repeated words trimmed, two faces matched to grim lines, the shrug on "the job came with both" now plays (its trigger looked for older wording), and the menu no longer claims his hands never left his pockets.
+- **Reduced motion:** no skull spin or tremble, no box tween, no slam kick (it shook before), black cuts become a dim.
+
+## 2026-10-23 — Dialogue pass on the reworked fights
+
+Gerson, Sans + Alphys, Aqua, Muffet, Ant Tenna + Spamson and Spamson NEO. Lines were brought closer to each character's canon voice; designer-authored and reference lines are kept as written. Sans + Alphys: Alphys's panel now follows what she's doing (console and typing during attacks, alarm on a broken relay, cell or gate, startled on Flowey's hack), and lines can choose her face.
+
 ## 2026-10-23 — Designer decisions on the new reworks
 
 - **Muffet:** only one grab per actor lands each turn. Later attempts still reach in but close on nothing, so a player standing still takes steadier damage from turn to turn.
