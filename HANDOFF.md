@@ -217,7 +217,7 @@ Three acts, following the designer's Undertale Yellow reference (`docs/reference
 2. The dark, where he takes the soul.
 3. Inside him, boxless. Phases alternate with the six pages, and Seth's Torn Notebook acts on his turns.
 
-Only pacifist-route bosses return as replayed attacks. The six fragments are pages from one Purple SOUL's life, not six human souls. Keep the functional false/moving commands, fake Game Over and stolen mechanics. Seth can deny him the soul; the body does not stand up and leave, and the king eventually receives it. Flowey uses his canon Undertale battle frames, here and in Gerson and Sans + Alphys.
+Only pacifist-route bosses return as replayed attacks. The six fragments are pages from one Purple SOUL's life, not six human souls. Keep the functional false/moving commands, fake Game Over and stolen mechanics. Seth can deny him the soul; the body does not stand up and leave, and the king eventually receives it. Flowey uses his canon Undertale battle frames, here and in Gerson and Sans + Alphys; when talking, only his mouth moves. His supplied voice blip, evil blip, hurt cry and laugh are in the fight. FIGHT must feel rewarding: in act one his health bar takes real damage until he rigs it at the end of each cycle (LOAD, extra zeros, your attack set to 0); in act three the hits stick. His act-three body is original pixel art (a television head showing his canon faces and the replayed bosses, petals, jaw, eye stalks and vine arms).
 
 ### Tenna/Spamson, Spamson NEO, Encore and Rift
 

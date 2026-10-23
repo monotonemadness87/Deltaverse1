@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-10-23 — Flowey, second pass: his voice, a real body, and FIGHT that pays off (until he rigs it)
+
+The designer found the first redo short of the other fights, his talking weird, and the sprites weak. They supplied his voice blip, his evil blip, his hurt cry and his evil laugh.
+
+- **Talking:** his mouth now just opens and shuts on whatever face he's making. Before, it flipped between two different expressions. Two talking frames are canon twins; the rest were opened from their own resting frame, so the eyes never change. The creepy and blank faces stay still.
+- **Voice:** he gets a blip per letter. The evil blip plays when he drops the act, and always inside him. His hurt cry plays on every hit, and his laugh plays when he rigs the fight and on his "Hee hee hee" lines.
+- **FIGHT pays off:**
+  - **Act one:** he has a 600 HP bar. Notebook hits land for 36–164 damage, with his hurt face, the hurt cry, a burst of petals and a red damage number.
+  - **The rigs:** each act-one cycle ends with him rigging the numbers. First he LOADs his health back. Then he adds zeros (MAX HP 600 → 99999). Then he sets your attack to 0.
+  - **Act three:** your hits stick. He has 4200 HP, and damage grows with each page you've recovered. His television cracks in three stages as it drops.
+- **His body (act three):** new original pixel art. It's a television head that plays his real faces (and, during replays, the bosses he's stealing), with two rings of yellow petals, a toothed jaw, eyes on stalks and thorned vine arms. It breathes, blinks, opens its jaw when he laughs or bites, flashes and shakes when hit, and stays above the play area.
+- **New phase, HOWDY, INSIDE (18 s):** opens act three by attacking with each part in turn: eye lasers (the eye glows first), petal volleys, rows of teeth from the jaw, and thorned vine bars swept in by the arms. Then all of it together.
+- **Act one escalates:** thorned vines grow behind him in the second cycle. In the third he's larger. When he rigs the numbers, his sprite glitches through his melting frames.
+- **Chase rooms:** each area has its own textured floor: Ruins brick with red leaves, Snowdin snow, Waterfall glowing grass, cracked Hotland rock, CORE plating.
+
 ## 2026-10-23 — Flowey redone: three acts, his real sprites, a false-pacifist neutral
 
 The designer asked for a redo, using their Undertale Yellow reference and Undertale's own Flowey sprite sheet. The study is in `docs/reference-study/flowey-study.md`.
