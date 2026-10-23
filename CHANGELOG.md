@@ -1,5 +1,35 @@
 # Changelog
 
+## 2026-10-23 — Ant Tenna + Spamson: phrased acts, visible props, a staged finale
+
+Reworked from the reference study (`docs/reference-study/spamton-tenna-study.md`). Every turn keeps its length, and the finale is still 162 s. Kept as confirmed: the deliberately harsh WARM-UP PHRASE, the eleven-slot Falling Punchline fix, every mechanic, and the hub's DUO / NEO + UPGRADES modes.
+
+- **Rhythm:** each turn runs intro → build → a short rest (often a cash box) → peak → a warned finisher, then an empty box. Before, 246 objects across the fight were deleted mid-flight; now none are.
+- **Residents:**
+  - Mothlark: notes fly out of her mouth in bars and end on a held chord.
+  - Presto: plays a three-cup shell game.
+  - Stephex: counts in 5-6-7-8 and dances swung steps with floor ripples.
+  - Boing: THE FALLING PUNCHLINE is staged as a joke (setup, setup, pause, punchline), with anvils hanging on visible ropes.
+- **Duo turns 17–26:**
+  - Spamson's merchandise is thrown from his hand, and Tenna's rows flash down from his antenna.
+  - Each turn has its own sections and finisher: head trios, spotlight stars, smash cuts with a seam and a clap, a rimshot, a ringing phone before pipis, a chained heart, an inhale before each pull, accelerating channel changes, a marquee double feature, and a five-quote medley.
+- **Finale:** four staged acts (demonstration, recoil, unstable, overload), each opened by Tenna's title card. It ends on THE BIG ONE: a 2 s charge, then a telegraphed full-box sweep with two safe pockets, a white frame, and silence before the explosion. Crossfire now comes between waves.
+- **Size and speed:** Spamson's heads, cards, mail and pipis are about 1.15–1.3× larger with matching hitboxes. They travel faster after the same warnings. The SOUL is drawn larger, with its hitbox unchanged.
+- **Feel:** a muzzle star on every shot (the old flash was never drawn), knock-back on armoured hits, generator-break flashes, visible guard blocks, a full-charge ping, and a cosmetic graze glint and tick.
+- **Also fixed:**
+  - The guard-block and Addison cues were never drawn.
+  - Smash Cut caused a console warning and ignored screen shake.
+  - The finale stage label ran off the edge.
+  - Spawns that couldn't finish before the box closed are no longer created.
+- Reduced motion: static is a flat frame, and marquee chasing, wash pulsing and rope sway stop. The white-out is dimmed.
+- **Verified:**
+  - God-mode bots reach victory at turn 27 on every seed with no errors.
+  - All 27 attacks run cleanly in both motion modes, and the hub modes still boot.
+  - Most turns are within ±50% of their old damage; duo turns are 10–43% lower.
+  - **T5 THE THREE-CUP SOUL:** standing still +100%, moving +54%.
+  - **T15 THE FALLING PUNCHLINE:** standing still +100%, moving −5%.
+  - Both come from the study's anti-camping changes and are pending the designer's decision.
+
 ## 2026-10-23 — Spamson NEO: phrased attacks with visible sources and a staged final
 
 Reworked from the reference study (`docs/reference-study/spamton-tenna-study.md`). Every turn keeps its length (11.5 s, 14.5 s, final 52 s). The phase-2 crossfire aim is unchanged (the confirmed "don't move" pattern).

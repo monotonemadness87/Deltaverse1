@@ -46,8 +46,8 @@
   },
   {
     "file": "muffet.html",
-    "bytes": 24331677,
-    "sha256": "a1e6a7af101132e27c8a32e3e900d1d5291515c51653098ac731795a43b3bb1d"
+    "bytes": 24364314,
+    "sha256": "5635a59a7c2000db51cc4db9f8bae13f144c28b0953f9280f19c1e9c565ec860"
   },
   {
     "file": "rift.html",
@@ -66,12 +66,12 @@
   },
   {
     "file": "spamson-neo.html",
-    "bytes": 9188836,
-    "sha256": "f6f6a616e77571d80045852a45df2006d9a533bce028c5c1468d69a43f38e417"
+    "bytes": 9206306,
+    "sha256": "ebfe1bd05059329cc976dbdc90712ec98f3b265964b5de2008d440a5c0863950"
   },
   {
     "file": "spamtenna.html",
-    "bytes": 18199431,
-    "sha256": "2cf1c1e815274c470f5b2b414a303ad34cb6992390cc9c01c1fd8a1a3c39a3fb"
+    "bytes": 18234199,
+    "sha256": "91147ef7859f71423c2d9df6e751cfd0c908ea98de33f03d17adb8bf34f7e52e"
   }
 ]
