@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-10-23 — Muffet: phrased turns, hands that release spiders, a staged pet
+
+Reworked from the reference study (`docs/reference-study/muffet-study.md`: Undertale and Underswap Muffet, plus a fan-made giant-Queen fight for staging). Every turn keeps its length and the whole HANDOFF contract stays. That includes the captives, six hands, the four connected silk layouts, Aqua's choices and escape, SIT TIGHT survival, and the fatal turn-60 trap.
+
+- **Rhythm:** turns are built from phrases. That means same-side trains, swung gaps, 0.6–1.9 s rests and a finisher, then a clean empty box of at least 0.6 s. No hazard is deleted mid-crossing any more.
+- **Visible sources:** spiders are released by Muffet's gripping hands and walk a short strand onto their string. Donuts roll in from past the edge. Spiders crawl off when they finish.
+- **Readable hazards:** spiders are larger on 3–4 string layouts and the full web (hitbox unchanged), and every hazard has a crisp dark outline.
+- **Pet turn:** the pet climbs onto the box edge, leaps onto its marked circle, and stomps faster each time (1.9 s → 1.2 s), finishing on a double stomp. Each landing nudges the box and bows the silk.
+- **Chase** runs in three acts and ends on a harmless finisher ring. **SIT TIGHT** landings are phrased, with accent flashes on landings 4, 8 and 11 and chevrons warning 0.5 s before each kick. **Turn 60** holds a long, glowing hover before the crush (still fatal).
+- **Other turns:** grab and smash turns get long/short cadences and a cupped pincer. Hips accelerate to a final hip. *Turn the table* becomes four quarter-turns. White tea sweeps, rests, then brackets the SOUL.
+- **String switching** is snappier (0.10 s hop, 0.12 s lockout; was 0.17 s and 0.20 s), with squash, stretch and a string twang. Forced hops are unchanged.
+- **Previews:** a small silk tag previews milestone turns (every 5th, and 60) during the menu. Purple orb-webs breathe at the sides on full-web milestone turns.
+- **Also fixed:** knots on string layouts could close invisible links and block nothing; they now really block. Anti-camp responses no longer wind up and then get deleted at turn end. The chase's last grab, which never resolved, is gone. The web "READY" countdown no longer overlaps the attack title.
+- Reduced motion: no flashes, squash, twang, bow, bob, nudge, shake or orb spin; all warnings remain.
+- **Verified:**
+  - The god-mode bot reaches turn 60 on every seed with no errors.
+  - Normal-play deaths are similar to before.
+  - For a moving player, every turn's damage is within ±50% (the largest change is +9%).
+  - Aqua takes less SIT TIGHT damage (12 → 4 and 8 → 4 per turn).
+  - For a still player, ten turns move beyond ±50%. Each comes down to whether one 28-damage anti-camp bite lands inside that turn; the run total is unchanged.
+
 ## 2026-10-22 — Sans + Alphys: faster, sparser skull rings
 
 - Skull rings chain 45 ms apart (was 75 ms) and use fewer skulls: ring waves build 3 → 4 → 6 (was 4 → 6 → 8), the closing double ring is 4 + 4 (was 6 + 6), and cover rings have at most 4. The open lanes between beams are now easy to read, and a player standing still can no longer be hit several times by one ring.
