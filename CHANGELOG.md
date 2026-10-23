@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-10-23 — Spamson NEO: phrased attacks with visible sources and a staged final
+
+Reworked from the reference study (`docs/reference-study/spamton-tenna-study.md`). Every turn keeps its length (11.5 s, 14.5 s, final 52 s). The phase-2 crossfire aim is unchanged (the confirmed "don't move" pattern).
+
+- **Rhythm:** each attack runs intro → build → rest → peak → finisher instead of one cast every 1.9 s. Invoice rows, pods, sweeps, relays, wings and the gauntlet each have their own phrase and finisher. Nothing is spawned and then deleted at the end of a turn any more (phase-2 turns used to lose 3–7 hazards, and the final 13 at its flips).
+- **Hazards come from him:** cards and pods leave his free hand. Receipts print from his chest. Feathers peel off the wings, and crossfire pellets leave the wing tips. Mortgage beams start at his eye. Relay rain falls from cannon smoke, with a dashed control lead to his arm. Each projectile flies to its entry point during its unchanged warning and can't hurt until it lands.
+- **Sweeps:** a short wind-up with a dashed wedge before the existing warning. The cannon kicks back on firing.
+- **Gauntlet:** the box narrows for the turn.
+- **Final:** four acts that tighten (casts every 1.6 s → 1.0 s), with a breath after every third cast in act 3. He fades between screen edges instead of jumping, then looms full-size behind the box. The last 3 s stop casting for three determination-pink pulses and a white frame.
+- **Size and speed:** cards, receipts and feathers are 1.3× with matching hitboxes. The SOUL is drawn larger (hurtbox unchanged). Rows and fans travel faster after the same warnings (155 → 210/230 px/s), and gauntlet cards go 135 → 200 px/s.
+- **Feel:** a muzzle star on each shot, knock-back on targets, a lane flash when a relay breaks, and a cosmetic graze arc and tick.
+- **Also fixed:** receipts were drawn 5.5 px off their hitbox. The final's edge boss ignored its transparency. The hit and BAIT recoil effects were never drawn. Single-lane relays showed a misleading SAFE label, and SAFE labels stacked. The CUT WIRES line repeated every cast. BAIT + READ + practice sweeps could be cut short. Cards now read over the strings.
+- Reduced motion: no flights, swings, kicks, rims or box tween; the white frame is dimmed.
+- Verified: god-mode bots win every seed with no errors; at normal difficulty every pattern is within ±50% of its previous damage (16-run probe). Larger swings appear only in assist modes (READ, practice), where late spawns that used to be deleted now resolve; those are pending the designer's decision.
+
 ## 2026-10-23 — Muffet: phrased turns, hands that release spiders, a staged pet
 
 Reworked from the reference study (`docs/reference-study/muffet-study.md`: Undertale and Underswap Muffet, plus a fan-made giant-Queen fight for staging). Every turn keeps its length and the whole HANDOFF contract stays. That includes the captives, six hands, the four connected silk layouts, Aqua's choices and escape, SIT TIGHT survival, and the fatal turn-60 trap.
