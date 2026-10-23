@@ -1203,7 +1203,7 @@ class MuffetGame{
  beginAttack(){
   if(this.bossHP<=this.withdrawalHP){this.withdraw();return;}
   if(!this.intent){this.prepareEnemy();return;}if(this.state==='dialogue'||this.state==='drink')return;
-  const previousBox={...this.arena},family=this.intent.family;this.boxMorph=null;this.hipCast=null;for(const actor of [this.seth,this.aqua]){delete actor.hipImpulse;actor.forcedHop=false;}this.state='attack';this.waveAge=0;this.liveAge=0;this.warmup=family==='fatalSitTight'||family==='rethread'||this.turn%10===0?1.8:1.15;
+  const previousBox={...this.arena},family=this.intent.family;this.boxMorph=null;this.hipCast=null;for(const actor of [this.seth,this.aqua]){delete actor.hipImpulse;actor.forcedHop=false;actor.grabbedThisTurn=false;}this.state='attack';this.waveAge=0;this.liveAge=0;this.warmup=family==='fatalSitTight'||family==='rethread'||this.turn%10===0?1.8:1.15;
   this.waveDuration=family==='chase'?16:family==='hipBump'?11.8:family==='sitTight'?15:family==='fatalSitTight'?9:10+Math.min(2,Math.floor(this.turn/20));
   this.spawnCount=0;this.nextSpawn=0;this.nextHip=.25;this.nextGrab=.7;this.nextClose=2.4;this.nextRetarget=3.5;this.bullets=[];this.casts=[];this.closures=[];this.hands=this.intent.hands;this.circleRadius=0;this.chaseStarted=false;this.aquaReplan=0;this.aquaSitControl=null;
   this.phrase=[];this.rests=[];this.pet=null;this.petNudge=null;this.silkBow=null;this.twang=null;this.ringShow=null;this.spinTurns=null;this.potTarget=null;
@@ -1811,6 +1811,8 @@ class MuffetGame{
  }
  captureActor(actor,origin){
   if(this.state!=='attack'||actor.invuln>0||actor.grabCooldown>0)return;
+  // Only one grab per actor lands each turn; later attempts still reach in but close on nothing.
+  if(actor.grabbedThisTurn)return;actor.grabbedThisTurn=true;
   if(actor.id==='aqua'){
    if(!['active','fleeing'].includes(actor.status))return;this.effects.push({kind:'aquaCapture',origin:this.screen(actor),mouth:{x:this.boss.x,y:this.boss.y+20},age:0});this.hurt(actor,28,'Muffet’s bite');actor.invuln=1.6;actor.grabCooldown=2.5;this.allyMessage=actor.hp?'Aqua tears free of her mouth.':'Aqua’s light goes dark.';this.allyMessageAge=4;this.emit('capture',{actor:'aqua'});return;
   }

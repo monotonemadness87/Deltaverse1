@@ -46,8 +46,8 @@
   },
   {
     "file": "muffet.html",
-    "bytes": 24364314,
-    "sha256": "5635a59a7c2000db51cc4db9f8bae13f144c28b0953f9280f19c1e9c565ec860"
+    "bytes": 24364502,
+    "sha256": "ebf09415c03d55935307ca222c01d9e63fd8a1666bdd15ba4525f0d9d50e58c5"
   },
   {
     "file": "rift.html",
@@ -71,7 +71,7 @@
   },
   {
     "file": "spamtenna.html",
-    "bytes": 18234199,
-    "sha256": "91147ef7859f71423c2d9df6e751cfd0c908ea98de33f03d17adb8bf34f7e52e"
+    "bytes": 18234290,
+    "sha256": "752777e8172cfca753085bf2d1162f6b08c6a3e6592255070859e9358224d162"
   }
 ]

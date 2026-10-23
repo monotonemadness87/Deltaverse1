@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-23 — Designer decisions on the new reworks
+
+- **Muffet:** only one grab per actor lands each turn. Later attempts still reach in but close on nothing, so a player standing still takes steadier damage from turn to turn.
+- **Ant Tenna + Spamson:** the finale's stage title cards (RECOIL, UNSTABLE, OVERLOAD, THE BIG ONE) sit just inside the top of the box instead of over the hosts.
+- **Left as designed (confirmed):** T5 THE THREE-CUP SOUL and T15 THE FALLING PUNCHLINE stay harder for a player who stands still. Spamson NEO's assist-mode swings (READ, practice) stay.
+
 ## 2026-10-23 — Ant Tenna + Spamson: phrased acts, visible props, a staged finale
 
 Reworked from the reference study (`docs/reference-study/spamton-tenna-study.md`). Every turn keeps its length, and the finale is still 162 s. Kept as confirmed: the deliberately harsh WARM-UP PHRASE, the eleven-slot Falling Punchline fix, every mechanic, and the hub's DUO / NEO + UPGRADES modes.
@@ -28,7 +34,7 @@ Reworked from the reference study (`docs/reference-study/spamton-tenna-study.md`
   - Most turns are within ±50% of their old damage; duo turns are 10–43% lower.
   - **T5 THE THREE-CUP SOUL:** standing still +100%, moving +54%.
   - **T15 THE FALLING PUNCHLINE:** standing still +100%, moving −5%.
-  - Both come from the study's anti-camping changes and are pending the designer's decision.
+  - Both come from the study's anti-camping changes; kept by the designer's decision.
 
 ## 2026-10-23 — Spamson NEO: phrased attacks with visible sources and a staged final
 
@@ -43,7 +49,7 @@ Reworked from the reference study (`docs/reference-study/spamton-tenna-study.md`
 - **Feel:** a muzzle star on each shot, knock-back on targets, a lane flash when a relay breaks, and a cosmetic graze arc and tick.
 - **Also fixed:** receipts were drawn 5.5 px off their hitbox. The final's edge boss ignored its transparency. The hit and BAIT recoil effects were never drawn. Single-lane relays showed a misleading SAFE label, and SAFE labels stacked. The CUT WIRES line repeated every cast. BAIT + READ + practice sweeps could be cut short. Cards now read over the strings.
 - Reduced motion: no flights, swings, kicks, rims or box tween; the white frame is dimmed.
-- Verified: god-mode bots win every seed with no errors; at normal difficulty every pattern is within ±50% of its previous damage (16-run probe). Larger swings appear only in assist modes (READ, practice), where late spawns that used to be deleted now resolve; those are pending the designer's decision.
+- Verified: god-mode bots win every seed with no errors; at normal difficulty every pattern is within ±50% of its previous damage (16-run probe). Larger swings appear only in assist modes (READ, practice), where late spawns that used to be deleted now resolve; kept by the designer's decision.
 
 ## 2026-10-23 — Muffet: phrased turns, hands that release spiders, a staged pet
 
