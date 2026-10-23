@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-10-23 — Flowey redone: three acts, his real sprites, a false-pacifist neutral
+
+The designer asked for a redo, using their Undertale Yellow reference and Undertale's own Flowey sprite sheet. The study is in `docs/reference-study/flowey-study.md`.
+
+- **Story:** this is the false-pacifist neutral (one of two planned neutral versions). Flowey is disappointed: two humans fell, and Seth chose to be a sentimental sap when the two of them together might have threatened the king. So he takes Seth's soul, and maybe then Aqua will stop being so disappointing. All dialogue is rewritten for this. The ending choice and both endings stay, and refusing him now closes on small Flowey turning his attention to Aqua.
+- **Act one, his battle:** twelve short attacks (10–13 s, down from 26–38 s) built from the existing tricks. His buttons still move, MERCY is still disconnected, and the fake Game Over is still there. Three times he SAVEs: a giant-face barrage over white grass. Then he LOADs a room from the journey: a 26 s top-down chase through the Ruins (Encore's curtains), Snowdin (Rift's shards) and Waterfall (Mettalot's tears). Vines creep up from behind, and the door at the far end lets you out early. A short montage runs through Hotland and the CORE.
+- **Act two:** the rooms stop, and in the dark he takes the soul.
+- **Act three, inside him:** no box, and a giant Flowey over his roots. Six ~20 s phases replay the pacifist-route bosses and his own tricks, alternating with the six pages of Seth's life. The finale is a 40 s gauntlet (it was 133 s). The Torn Notebook acts on Seth's turns.
+- **Pacing:** the whole fight now takes about 11 minutes in god mode. Before, it didn't finish in 25.
+- **Removed:** the Spamson NEO replay (a genocide-route boss).
+- **Sprites:** his canon battle frames, cut pixel-exact from the sheet, with a talking frame for every expression. The same sprites replace the old art in Gerson and in Sans + Alphys.
+- **Also fixed:**
+  - Pressing Z on a page phase recovered the page instantly. Calling it back now works from 7 s, when the prompt appears.
+  - His text box inside him wrapped as if it were the narrow speech bubble.
+- **Difficulty:** this is a structural redo, so per-attack comparisons don't apply. On Normal, a dodging test bot (~0.15 s reactions) clears every chase, taking 2–8 hits of 3 HP. The random test bot now gets 12–18 steps in before dying (old fight: 12–14 of 25 attacks), but dies more often, because random wandering can't walk a chase.
+
 ## 2026-10-23 — Sans — No Promises: phrased attacks and the Sans + Alphys lessons
 
 Every attack keeps its 18 s and the final its 68 s. All mechanics stay (lock lines, `!` markers, ghost bones, the rotating rig, break-a-blaster gates).
