@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-24 — Flowey: mouths fly jaws-first
+
+The biting mouths (MOUTH OF THE WORLD and the FALL UP floor jaws) were drawn backwards, opening away from where they were going. They now face the way they move.
+
 ## 2026-10-24 — Flowey: harder attacks (chases unchanged)
 
 The designer asked for harder attacks, leaving the chases alone.
