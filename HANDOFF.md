@@ -62,7 +62,7 @@ The hub is currently an encounter launcher, **not a continuous campaign save**. 
 | Waterfall | Mettalot — Waterfall After Dark | Gerson — What For? |
 | Hotland | Ant Tenna + Spamson — The Next Big Thing, currently pacifist only in launcher | Spamson NEO — A Deal in the Dark, then Muffet — The Dark Nest |
 | CORE | Sans — No Promises | Sans + Alphys — Misery Likes Company |
-| New Home | Flowey — Inside Your Best Friend | Aqua — Last Playmate |
+| New Home | Flowey — Inside Your Best Friend (neutral; two versions planned, the false-pacifist one is built) | Aqua — Last Playmate |
 
 Aqua finale practice is a shortcut into the same canonical fight. Battle Lab, LAST BELL and Ant vs Termite are Extras. LAST BELL's separate universe and the colony simulation do not establish Underground lore.
 
@@ -210,7 +210,14 @@ Gerson: approved 17-turn pacing; Flowey helps but is absent from the middle. Set
 
 Mettalot: Purple SOUL, showmanship/ratings, Napstablook, distinct quiz/rhythm/dance. Phase2 at750, finale around1500–1750, target2000. Spin controls, seeking tears and laser pointer must function.
 
-Flowey: pacifist/neutral finale inside his mind after absorbing Seth. Six fragments are pages from one Purple SOUL's life, not six human souls. Functional false/moving commands, fake Game Over and stolen mechanics. Seth can deny him the soul; the body does not stand up and leave, and the king eventually receives it.
+Flowey: both Flowey fights are neutral, not pacifist. Two versions are planned; the built one is the false-pacifist neutral, where Seth spared everyone. Flowey is disappointed: two humans, and Seth chose to be a weak, sentimental sap. Together, Seth and Aqua might have been a real threat to the king. As things stand, he takes Seth's soul, and maybe then Aqua will stop being so disappointing.
+
+Three acts, following the designer's Undertale Yellow reference (`docs/reference-study/flowey-study.md`):
+1. His rigged battle in the box. Short attacks; face-barrage SAVEs that lead straight into chase LOADs through rooms Seth walked.
+2. The dark, where he takes the soul.
+3. Inside him, boxless. Phases alternate with the six pages, and Seth's Torn Notebook acts on his turns.
+
+Only pacifist-route bosses return as replayed attacks. The six fragments are pages from one Purple SOUL's life, not six human souls. Keep the functional false/moving commands, fake Game Over and stolen mechanics. Seth can deny him the soul; the body does not stand up and leave, and the king eventually receives it. Flowey uses his canon Undertale battle frames, here and in Gerson and Sans + Alphys; when talking, only his mouth moves. His supplied voice blip, evil blip, hurt cry and laugh are in the fight. FIGHT must feel rewarding: in act one his health bar takes real damage until he rigs it at the end of each cycle (LOAD, extra zeros, your attack set to 0); in act three the hits stick. In act three he is his canon sprite, huge (5×), with original thorned vines behind him; the designer rejected an original creature design, so don't invent a new body for him.
 
 ### Tenna/Spamson, Spamson NEO, Encore and Rift
 
