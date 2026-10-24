@@ -275,7 +275,7 @@ class MindBattle{
  flowerY(){return this.act===3?132:118;}
  get step(){return PLAN[this.round-1]||null;}
  get count(){return this.fragments.filter(Boolean).length;}
- get config(){const c={...DIFFICULTY[this.settings.difficulty]};if(this.fragments[0])c.warning+=.13;return c;}
+ get config(){const c={...DIFFICULTY[this.settings.difficulty]};if(this.fragments[0])c.warning+=.13;if(!this.chase)c.speed*=1.18;return c;}
  message(pages,next='warning'){this.pages=(Array.isArray(pages)?pages:[typeof pages==='string'?line(pages,this.face):pages]).flatMap(p=>{p=typeof p==='string'?line(p,this.face):p;return this.paginate?this.paginate(p):[p];});this.next=next;this.showPage();}
  showPage(){const p=this.pages.shift();this.text=p.text;this.speaker=p.face<0?'self':'flowey';if(p.face>=0)this.face=p.face;this.displayChars=0;this.state='dialogue';this.timer=0;this.emit('text');if(p.face>=0&&/^Hee hee hee/.test(p.text))this.emit('laugh');}
  options(){return this.state==='act'?['REMEMBER','RESIST','CALL','CHECK']:this.state==='item'?this.items.filter(i=>i.count).map(i=>`${i.name} x${i.count}`):[];}
@@ -310,7 +310,7 @@ class MindBattle{
  finishAttack(){this.completed=this.round;this.bullets=[];this.shots=[];this.controls='normal';this.blocked='';this.echo=null;this.drift=null;this.mirror=false;this.angle=this.angleTarget=0;this.nerve=0;this.resisted=false;const step=PLAN[this.round-1];this.chase=null;if(step.id==='last'){this.beginFinal();return;}
   // A face scene saves the file and the chase loads it at once; the last chases run straight into the dark.
   const go=step.type==='face'||step.id==='waterfall'||step.id==='montage'?'warning':'menu',lines=AFTER[step.id]||[];if(lines.length)this.message(lines,go);else if(go==='warning')this.startAttack();else this.toMenu();}
- startMemory(index){this.initField();this.memory=index;const m=MEMORIES[index];this.pattern='page';this.attackName=m.name;this.scene='memory';this.mode=m.mode;this.state='memory';this.duration=19;this.arena={x:170,y:244,w:428,h:214};this.targetArena={...this.arena};this.soul={x:300,y:this.mode==='blue'?446:350,vy:0};this.face=5;this.fragment={x:510,y:310,r:12,hp:this.mode==='yellow'?4:1};if(index===2)this.fragment={x:384,y:366,r:12,hp:1};if(index===4)this.fragment={x:540,y:420,r:12,hp:1};if(index===5){this.fragment={x:384,y:290,r:16,hp:4};this.soul.x=384;this.soul.y=432;}this.say(m.thought,10,5);this.invulnerability=1;this.checkpointNow('memory');this.every(1.6,18,1.45,i=>{if(this.fragments[index])return;const a=this.arena;for(let k=0;k<3;k++)this.spawn({kind:'seed',x:a.x+30+(i*67+k*110)%(a.w-60),y:a.y-12,r:4,vx:Math.sin(i+k)*20,vy:60*this.config.speed,life:5});});this.at(7,()=>this.say(index===5?'That last page? Press Z. Go on.':'Aww, you can almost reach it! Keep trying!',11,4));this.at(11,()=>{if(this.assist){this.callMemory();this.assist=false;}});this.at(7,()=>{if(this.mode!=='yellow'&&!this.fragments[index])this.effects.push({type:'control',text:'Z / CALL THE PAGE BACK',life:2.6});});this.emit('memory');}
+ startMemory(index){this.initField();this.memory=index;const m=MEMORIES[index];this.pattern='page';this.attackName=m.name;this.scene='memory';this.mode=m.mode;this.state='memory';this.duration=19;this.arena={x:170,y:244,w:428,h:214};this.targetArena={...this.arena};this.soul={x:300,y:this.mode==='blue'?446:350,vy:0};this.face=5;this.fragment={x:510,y:310,r:12,hp:this.mode==='yellow'?4:1};if(index===2)this.fragment={x:384,y:366,r:12,hp:1};if(index===4)this.fragment={x:540,y:420,r:12,hp:1};if(index===5){this.fragment={x:384,y:290,r:16,hp:4};this.soul.x=384;this.soul.y=432;}this.say(m.thought,10,5);this.invulnerability=1;this.checkpointNow('memory');this.every(1.4,18,1.05,i=>{if(this.fragments[index])return;const a=this.arena;for(let k=0;k<4;k++)this.spawn({kind:'seed',x:a.x+30+(i*67+k*110)%(a.w-60),y:a.y-12,r:4,vx:Math.sin(i+k)*24,vy:78*this.config.speed,life:5});});this.every(2.5,18,2.6,i=>{if(this.fragments[index])return;const a=this.arena;this.aimed(i%2?a.x:a.x+a.w,a.y+20,3,135);});this.at(7,()=>this.say(index===5?'That last page? Press Z. Go on.':'Aww, you can almost reach it! Keep trying!',11,4));this.at(11,()=>{if(this.assist){this.callMemory();this.assist=false;}});this.at(7,()=>{if(this.mode!=='yellow'&&!this.fragments[index])this.effects.push({type:'control',text:'Z / CALL THE PAGE BACK',life:2.6});});this.emit('memory');}
  callMemory(){if(!this.fragment||this.mode==='yellow')return;this.bullets=[];this.fragment.x=this.soul.x;this.fragment.y=this.soul.y;this.effects.push({type:'call',text:'YOUR VOICE ANSWERS',life:1.4});}
  recover(){const index=this.memory;if(index<0||this.fragments[index])return;this.fragments[index]=true;this.hp=Math.min(this.maxHP,this.hp+8);this.bullets=[];this.shots=[];this.fragment=null;this.controls='normal';this.blocked='';this.emit('fragment');this.message([line(MEMORIES[index].reply,-1),...MEMORY_LINES[index]],'warning');}
  setArena(a,snap=false){this.targetArena={...a};if(snap)this.arena={...a};}
@@ -691,6 +691,10 @@ const PLAN=[
 ];
 const DARK_STEP=PLAN.findIndex(s=>s.type==='dark');
 function buildAttack(g){
+ // Harder than the first pass: every repeating spawn in an attack (replays included) comes about 28% more often.
+ const every=g.every;g.every=(s,e,d,fn)=>every.call(g,s,e,d*.72,fn);try{build(g);}finally{g.every=every;}
+}
+function build(g){
  const p=g.pattern,a=g.arena,each=(s,e,d,fn)=>g.every(s,e,d,fn),sp=()=>g.config.speed;
  const cue=(text,life=1.5)=>g.effects.push({type:'control',text,life});
  const vine=i=>{const aa=g.targetArena,gap=aa.y+aa.h/2+Math.sin(i*.83)*28,from=i%2===0;for(const y of [gap-90,gap+90])g.spawn({kind:'vine',x:from?aa.x-15:aa.x+aa.w+15,y,w:18,h:118,vx:(from?1:-1)*111*sp(),delay:.65,life:5});};
@@ -719,7 +723,7 @@ function buildAttack(g){
  }else if(p==='face2'){
   each(.4,10.8,.5,i=>daisyFall(60+(i*137)%648,Math.sin(i*1.7)*40,136));each(1.4,10.6,2.3,i=>{const s=g.soul;for(let k=-2;k<=2;k++){const t=Math.atan2(s.y-210,s.x-384)+k*.16;g.spawn({kind:'seed',r:5,x:384,y:210,vx:Math.cos(t)*150*sp(),vy:Math.sin(t)*150*sp(),delay:.5,life:4});}g.emit('cue');});
  }else if(p==='face3'){
-  each(.3,6.2,.16,i=>spiral(i,3,104));each(6.6,11.8,.16,i=>spiral(-i,3,112));each(2,11.6,2.6,i=>{const left=i%2===0,gap=g.arena.y+40+(i*67)%(g.arena.h-80);for(let y=g.arena.y+14;y<g.arena.y+g.arena.h;y+=30)if(Math.abs(y-gap)>40)g.spawn({kind:'daisy',r:8,x:left?10:758,y,vx:(left?1:-1)*150*sp(),delay:.6,life:6});g.emit('cue');});
+  each(.3,6.2,.16,i=>spiral(i,3,104));each(1,12,1.5,i=>{const s=g.soul;for(let k=-1;k<=1;k++){const t=Math.atan2(s.y-196,s.x-384)+k*.14;g.spawn({kind:'seed',r:5,x:384,y:196,vx:Math.cos(t)*165*sp(),vy:Math.sin(t)*165*sp(),delay:.45,life:4});}g.emit('cue');});each(6.6,11.8,.16,i=>spiral(-i,3,112));each(2,11.6,2.6,i=>{const left=i%2===0,gap=g.arena.y+40+(i*67)%(g.arena.h-80);for(let y=g.arena.y+14;y<g.arena.y+g.arena.h;y+=30)if(Math.abs(y-gap)>40)g.spawn({kind:'daisy',r:8,x:left?10:758,y,vx:(left?1:-1)*150*sp(),delay:.6,life:6});g.emit('cue');});
  }else if(p==='turn'){
   each(.25,9.8,2.4,i=>{g.angleTarget+=(i%3===2?-1:1)*Math.PI/2;g.face=[1,3,2,6][i%4];cue('TURN');});each(.8,9.8,1.6,i=>g.ring(384,346,8,77,i*.31));g.at(4.9,()=>g.setControls('quarter',4));
  }else if(p==='mouth'){

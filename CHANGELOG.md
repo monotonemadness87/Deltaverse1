@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-10-24 — Flowey: harder attacks (chases unchanged)
+
+The designer asked for harder attacks, leaving the chases alone.
+
+- **Every non-chase attack:** repeating spawns come about 28% more often, replays included, and his bullets fly 18% faster.
+- **Page phases:** a real barrage now, with a heavier pellet rain plus aimed volleys from the sides. Before, a player who stood still took almost nothing.
+- **The third face barrage:** aimed volleys added; before, standing still took no hits.
+- **Measured** with 8 seeds per attack, Normal, damage taken repeatedly without dying:
+  - Random dodger: about 1.4× more hits on average. Most attacks rise 10–60%. The page phases rise 1.5–2.3×, from 8–13 hits a minute to 17–20.
+  - Player who stands still: up 0–60% on most attacks. The page phases go from 3–6 hits a minute to 22–32, and the third face barrage from 0 to 47.
+  - The dodging bot's results in the chases are unchanged.
+
 ## 2026-10-23 — Flowey: act three is big canon Flowey
 
 The designer rejected the original TV-headed creature. Inside him, Flowey is now his own canon battle sprite at 5×: talking, with his hurt face, and tearing into offset bands more often as his health drops. Thorned vines reach out from behind him. During boss replays he dims, and the boss appears in front of him. The HOWDY, INSIDE attacks now come from his own eyes, face and vines.
