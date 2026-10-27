@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-27 — Flowey: the current Gaster Blasters
+
+Flowey's blasters still used the old animation: the skull popped in, a dashed line showed, then a flat white bar. They now run the Sans fights' own lifecycle, from the shared `blaster-beam.js`:
+- **The skull:** it swoops in spinning and settles. It trembles just before firing and opens its jaw on the fire frame.
+- **The beam:** one frame as a thin line, then it widens in three steps from a narrow mouth, holds, and burns out through greys.
+- **Afterwards:** the skull kicks back, drifts while the beam holds, then leaves.
+- **Hits** follow the drawn beam, mouth taper included.
+- **Reduced motion:** no spin and no tremble.
+
+Both Flowey fights use it: the pacifist Sans replay, and the false genocide's Sans + Alphys replay and COURSE CORRECTION. `tools/sync_sans_art.py` now copies `blaster-beam.js` along with Sans's art.
+
 ## 2026-10-27 — Flowey: the current Sans
 
 Both Flowey fights still drew Sans from the old single sprite sheet, from before the Sans rework. They now use the same assembled Sans as the Sans fights. That covers the pacifist NO PROMISE TO KEEP replay, the false-genocide MISERY WITHOUT COMPANY replay and the THE CORE memory cut. Bones and blasters come from the same module too. `tools/sync_sans_art.py` copies `sans.html`'s art into a Flowey file. Rerun it, then rebuild the false-genocide file, whenever Sans's art changes.

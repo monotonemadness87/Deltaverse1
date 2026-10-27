@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Copy the current Sans art module from games/sans.html into a Flowey file.
+"""Copy the current Sans art and blaster modules from games/sans.html into a Flowey file.
 
 Flowey's replays (and the false-genocide Sans + Alphys memory) draw Sans with a bundled
 `sans-art.js` module. This replaces it with the live `art.js` from sans.html, so Flowey never
-shows an older Sans than the Sans fights do. Usage: sync_sans_art.py games/flowey.html
+shows an older Sans than the Sans fights do. `blaster-beam.js` (the skull and beam lifecycle:
+fire line, stepped widening, burn-out, recoil) is copied the same way, inserted if missing. Usage: sync_sans_art.py games/flowey.html
 """
 import sys
 from pathlib import Path
@@ -28,9 +29,18 @@ for old, new in [('class Art{', 'class SansArt{'), ('Object.assign(exports,{SANS
     if art.count(old) != 1:
         raise ValueError('sans.html art.js changed shape: ' + old)
     art = art.replace(old, new)
+a, b = module(sans, 'blaster-beam.js')
+beam = sans[a:b]
 for path in sys.argv[1:]:
     p = Path(path)
     text = p.read_text(encoding='utf-8')
     a, b = module(text, 'sans-art.js')
-    p.write_text(text[:a] + art + text[b:], encoding='utf-8')
+    text = text[:a] + art + text[b:]
+    if 'modules["blaster-beam.js"]' in text:
+        a, b = module(text, 'blaster-beam.js')
+        text = text[:a] + beam + text[b:]
+    else:
+        a, _ = module(text, 'sans-art.js')
+        text = text[:a] + beam + '\n' + text[a:]
+    p.write_text(text, encoding='utf-8')
     print('synced', p, len(text), '->', len(text) - (b - a) + len(art))

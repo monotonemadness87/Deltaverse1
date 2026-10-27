@@ -273,6 +273,7 @@ const {beginQuiz,answerQuiz,quizButtons}=require("nightmare-scenes.js");
 const {INTRO,AFTER,AMBIENT,DARK,INSIDE,MEMORIES,MEMORY_LINES,FINAL,RELEASE,EPILOGUE,CUT,STRIKE_LINES,RUGS,line,ESCAPE,PLEA,TAUNT,LAUGH,VERDICT,KILL,TRAPS,LOCKS,RETRY}=require("story.js");
 const {buildAttack,PLAN,DARK_STEP}=require("patterns.js");
 const {beginChase,updateChase}=require("chase.js");
+const {blasterBeam,beamWidthAt,blasterRecoil}=require("blaster-beam.js");
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const ROOM={x:180,y:248,w:408,h:220};
 const DIFFICULTY={gentle:{speed:.86,damage:4,warning:1.2,cooldown:.93},normal:{speed:1.12,damage:7,warning:1,cooldown:.68},hard:{speed:1.34,damage:9,warning:.88,cooldown:.5}};
@@ -359,8 +360,8 @@ class MindBattle{
  hit(b,s=this.soul){if(b.kind==='neoSweep')return sweepCollision(b,s);if(b.kind==='broadcastRay')return this.hit({...b,kind:'beam'},s);if(['jaw','hand','vine'].includes(b.kind)){const p=propFootprint(b.kind==='jaw'?'mouth':b.kind,b.w,b.h);return Math.abs(b.x-s.x)<p.w/2+4&&Math.abs(b.y-s.y)<p.h/2+4;}if(b.kind==='rig'){const cx=b.x,cy=b.y,len=b.h;return (Math.abs(s.y-cy)<10&&Math.abs(s.x-cx)<this.arena.w/2*clamp((b.age-.7)/.5,0,1))||(Math.abs(s.x-cx)<10&&s.y>=cy&&s.y<=cy+len);} if(b.kind==='beam')return Math.abs(-Math.sin(b.angle)*(s.x-b.x)+Math.cos(b.angle)*(s.y-b.y))<b.width/2+4;if(b.r)return Math.hypot(b.x-s.x,b.y-s.y)<b.r+5;return Math.abs(b.x-s.x)<b.w/2+4&&Math.abs(b.y-s.y)<b.h/2+4;}
  damage(){if(this.settings.invincible||this.invulnerability>0)return;this.hp=Math.max(0,this.hp-this.config.damage);this.invulnerability=this.config.cooldown;this.shake=.15;this.emit('hurt');if(!this.hp){if(this.fragments[4]&&!this.revived){this.revived=true;this.hp=Math.min(this.maxHP,9);this.bullets=[];this.invulnerability=2;this.say('No. You were supposed to stay DOWN.',4);this.effects.push({type:'revive',text:'YOU GET UP',life:2});this.emit('heal');}else{this.state='dead';this.deathAge=0;this.deaths++;this.timer=0;this.bullets=[];this.shots=[];this.face=3;this.emit('dead');}}}
  shoot(charged=false){if(this.mode==='hybrid'){if(this.shootTimer>0)return;const angle=this.vertical?-Math.PI/2:0;this.shotAngle=angle-Math.PI/2;this.shots.push({x:this.soul.x,y:this.soul.y,vx:Math.cos(angle)*620,vy:Math.sin(angle)*620,life:1.5,charged});this.hybridBurst=charged?0:this.hybridBurst+1;this.shootTimer=charged?.25:this.hybridBurst>=3?.36:.105;if(this.hybridBurst>=3)this.hybridBurst=0;this.emit('shot');return;}if(this.mode!=='yellow'||this.split||this.shootTimer>0||this.shotHeat>85)return;const target=this.blasters.filter(b=>!b.gone).sort((a,b)=>Math.hypot(a.x-this.soul.x,a.y-this.soul.y)-Math.hypot(b.x-this.soul.x,b.y-this.soul.y))[0],angle=target?Math.atan2(target.y-this.soul.y,target.x-this.soul.x):-Math.PI/2;this.shotAngle=angle-Math.PI/2;this.shots.push({x:this.soul.x,y:this.soul.y,vx:Math.cos(angle)*620,vy:Math.sin(angle)*620,life:1.7,charged});this.shootTimer=charged?.38:.24;this.shotHeat+=charged?36:24;this.emit('shot');}
- blaster(x,y,angle,width=30,warning=1.8){this.blasters.push({x,y,tx:x,ty:y,angle,width,warning,live:.58,age:0,hp:7,gone:false,fired:false,flash:0});this.emit('blaster-enter');}
- updateBlasters(dt){const a=this.arena,s=this.soul;for(const b of this.blasters){if(b.gone)continue;b.age+=dt;b.flash=Math.max(0,b.flash-dt);const t=clamp(b.age/.38,0,1),dx=b.tx-(a.x+a.w/2),dy=b.ty-(a.y+a.h/2),d=Math.hypot(dx,dy)||1;b.x=b.tx+dx/d*48*(1-t)**3;b.y=b.ty+dy/d*48*(1-t)**3;if(!b.fired&&b.age>=b.warning){b.fired=true;this.emit('blaster-blast');}if(b.age>=b.warning&&b.age<b.warning+b.live&&!b.gone){const dx=s.x-b.x,dy=s.y-b.y,ux=Math.cos(b.angle),uy=Math.sin(b.angle);if(dx*ux+dy*uy>=0&&Math.abs(dx*uy-dy*ux)<b.width/2+4)this.damage();}}this.blasters=this.blasters.filter(b=>!b.gone&&b.age<b.warning+b.live+.25);}
+ blaster(x,y,angle,width=30,warning=1.8){const a=this.arena,cx=a.x+a.w/2,cy=a.y+a.h/2,dx=x-cx,dy=y-cy,d=Math.hypot(dx,dy)||1,swoop=120;this.blasters.push({x:x+dx/d*swoop,y:y+dy/d*swoop,tx:x,ty:y,swoop,spin:this.blasters.length%2?2.2:-2.2,angle,width,warm:warning,warning,entry:.38,live:.55,age:0,hp:7,maxHP:7,gone:false,fired:false,flash:0});this.emit('blaster-enter');}
+ updateBlasters(dt){const a=this.arena,s=this.soul,cx=a.x+a.w/2,cy=a.y+a.h/2;for(const b of this.blasters){if(b.gone)continue;b.age+=dt;b.flash=Math.max(0,b.flash-dt);const ease=1-Math.pow(1-Math.min(1,b.age/b.entry),3),ex=b.tx-cx,ey=b.ty-cy,d=Math.hypot(ex,ey)||1,recoil=blasterRecoil(b,b.age);b.x=b.tx+ex/d*b.swoop*(1-ease)-Math.cos(b.angle)*recoil;b.y=b.ty+ey/d*b.swoop*(1-ease)-Math.sin(b.angle)*recoil;if(!b.fired&&b.age>=b.warm){b.fired=true;this.emit('blaster-blast');}if(b.age<b.warm||b.age>b.warm+b.live)continue;const beam=blasterBeam(b),ux=Math.cos(beam.angle),uy=Math.sin(beam.angle),dx=s.x-beam.x,dy=s.y-beam.y;if(beam.width>=1&&beam.alpha>=.1&&dx*ux+dy*uy>=0&&Math.abs(dx*uy-dy*ux)<beamWidthAt(beam,dx*ux+dy*uy)/2+3)this.damage();}this.blasters=this.blasters.filter(b=>!b.gone&&b.age<b.warm+b.live+.3);}
 
  update(dt,input={}){if(this.state==='dead'){if(!this.paused){dt=Math.min(Math.max(dt,0),.04);this.clock+=dt;this.deathAge=(this.deathAge||0)+dt;}return;}dt=clamp(dt,0,.025);if(this.paused)return;this.clock+=dt;this.timer+=dt;this.foeHurt=Math.max(0,this.foeHurt-dt);this.rigFlash=Math.max(0,this.rigFlash-dt);this.static=Math.max(0,(this.static||0)-dt*1.7);this.effects=this.effects.filter(e=>(e.life-=dt)>0);this.invulnerability=Math.max(0,this.invulnerability-dt);this.shake=Math.max(0,this.shake-dt);this.shootTimer=Math.max(0,this.shootTimer-dt);this.crossCooldown=Math.max(0,this.crossCooldown-dt);
   if(this.state==='dialogue'){this.displayChars=Math.min(this.text.length,this.displayChars+dt*45);return;}
@@ -867,6 +868,46 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const ATTACKS=PLAN;
 Object.assign(exports,{PLAN,ATTACKS,DARK_STEP,BODY,buildAttack,ROOM,SQUARE,FACE,BIG});
 };
+modules["blaster-beam.js"]=(exports,require)=>{
+// The mouth is 26 pixels along the aim direction at the 96 x 108 skull size.
+const BLASTER_MOUTH_OFFSET=26;
+const FRAME=1/60;
+const smooth=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};
+// Core (Alphys) beams keep their smooth bloom and collapse.
+function beamEnvelope(t,live){return t<0||t>live?0:Math.min(smooth(t/Math.min(.075,live*.2)),smooth((live-t)/Math.min(.17,live*.4)));}
+// One shared skull lifecycle. Fire: one frame of a thin line, then the beam widens in three visible
+// steps. Hold solid. Burn out: about eight frames narrowing through light, mid and dark grey; the
+// last third of the fade is a harmless after-image. Drawn width is always the live hit width.
+function blasterStage(t,live){
+ if(t<0||t>live)return null;
+ if(t<FRAME)return {k:-1,shade:1,harm:true};
+ if(t<4*FRAME)return {k:Math.min(1,(Math.floor((t-FRAME)/FRAME)+1)/3),shade:1,harm:true};
+ const fade=Math.min(8*FRAME,live*.4),f=(t-(live-fade))/fade;
+ if(f<=0)return {k:1,shade:1,harm:true};
+ return {k:1-.7*Math.min(1,f),shade:[1,.78,.56,.36][Math.min(3,Math.floor(f*4))],harm:f<.62};
+}
+// A small kick back on the fire frame, a slow drift while the beam holds, then the skull leaves.
+function blasterRecoil(b,age){const t=age-b.warm;if(t<=0)return 0;const live=b.live??.55,s=Math.max(.6,b.drawScale??1);return (14*(1-Math.exp(-t/.035))+26*Math.min(t,live))*s+Math.max(0,t-live)**2*2400;}
+function blasterBeam(b,reach=2000){
+ const ux=Math.cos(b.angle),uy=Math.sin(b.angle),t=b.age-b.warm,scale=b.drawScale??1;
+ const live=!b.gone&&b.hp>0&&t>=0&&t<=b.live,stage=live?blasterStage(t,b.live):null;
+ const width=!stage?0:stage.k<0?Math.min(2,b.width):b.width*stage.k;
+ return {x:b.x+ux*BLASTER_MOUTH_OFFSET*scale,y:b.y+uy*BLASTER_MOUTH_OFFSET*scale,angle:b.angle,width,mouthLimit:36*scale,flare:18*scale,alpha:stage?(stage.harm?1:.05):0,shade:stage?.shade??1,length:reach+Math.hypot(b.x,b.y),live};
+}
+function beamWidthAt(beam,distance){return Math.min(beam.width,beam.mouthLimit)+(beam.width-Math.min(beam.width,beam.mouthLimit))*Math.max(0,Math.min(1,distance/beam.flare));}
+// `box` (optional): outside the battle box the beam is drawn at half strength so Sans and the HUD stay readable.
+function drawBlasterBeam(ctx,b,box=null){
+ const beam=blasterBeam(b);if(b.gone||b.hp<=0||(!beam.live&&b.age>=b.warm))return;
+ if(beam.live&&beam.width>0){
+  const g=Math.round(255*beam.shade),shape=()=>{ctx.save();ctx.translate(beam.x,beam.y);ctx.rotate(beam.angle);const mouth=Math.min(beam.width,beam.mouthLimit),flare=beam.flare;ctx.beginPath();ctx.moveTo(0,-mouth/2);ctx.lineTo(flare,-beam.width/2);ctx.lineTo(beam.length,-beam.width/2);ctx.lineTo(beam.length,beam.width/2);ctx.lineTo(flare,beam.width/2);ctx.lineTo(0,mouth/2);ctx.closePath();ctx.fill();ctx.restore();};
+  ctx.save();ctx.fillStyle=`rgb(${g},${g},${g})`;
+  if(box){ctx.globalAlpha*=.5;shape();ctx.globalAlpha/=.5;ctx.beginPath();ctx.rect(box.x,box.y,box.w,box.h);ctx.clip();}
+  shape();ctx.restore();
+ }else if(b.age<b.warm){ctx.save();ctx.translate(beam.x,beam.y);ctx.rotate(beam.angle);ctx.globalAlpha*=b.track&&b.aimLocked?.4:.18;ctx.fillStyle=b.track&&b.aimLocked?'#ffeb37':'#45c9fa';ctx.fillRect(0,-2,beam.length,4);ctx.restore();}
+}
+
+Object.assign(exports,{BLASTER_MOUTH_OFFSET,beamEnvelope,blasterStage,blasterRecoil,blasterBeam,beamWidthAt,drawBlasterBeam});
+};
 modules["sans-art.js"]=(exports,require)=>{
 const load=src=>new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src=src;});
 const canvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
@@ -1191,6 +1232,7 @@ const {SoulBreak}=require("soul-break.js");
 const {SpamMemoryArt}=require("spamtenna-art.js");
 const {verticalLanes}=require("spamtenna-scenes.js");
 const {SansArt}=require("sans-art.js");
+const {drawBlasterBeam}=require("blaster-beam.js");
 const {GhostArt}=require("ghost-art.js");
 const {SoulVisual}=require("soul-visual.js");
 const {MindBattle,clamp}=require("engine.js");
@@ -1281,7 +1323,8 @@ function hazard(b){
 }
 function field(){const a=game.arena,cx=a.x+a.w/2,cy=a.y+a.h/2;ctx.save();if(game.mirror){ctx.translate(768,0);ctx.scale(-1,1);}ctx.translate(cx,cy);ctx.rotate(game.angle);ctx.translate(-cx,-cy);const rooms=game.pieces(),boxless=(game.act===3||game.scene==='face')&&!game.split&&!game.circle;if(game.scene==='face')faceScene();ctx.fillStyle='#000';if(boxless){for(const r of rooms){ctx.save();ctx.strokeStyle=game.state==='memory'?MEMORIES[game.memory].color:'#6f6280';ctx.globalAlpha=game.scene==='face'?.0:.55;ctx.lineWidth=2;for(const [px,py,dx,dy] of [[r.x,r.y,1,1],[r.x+r.w,r.y,-1,1],[r.x,r.y+r.h,1,-1],[r.x+r.w,r.y+r.h,-1,-1]]){ctx.beginPath();ctx.moveTo(px+dx*16,py);ctx.lineTo(px,py);ctx.lineTo(px,py+dy*16);ctx.stroke();}ctx.restore();}}else if(game.circle){ctx.beginPath();ctx.arc(cx,cy,124,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#c5a6e8';ctx.lineWidth=4;ctx.stroke();ctx.beginPath();ctx.arc(cx,cy,48,0,Math.PI*2);ctx.stroke();}else for(const r of rooms){ctx.fillRect(r.x,r.y,r.w,r.h);if(!game.stolenBorder)box(r.x,r.y,r.w,r.h,game.state==='memory'?MEMORIES[game.memory].color:'#ddd',4);else for(let i=0;i<4;i++)art.prop('hand',r.x+r.w*(i%2),r.y+r.h*Math.floor(i/2),42,28,game.clock+i);}
  if(game.echo){const r=game.echo;if(boxless){ctx.save();ctx.strokeStyle='#6f6280';ctx.globalAlpha=.55;ctx.lineWidth=2;for(const [px,py,dx,dy] of [[r.x,r.y,1,1],[r.x+r.w,r.y,-1,1],[r.x,r.y+r.h,1,-1],[r.x+r.w,r.y+r.h,-1,-1]]){ctx.beginPath();ctx.moveTo(px+dx*16,py);ctx.lineTo(px,py);ctx.lineTo(px,py+dy*16);ctx.stroke();}ctx.restore();}else{ctx.fillStyle='#000';ctx.fillRect(r.x,r.y,r.w,r.h);box(r.x,r.y,r.w,r.h,'#c5a6c6',4);}}
- for(const b of game.blasters){if(b.gone)continue;sansArt.blaster(ctx,{...b,warm:b.warning,armorFlash:b.flash});ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.angle);if(b.age<b.warning){ctx.strokeStyle='#888';ctx.lineWidth=1;ctx.setLineDash([8,5]);ctx.beginPath();ctx.moveTo(32,0);ctx.lineTo(850,0);ctx.stroke();ctx.setLineDash([]);}else if(b.age<b.warning+b.live){ctx.fillStyle='#eee';ctx.fillRect(32,-b.width/2,850,b.width);}ctx.restore();}
+ // Beams first, then the skulls over them, as in the Sans fights.
+ for(const b of game.blasters)if(!b.gone)drawBlasterBeam(ctx,b);sansArt.calm=reduceMotion;for(const b of game.blasters)if(!b.gone)sansArt.blaster(ctx,{...b,armorFlash:b.flash});
  if(game.broadcast)for(const b of game.bullets)if(b.kind==='neoSweep')spamArt.origin(ctx,b,game);
  for(const e of game.effects)if(e.type==='cannon')art.prop('cannon',e.x,e.y,46,35,e.angle-Math.PI,Math.min(1,e.life*3));ctx.save();ctx.beginPath();if(boxless)ctx.rect(0,0,768,472);else if(game.circle){ctx.arc(cx,cy,121,0,Math.PI*2);ctx.arc(cx,cy,51,0,Math.PI*2,true);}else for(const r of rooms)ctx.rect(r.x+3,r.y+3,r.w-6,r.h-6);if(game.echo)ctx.rect(game.echo.x+3,game.echo.y+3,game.echo.w-6,game.echo.h-6);ctx.clip();
  if(game.mode==='hybrid'&&game.vertical){ctx.strokeStyle='#683e7e';ctx.lineWidth=2;for(const x of verticalLanes(game)){ctx.beginPath();ctx.moveTo(x,a.y+4);ctx.lineTo(x,a.y+a.h-4);ctx.stroke();}}
