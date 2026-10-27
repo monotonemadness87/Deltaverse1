@@ -61,6 +61,8 @@ function build(g){
  // Rift's cataclysm: a lattice with one open column, orbiting blades, crossed cuts.
  const lattice=i=>{const aa=g.targetArena,s=g.soul,vertical=i%2===0,n=vertical?6:3,step=(vertical?aa.w:aa.h)/n,gap=clamp(Math.floor((vertical?s.x-aa.x:s.y-aa.y)/step),0,n-1);for(let k=0;k<n;k++)if(k!==gap)g.beam(vertical?aa.x+(k+.5)*step:aa.x+aa.w/2,vertical?aa.y+aa.h/2:aa.y+(k+.5)*step,vertical?Math.PI/2:0,Math.max(8,step-30),1.2,.3);};
  const orbit=(i,count=8,cx=384,cy=352,radius=96)=>{for(let k=0;k<count;k++)g.spawn({kind:'orbit',art:k%2?'sword':'eye',r:6,cx,cy,x:cx,y:cy,theta:i*.51+k*Math.PI*2/count,radius,spin:i%2?-1.2:1.2,release:1.8,delay:.6,life:4.6});g.emit('cue');};
+ // His own slash: a red band flickers across you, the screen cuts to static, and the gash is there when it comes back.
+ const slash=(i,at=g.soul)=>{g.spawn({kind:'beam',x:at.x,y:at.y,angle:(i%2?.62:-.62)+((i*37)%5-2)*.14,width:46,warning:.95*g.config.warning,live:.14,color:'slash'});g.emit('cue');};
  const rewind=(save,...loads)=>{g.at(save,()=>g.saveAttack());for(const t of loads)g.at(t,()=>g.loadAttack());};
  if(AMBIENT[p])for(const [i,t] of [g.duration*.38,g.duration*.72].entries())g.at(t,()=>g.say(AMBIENT[p][i+1],g.act===3?(i?9:4):i?4:2,3.2));
  if(p==='pellets'){
@@ -71,6 +73,7 @@ function build(g){
  }else if(p==='buttons'){
   each(.3,8.6,.95,i=>g.spawn({kind:'button',label:i%5===4?'MERCY':'FIGHT',x:a.x+30+(i*83)%(a.w-60),y:a.y-24,w:96,h:32,trap:true,vy:112*sp(),vx:i%2?38:-38,delay:.65,life:5}));each(1.5,8.6,2.4,vine);g.at(4,()=>cue('IT ALWAYS SAID FIGHT'));
  }else if(p==='mercy'){
+  each(2.2,9.4,2.8,slash);
   g.addTrap('MERCY',()=>({x:308,y:314,w:152,h:48}),'MERCY',null,11);each(.4,9.4,1,i=>g.spawn({kind:'button',label:i%3?'SPARE':'JUST ONCE',x:200+(i*97)%368,y:230,w:i%3?96:126,h:32,trap:true,vy:96*sp(),vx:Math.cos(i)*40,life:5,delay:.7}));each(1.6,9.6,2.3,i=>g.beam(g.soul.x,g.soul.y,i%2?0:Math.PI/2,16,1.18,.28));g.at(4.8,()=>{g.addTrap('HEAL',()=>({x:460,y:355,w:105,h:42}),'HEAL',null,6);g.face=9;cue('IT WORKED ONCE');});
  }else if(p==='face1'){
   each(.3,10.6,1.3,i=>g.ring(384,196,10,96,i*.4));each(.8,10.6,1.05,i=>count(i));each(8,11,.14,i=>spiral(i,2,112));
@@ -85,21 +88,26 @@ function build(g){
   rewind(2.8,6.2);
   each(.3,8.8,.94,i=>g.jaw(i));each(1.6,8.8,2.6,i=>g.aimed(i%2?160:608,300+(i%2)*100,4,113));
  }else if(p==='hands'){
+  each(3,9.6,3.2,slash);
   g.drift={x:a.x,y:a.y,amplitude:68,start:0};g.at(1,()=>g.setControls('reverse',5));g.at(7,()=>g.setControls('quarter',3.6));each(.7,9.8,1.2,i=>g.aimed(i%2?g.targetArena.x:g.targetArena.x+g.targetArena.w,270+(i%3)*65,3,113));each(2.2,9.8,3,vine);
  }else if(p==='name'){
+  each(5,9,3,slash);
   rewind(2.4,5.6,8);
   each(.3,8.8,.76,i=>words(i,['SETH','LV 10','LOVE','DUST','EXP']));each(1.6,8.8,2.6,i=>g.beam(g.soul.x,g.soul.y,i%2?Math.PI/4:-Math.PI/4,12,1.25,.25));g.at(3.6,()=>{g.fakeHp=true;cue('HP: MINE');});g.at(6.8,()=>g.fakeHp=false);
  }else if(p==='screen'){
+  each(4,9.6,3.4,slash);
   g.well=25;each(.2,9.6,1.45,i=>g.ring(384,320,13,93,i*.31));each(1.8,9.6,2.6,crossed);[3.4,7].forEach(t=>g.at(t,()=>{g.mirror=!g.mirror;g.invulnerability=Math.max(g.invulnerability,.6);cue(g.mirror?'NOBODY IN THE GLASS':'THE GLASS TURNS BACK');g.emit('warp');}));
  }else if(p==='delete'){
   lanes();each(.4,9.8,.87,i=>g.spawn({kind:'hand',x:i%2?g.arena.x-24:g.arena.x+g.arena.w+24,y:[286,358,430][i%3],w:45,h:24,vx:(i%2?1:-1)*161*sp(),life:4,delay:.5}));each(1.6,9.8,2.5,i=>words(i,['MERCY','SPARE','MERCY']));g.at(7.6,()=>{g.blocked='';cue('UP RESTORED. MERCY ISN’T.');});
  }else if(p==='over'){
+  g.at(2.6,()=>slash(1));
   each(.3,3.2,1.1,i=>g.aimed(i%2?195:570,250,5,123));g.at(4.4,()=>g.beginFakeOver(4.6));each(9.4,12.2,.9,i=>g.jaw(i));
  }else if(p==='you'){
   rewind(3,6.6);
   dual();each(.4,10,.9,i=>{const aa=i%2?g.echo:g.arena,s=i%2?g.echoSoul():g.soul;g.aimed(aa.x+aa.w/2,aa.y-15,3,113);for(const seed of g.bullets.slice(-3)){const theta=Math.atan2(s.y-seed.y,s.x-seed.x);seed.vx=Math.cos(theta)*112*sp();seed.vy=Math.sin(theta)*112*sp();}});each(1.8,10,2.8,crossed);
  // ---- Act three: inside him. ----
  }else if(p==='body'){
+  each(15,17.4,1.2,slash);
   rewind(5,9.6,15.6);
   // Vines lashing in from the dark, petals, jaw, arms; then all of it.
   const lash=i=>{const e={x:i%2?800:-32,y:200+(i*53)%110},s=g.soul;g.beam(s.x,s.y,Math.atan2(s.y-e.y,s.x-e.x),14,.95,.3);};
@@ -116,7 +124,7 @@ function build(g){
   // RIFT’s cataclysm: the room is a knife, then the crown’s orbit, then two hearts.
   g.replay='cataclysm';g.changeArena({x:150,y:252,w:468,h:212});
   g.every(.3,5.8,1.5,lattice);g.every(.8,5.8,1.1,i=>riftTargeted(g,i));
-  g.at(6.4,()=>{g.changeArena({x:258,y:226,w:252,h:252});g.circle=true;g.soul.x=472;g.soul.y=352;cue('KEEP CIRCLING',2);});g.every(7,12.6,1.9,i=>orbit(i));g.every(7.8,12.6,2.6,i=>g.spawn({kind:'beam',x:384,y:352,angle:i*.71,width:9,warning:1.1*g.config.warning,live:1.3,spin:i%2?-.45:.45}));
+  g.at(6.4,()=>{g.breakBox({x:258,y:226,w:252,h:252});g.circle=true;g.soul.x=472;g.soul.y=352;cue('KEEP CIRCLING',2);});g.every(7,12.6,1.9,i=>orbit(i));g.every(7.8,12.6,2.6,i=>g.spawn({kind:'beam',x:384,y:352,angle:i*.71,width:9,warning:1.1*g.config.warning,live:1.3,spin:i%2?-.45:.45}));
   g.at(13,()=>{dual();cue('OPPOSITE HEARTS',2);});g.every(13.5,19.4,1.3,i=>crossed(i));g.every(14,19.4,2.2,i=>riftVolley(g,i%2?g.echo.x+g.echo.w/2:g.arena.x+g.arena.w/2,g.arena.y-10,9,82,i*.3));
  }else if(p==='gerson'){
   rewind(3.2,5.6);
@@ -124,7 +132,7 @@ function build(g){
   g.replay='gerson';g.changeArena({x:264,y:258,w:240,h:200});
   g.every(.3,6.2,.52,i=>arrow(i));g.at(1,()=>cue('FOUR SIDES. NO SHIELD.',2));
   g.at(6.6,()=>cue('THE HAMMER TURNS THE BOX',2));g.every(6.8,12.8,2.1,i=>{g.angleTarget+=(i%2?-1:1)*Math.PI/2;g.effects.push({type:'swing',life:.3});g.emit('warp');for(let k=0;k<2;k++)shell(i*2+k);});g.every(7.4,12.8,1,i=>arrow(i+1,200));
-  g.at(13.2,()=>{g.changeArena({x:150,y:262,w:468,h:196},'purple');cue('BENT STRINGS',2);});g.every(13.6,19.4,.9,i=>{const aa=g.targetArena,lane=(i*2)%3;g.spawn({kind:'shell',r:12,x:aa.x+aa.w+18,y:[aa.y+36,aa.y+aa.h/2,aa.y+aa.h-36][lane],vx:-175*sp(),delay:.45,life:5});});g.every(14,19.4,1.2,i=>{const aa=g.targetArena,x=clamp(g.soul.x+((i%3)-1)*40,aa.x+16,aa.x+aa.w-16);g.spawn({kind:'arrow',x,y:aa.y-24,angle:Math.PI/2,w:10,h:40,vx:0,vy:230*sp(),delay:.6,life:4});});
+  g.at(13.2,()=>{g.breakBox({x:150,y:262,w:468,h:196},'purple');cue('BENT STRINGS',2);});g.every(13.6,19.4,.9,i=>{const aa=g.targetArena,lane=(i*2)%3;g.spawn({kind:'shell',r:12,x:aa.x+aa.w+18,y:[aa.y+36,aa.y+aa.h/2,aa.y+aa.h-36][lane],vx:-175*sp(),delay:.45,life:5});});g.every(14,19.4,1.2,i=>{const aa=g.targetArena,x=clamp(g.soul.x+((i%3)-1)*40,aa.x+16,aa.x+aa.w-16);g.spawn({kind:'arrow',x,y:aa.y-24,angle:Math.PI/2,w:10,h:40,vx:0,vy:230*sp(),delay:.6,life:4});});
  }else if(p==='neo'){
   // SPAMSON NEO: upright strings, receivers that fire down their lane, falling heads, one cannon sweep with a safe pocket.
   beginBroadcast(g,true);g.replay='neo';g.broadcast.phase='NO REFUNDS';cue('LEFT + RIGHT CHANGE STRINGS / Z SHOOTS',3);
@@ -142,19 +150,19 @@ function build(g){
   // SANS + ALPHYS: bones to jump, blasters around the box, the CORE’s blue and orange.
   g.replay='misery';g.changeArena({x:180,y:282,w:408,h:160},'blue');cue('JUMP',1.6);
   g.every(.4,6,.62,i=>bones(i));
-  g.at(6.4,()=>{g.changeArena({x:264,y:252,w:240,h:220});cue('BLASTERS',1.6);});g.every(6.8,12.8,.95,i=>blast(i));
-  g.at(13,()=>{g.changeArena({x:204,y:252,w:360,h:220});cue('BLUE: STAND STILL / ORANGE: MOVE',2.4);});g.every(13.4,19.4,1.5,coreBeam);g.every(14.2,19.4,2.2,i=>blast(i+3));
+  g.at(6.4,()=>{g.breakBox({x:264,y:252,w:240,h:220});cue('BLASTERS',1.6);});g.every(6.8,12.8,.95,i=>blast(i));
+  g.at(13,()=>{g.breakBox({x:204,y:252,w:360,h:220});cue('BLUE: STAND STILL / ORANGE: MOVE',2.4);});g.every(13.4,19.4,1.5,coreBeam);g.every(14.2,19.4,2.2,i=>blast(i+3));
  }else if(p==='last'){
   // His last gauntlet: everything he took from everyone, all at once. He doesn't beg. He LOADs it again.
   const lash=i=>{const e={x:i%2?800:-32,y:200+(i*53)%110},s=g.soul;g.beam(s.x,s.y,Math.atan2(s.y-e.y,s.x-e.x),14,.95,.3);};
   g.changeArena({x:168,y:250,w:432,h:216});each(.4,5.6,.9,i=>{lash(i);if(i%2)g.ring(384,300,10,104,i*.35);});
-  g.at(6,()=>{g.changeArena({x:96,y:266,w:576,h:196});cue('NO ENCORE',1.6);});each(6.4,10.4,1,i=>encoreCurtain(g,i,70));
-  g.at(10.8,()=>{g.changeArena({x:258,y:226,w:252,h:252});g.circle=true;g.soul.x=472;g.soul.y=352;cue('NO LITTLE LIGHT',1.6);});each(11.2,15,1.7,i=>orbit(i));
-  g.at(15.4,()=>{g.changeArena({x:264,y:258,w:240,h:200});cue('NO SHIELD',1.6);});each(15.8,20,.55,i=>arrow(i,220));
-  g.at(20.4,()=>{g.changeArena({x:120,y:262,w:528,h:196},'purple');g.lane=1;cue('NO NEST',1.6);});each(20.8,25,1.2,i=>procession(i,3,160));g.at(23,()=>pet(clamp(g.soul.x,180,588)));
-  g.at(25.4,()=>{g.changeArena({x:180,y:282,w:408,h:160},'blue');cue('NO ONE TO CATCH YOU',1.6);});each(25.8,29.6,.66,i=>bones(i,215));g.at(27.6,()=>blast(1));
+  g.at(6,()=>{g.breakBox({x:96,y:266,w:576,h:196});cue('NO ENCORE',1.6);});each(6.4,10.4,1,i=>encoreCurtain(g,i,70));
+  g.at(10.8,()=>{g.breakBox({x:258,y:226,w:252,h:252});g.circle=true;g.soul.x=472;g.soul.y=352;cue('NO LITTLE LIGHT',1.6);});each(11.2,15,1.7,i=>orbit(i));
+  g.at(15.4,()=>{g.breakBox({x:264,y:258,w:240,h:200});cue('NO SHIELD',1.6);});each(15.8,20,.55,i=>arrow(i,220));
+  g.at(20.4,()=>{g.breakBox({x:120,y:262,w:528,h:196},'purple');g.lane=1;cue('NO NEST',1.6);});each(20.8,25,1.2,i=>procession(i,3,160));g.at(23,()=>pet(clamp(g.soul.x,180,588)));
+  g.at(25.4,()=>{g.breakBox({x:180,y:282,w:408,h:160},'blue');cue('NO ONE TO CATCH YOU',1.6);});each(25.8,29.6,.66,i=>bones(i,215));g.at(27.6,()=>blast(1));
   g.at(30,()=>{dual();});each(30.4,34,.9,crossed);g.at(30.4,()=>g.saveAttack());g.at(33,()=>{g.say('Again.',6,2);g.loadAttack();});
-  g.at(34.4,()=>{g.changeArena({x:168,y:250,w:432,h:216});});each(34.8,39.6,.7,i=>{if(i%2)lash(i);else g.ring(384,300,12,110,i*.3);});
+  g.at(34.4,()=>{g.breakBox({x:168,y:250,w:432,h:216});});each(34.8,39.6,.7,i=>{if(i%2)lash(i);else g.ring(384,300,12,110,i*.3);});each(35.2,39.4,1.4,slash);each(.8,5.4,2.2,slash);
   g.at(37.6,()=>g.say('You were never getting out of here.',2,3));g.at(40.2,()=>{g.bullets=[];g.face=3;g.glitch(1,'LOAD');});
  }
 }

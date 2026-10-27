@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-10-27 — Flowey false genocide: static cuts
+
+The designer asked for the scary static cuts from the Tenna footage: hard cuts through static to something else, for his attacks, his slashes, breaking the box and cutting to past memories.
+
+- **Memory cuts:** every attack, chase and page opens with a hard cut. Static, then a frame of the past: grey, red-tinted and scanlined, with ▶ PLAY, a LOAD counter and a file caption. The frames:
+  - Aqua with her knife (FILE 6 — LAST PLAYMATE).
+  - Encore (THE RUINS) and Rift's crown (SNOWDIN).
+  - Gerson as he dusts (WATERFALL).
+  - Spamson (HOTLAND) and Muffet (THE NEST).
+  - Sans (THE CORE).
+  - Flowey's own face.
+  - Every mid-attack LOAD cuts to one of them too.
+- **His slashes:** a new attack. A red band with X marks flickers across you, the screen cuts to static and a gash, and when it comes back the white cut is there. The slashes appear in JUST ONCE, YOUR OWN HANDS, LOVE LETTER, NO ONE ON THE OTHER SIDE, NO SECOND MORNING, A SOUL THAT WILL NOT TEAR and COURSE CORRECTION.
+- **Breaking the box:** mid-attack box changes in Rift's cataclysm, Gerson, Sans + Alphys and every switch in COURSE CORRECTION now cut to static while the old box flies apart in pieces.
+- **The ending:** Seth's first slash and every third frenzy strike cut through the same static gash.
+- **Fairness:** the fight freezes for the length of every cut (0.08–0.5 s), so nothing hits you that you couldn't see. Measured pressure is unchanged, at about 1.4× the false-pacifist fight.
+- **Reduced motion:** static bookends become black frames, and the cut frames hold still.
+
 ## 2026-10-27 — Flowey false genocide: dire and hopeless
 
 The designer wanted this route far more dire and hopeless, a real demonstration of Flowey's anger and power. The false-pacifist Flowey was just bored.
