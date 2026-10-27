@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-27 — Flowey: the current Sans
+
+Both Flowey fights still drew Sans from the old single sprite sheet, from before the Sans rework. They now use the same assembled Sans as the Sans fights. That covers the pacifist NO PROMISE TO KEEP replay, the false-genocide MISERY WITHOUT COMPANY replay and the THE CORE memory cut. Bones and blasters come from the same module too. `tools/sync_sans_art.py` copies `sans.html`'s art into a Flowey file. Rerun it, then rebuild the false-genocide file, whenever Sans's art changes.
+
 ## 2026-10-27 — Flowey false genocide: static cuts
 
 The designer asked for the scary static cuts from the Tenna footage: hard cuts through static to something else, for his attacks, his slashes, breaking the box and cutting to past memories.
