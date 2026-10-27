@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-27 — Flowey false genocide: the omega (page) attacks aren't fatal
+
+Hits during a page phase (the "omega" attacks) can take Seth down to 1 HP, but never kill him or cost determination. Everything else in the fight is still fatal.
+
 ## 2026-10-27 — Flowey false genocide: pages like Omega Flowey, sprouting Floweys, RESIST to 2
 
 - **RESIST:** the guarded attack's hits now cost 2 on Normal (1 Gentle, 3 Hard), down from 4.

@@ -250,7 +250,7 @@ Only pacifist-route bosses return as replayed attacks. The six fragments are pag
   - THINK OF AQUA: +1 STOLEN PIE, 3 at most.
   - CHECK: shows determination.
 - **Seth's slash sound** plays on every strike of his final frenzy.
-- **Page phases** are Seth's Aqua-fight specials turned on him (PAGE STORM, MARGIN TRAP, SHELL PRESS, NEO BURST, WEB SCRIPT, OMEGA NOTEBOOK). The page is sealed in thorns for 9 s, then drifts; Z calls it from 12 s.
+- **Page phases** are Seth's Aqua-fight specials turned on him (PAGE STORM, MARGIN TRAP, SHELL PRESS, NEO BURST, WEB SCRIPT, OMEGA NOTEBOOK). The page is sealed in thorns for 9 s, then drifts; Z calls it from 12 s. These "omega" attacks are never fatal: they stop at 1 HP.
 - **Chase Floweys** use the designer's overworld sprite (`tools/flowey-genocide/art/overworld-flowey.png`) and sprout procedurally as they come into view.
 - **Glitch frames:** occasional laughing-face cuts; Muffet's frame is her CRUEL GLEE face.
 - **Seth survives** (still the designer's call to change). The king is still ahead.

@@ -84,7 +84,8 @@ e=rep(e,"if(p.face>=0&&/^Hee hee hee/.test(p.text))this.emit('laugh');","if(p.fa
 # Determination: each death spends one before the retry; with none left, he RESETs the whole fight.
 # It comes back in full the first time Seth reaches the final attack. ACTs are worth a turn.
 e=rep(e,"options(){return this.state==='act'?['REMEMBER','RESIST','CALL','CHECK']","options(){return this.state==='act'?['REMEMBER','RESIST','THINK OF AQUA','CHECK']")
-e=rep(e,"this.hp=Math.max(0,this.hp-this.config.damage);","this.hp=Math.max(0,this.hp-(this.guardRound===this.round?Math.max(1,Math.round(this.config.damage*.3)):this.config.damage));")
+# The page phases (his "omega" attacks) are never fatal: they can take Seth down to 1 HP, no further.
+e=rep(e,"this.hp=Math.max(0,this.hp-this.config.damage);","this.hp=Math.max(this.state==='memory'?1:0,this.hp-(this.guardRound===this.round?Math.max(1,Math.round(this.config.damage*.3)):this.config.damage));")
 e=rep(e,"retry(){if(this.state==='dead'&&(this.deathAge||0)<1.8)return;const c=this.checkpoint;","retry(){if(this.state==='dead'&&(this.deathAge||0)<1.8)return;if(this.dt<=0){this.reset();this.glitch(1.6,'RESET');this.message([line('Out of determination? Hee hee hee.',3),line('From the TOP.',2),...INTRO],'menu');return;}this.dt--;const c=this.checkpoint;")
 e=rep(e,"this.round=round;const a=PLAN[round-1];","this.round=round;const a=PLAN[round-1];if(a.id==='last'&&!this.lastRefill){this.lastRefill=true;this.dt=this.dtMax;this.effects.push({type:'revive',text:'YOUR DETERMINATION RETURNS',life:2.6});}")
 # Seth's slash sound on the first strike and every strike of the frenzy.
