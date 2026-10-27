@@ -116,10 +116,15 @@ function build(g){
   const sweep=i=>{const left=i%2===0,a2=g.arena,gap=a2.y+30+((i*61)%(a2.h-60)),x=left?a2.x-20:a2.x+a2.w+20;g.formCue={part:left?'armL':'armR',until:g.attackTime+1};for(const [y0,y1] of [[a2.y,gap-36],[gap+36,a2.y+a2.h]])if(y1>y0)g.spawn({kind:'thornbar',x,y:(y0+y1)/2,w:16,h:y1-y0,vx:(left?1:-1)*150*sp(),delay:.6,life:6});g.emit('cue');};
   each(.6,4.6,1.3,lash);each(4.4,8,1.3,petals);g.at(8.4,()=>bite(0));g.at(10.2,()=>bite(1));each(11.6,14.6,1.5,sweep);each(14.8,17.2,.8,i=>{if(i%2)lash(i);else petals(i);});
  }else if(p==='theatre'){
-  // ENCORE’s genocide house: the same curtains and spotlight waltz, narrower, with nobody in the seats.
+  // ENCORE's genocide house, from his own blood timeline: sweeping baton bars with one gap (NO OVERTURE),
+  // the four-way spotlight cross with cracked-mask wheels (DEAD CENTER), then curtain slabs from every wall (FOURTH WALL).
   g.replay='theatre';g.changeArena({x:96,y:266,w:576,h:196});
-  g.every(.25,5.2,.9,i=>encoreCurtain(g,i,66));g.at(6,()=>cue('A MILLION EMPTY SEATS',2));g.every(6.4,19,.74,i=>encoreSpotlight(g,i));g.every(9,18.4,1.8,i=>encoreCurtain(g,i,74));
-  g.at(12.5,()=>{g.setControls('reverse',3.4);cue('NO OVERTURE',2);});
+  const sweep=(i,gap=50)=>{const aa=g.targetArena,vertical=i%2===0,center=(vertical?aa.x+aa.w/2:aa.y+aa.h/2)+Math.sin(i*1.17)*(vertical?aa.w*.22:aa.h*.18),start=vertical?aa.x+4:aa.y+4,end=vertical?aa.x+aa.w-4:aa.y+aa.h-4;for(const [lo,hi] of [[start,center-gap/2],[center+gap/2,end]]){if(hi<=lo)continue;g.spawn({kind:'baton',x:vertical?(lo+hi)/2:aa.x-14,y:vertical?aa.y-14:(lo+hi)/2,w:vertical?hi-lo:9,h:vertical?9:hi-lo,vx:vertical?0:148*sp(),vy:vertical?148*sp():0,life:5});}};
+  const wheel=(i,count=10)=>{const aa=g.targetArena,x=i%2?aa.x-18:aa.x+aa.w+18,y=aa.y+aa.h/2;for(let k=0;k<count;k++){const th=k/count*Math.PI*2+i*.44;g.spawn({kind:'star',art:'cracked',r:4,x,y,vx:Math.cos(th)*108*sp(),vy:Math.sin(th)*108*sp(),delay:.55,life:5});}};
+  const slab=(side,depth=45,warning=.67,live=.25)=>{const aa=g.targetArena,vertical=side==='left'||side==='right',w=vertical?depth:aa.w-8,h=vertical?aa.h-8:depth,x=side==='left'?aa.x+depth/2:side==='right'?aa.x+aa.w-depth/2:aa.x+aa.w/2,y=side==='top'?aa.y+depth/2:side==='bottom'?aa.y+aa.h-depth/2:aa.y+aa.h/2;g.spawn({kind:'slab',x,y,w,h,warning:warning*g.config.warning,live,life:warning+live+.3});};
+  g.at(.1,()=>cue('NO OVERTURE',1.6));g.every(.2,6.4,.8,i=>sweep(i,50));g.every(2,6.4,2.8,()=>g.beam(g.soul.x,g.soul.y,Math.PI/4,12,.72,.22));
+  g.at(6.7,()=>cue('DEAD CENTER',1.6));g.every(6.8,13.2,.64,i=>{g.beam(g.soul.x,g.soul.y,[0,Math.PI/2,Math.PI/4,-Math.PI/4][i%4],14,.66,.25);if(i%4===3)wheel(i,10);});
+  g.at(13.5,()=>{g.breakBox({x:232,y:252,w:304,h:214});cue('FOURTH WALL',1.6);});g.every(13.8,19.4,.65,i=>slab(['left','top','right','bottom'][i%4],45,.67,.25));g.every(14.6,19.4,1.7,i=>g.beam(g.soul.x,g.soul.y,i%2?Math.PI/4:-Math.PI/4,10,.76,.22));
  }else if(p==='cataclysm'){
   // RIFT’s cataclysm: the room is a knife, then the crown’s orbit, then two hearts.
   g.replay='cataclysm';g.changeArena({x:150,y:252,w:468,h:212});
@@ -156,7 +161,7 @@ function build(g){
   // His last gauntlet: everything he took from everyone, all at once. He doesn't beg. He LOADs it again.
   const lash=i=>{const e={x:i%2?800:-32,y:200+(i*53)%110},s=g.soul;g.beam(s.x,s.y,Math.atan2(s.y-e.y,s.x-e.x),14,.95,.3);};
   g.changeArena({x:168,y:250,w:432,h:216});each(.4,5.6,.9,i=>{lash(i);if(i%2)g.ring(384,300,10,104,i*.35);});
-  g.at(6,()=>{g.breakBox({x:96,y:266,w:576,h:196});cue('NO ENCORE',1.6);});each(6.4,10.4,1,i=>encoreCurtain(g,i,70));
+  g.at(6,()=>{g.breakBox({x:96,y:266,w:576,h:196});cue('NO ENCORE',1.6);});each(6.4,10.4,1,i=>encoreCurtain(g,i,60));
   g.at(10.8,()=>{g.breakBox({x:258,y:226,w:252,h:252});g.circle=true;g.soul.x=472;g.soul.y=352;cue('NO LITTLE LIGHT',1.6);});each(11.2,15,1.7,i=>orbit(i));
   g.at(15.4,()=>{g.breakBox({x:264,y:258,w:240,h:200});cue('NO SHIELD',1.6);});each(15.8,20,.55,i=>arrow(i,220));
   g.at(20.4,()=>{g.breakBox({x:120,y:262,w:528,h:196},'purple');g.lane=1;cue('NO NEST',1.6);});each(20.8,25,1.2,i=>procession(i,3,160));g.at(23,()=>pet(clamp(g.soul.x,180,588)));

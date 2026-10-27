@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-10-27 — Flowey: every borrowed attack audited against its source fight; Checkmate trimmed
+
+After the Sans and blaster fixes, every module Flowey borrows was compared with the current source game, image by image and line by line.
+- **Encore (outdated, fixed):**
+  - Flowey still had Encore's early attack atlas, so his moving curtain bars were drawn as a stretched curtain picture. They now use `encore.html`'s current pixel-snapped atlas: baton bars 8 px wide (was 12), as in Encore.
+  - Encore's body sheet is now the current file.
+  - **False genocide:** THE EMPTIED THEATRE replayed Encore's *pacifist* waves. It now follows his genocide timeline: NO OVERTURE (sweeping baton bars with one gap, plus diagonal spotlights), DEAD CENTER (the four-way spotlight cross with cracked-mask wheels) and FOURTH WALL (curtain slabs from every wall, after the box breaks).
+- **Rift (fixed):** the crown and its blades now draw pixel-crisp at their on-screen size, as in `rift.html`, instead of the scaled-down sheet. Ported volleys now use Rift's current thinner count (80%, at least 5 shards).
+- **Mettalot (fixed):** the ghost is rebuilt at its exact pixel size from `mettalot.html`'s current art. It stays grey as a memory.
+- **Already current:** Spamton/Tenna (identical sprites and anchors), Gerson, Muffet and Alphys (cropped from today's games for the false genocide), and Rift's cataclysm patterns. Sans and the Gaster Blasters were fixed in the two previous entries.
+- **One tool for all of it:** `tools/sync_borrowed_art.py` replaces `sync_sans_art.py`. It copies Sans, the blasters, Rift, Mettalot and Encore into a Flowey file. Rerun it, then rebuild the false genocide, whenever any of those fights' art changes.
+- **Checkmate:** the false-genocide theme is trimmed to 0:02.5–2:24. That drops about 3 s of leading silence (the music starts at about 0:03) and the silent tail after 2:24, so it loops from the end of the song straight back to the start.
+
 ## 2026-10-27 — Flowey: the current Gaster Blasters
 
 Flowey's blasters still used the old animation: the skull popped in, a dashed line showed, then a flat white bar. They now run the Sans fights' own lifecycle, from the shared `blaster-beam.js`:
@@ -9,11 +22,11 @@ Flowey's blasters still used the old animation: the skull popped in, a dashed li
 - **Hits** follow the drawn beam, mouth taper included.
 - **Reduced motion:** no spin and no tremble.
 
-Both Flowey fights use it: the pacifist Sans replay, and the false genocide's Sans + Alphys replay and COURSE CORRECTION. `tools/sync_sans_art.py` now copies `blaster-beam.js` along with Sans's art.
+Both Flowey fights use it: the pacifist Sans replay, and the false genocide's Sans + Alphys replay and COURSE CORRECTION. `tools/sync_borrowed_art.py` now copies `blaster-beam.js` along with Sans's art.
 
 ## 2026-10-27 — Flowey: the current Sans
 
-Both Flowey fights still drew Sans from the old single sprite sheet, from before the Sans rework. They now use the same assembled Sans as the Sans fights. That covers the pacifist NO PROMISE TO KEEP replay, the false-genocide MISERY WITHOUT COMPANY replay and the THE CORE memory cut. Bones and blasters come from the same module too. `tools/sync_sans_art.py` copies `sans.html`'s art into a Flowey file. Rerun it, then rebuild the false-genocide file, whenever Sans's art changes.
+Both Flowey fights still drew Sans from the old single sprite sheet, from before the Sans rework. They now use the same assembled Sans as the Sans fights. That covers the pacifist NO PROMISE TO KEEP replay, the false-genocide MISERY WITHOUT COMPANY replay and the THE CORE memory cut. Bones and blasters come from the same module too. `tools/sync_borrowed_art.py` copies `sans.html`'s art into a Flowey file. Rerun it, then rebuild the false-genocide file, whenever Sans's art changes.
 
 ## 2026-10-27 — Flowey false genocide: static cuts
 
