@@ -22,13 +22,15 @@ const PLAN=[
  A('neo','A DEAL ALREADY BROKEN',21,BIG),{id:'page3',type:'memory',index:3},
  A('muffet','THE EMPTY NEST',20,BIG),{id:'page4',type:'memory',index:4},
  A('misery','MISERY WITHOUT COMPANY',20,BIG),{id:'page5',type:'memory',index:5},
- A('last','I CAN FIX THIS',42,BIG)
+ A('last','COURSE CORRECTION',42,BIG)
 ];
 const DARK_STEP=PLAN.findIndex(s=>s.type==='dark');
-// Replays keep their own boss's cadence; his own attacks repeat about a third more often than the false-pacifist fight.
+// He is not bored this time. His own attacks repeat about 40% more often than the false-pacifist fight, the replays 10% more often than their own games,
+// and the screen keeps breaking into static: he SAVEs and LOADs whenever he likes.
 const REPLAYS=['theatre','cataclysm','gerson','neo','muffet','misery'];
 function buildAttack(g){
- const every=g.every,scale=REPLAYS.includes(g.pattern)?1:.66;g.every=(s,e,d,fn)=>every.call(g,s,e,d*scale,fn);try{build(g);}finally{g.every=every;}
+ const every=g.every,scale=REPLAYS.includes(g.pattern)?.9:.6;g.every=(s,e,d,fn)=>every.call(g,s,e,d*scale,fn);try{build(g);}finally{g.every=every;}
+ if(g.scene!=='face')for(let t=1.7+(g.round%3)*.6;t<g.duration-1;t+=g.act===3?2.9:4.2)g.at(t,()=>g.glitch(g.act===3?.45:.3));
 }
 function build(g){
  const p=g.pattern,a=g.arena,each=(s,e,d,fn)=>g.every(s,e,d,fn),sp=()=>g.config.speed;
@@ -59,8 +61,10 @@ function build(g){
  // Rift's cataclysm: a lattice with one open column, orbiting blades, crossed cuts.
  const lattice=i=>{const aa=g.targetArena,s=g.soul,vertical=i%2===0,n=vertical?6:3,step=(vertical?aa.w:aa.h)/n,gap=clamp(Math.floor((vertical?s.x-aa.x:s.y-aa.y)/step),0,n-1);for(let k=0;k<n;k++)if(k!==gap)g.beam(vertical?aa.x+(k+.5)*step:aa.x+aa.w/2,vertical?aa.y+aa.h/2:aa.y+(k+.5)*step,vertical?Math.PI/2:0,Math.max(8,step-30),1.2,.3);};
  const orbit=(i,count=8,cx=384,cy=352,radius=96)=>{for(let k=0;k<count;k++)g.spawn({kind:'orbit',art:k%2?'sword':'eye',r:6,cx,cy,x:cx,y:cy,theta:i*.51+k*Math.PI*2/count,radius,spin:i%2?-1.2:1.2,release:1.8,delay:.6,life:4.6});g.emit('cue');};
+ const rewind=(save,...loads)=>{g.at(save,()=>g.saveAttack());for(const t of loads)g.at(t,()=>g.loadAttack());};
  if(AMBIENT[p])for(const [i,t] of [g.duration*.38,g.duration*.72].entries())g.at(t,()=>g.say(AMBIENT[p][i+1],g.act===3?(i?9:4):i?4:2,3.2));
  if(p==='pellets'){
+  rewind(4,7.4);
   each(.4,9.2,1.45,i=>fan(i,i%3===2?8:6,160));g.at(3.6,()=>closing(165,22,5,3,64));g.at(6.4,()=>closing(165,22,15,3,70));g.at(9,()=>closing(165,24,9,3,74));
  }else if(p==='save'){
   each(.2,9.6,.9,i=>g.aimed(i%2?a.x:a.x+a.w,a.y+25+(i%3)*70,3,131));each(.6,9.6,1.3,i=>words(i,['EXP','LV','LOVE','EXP']));g.at(2.6,()=>g.saveAttack());[5.2,8].forEach(t=>g.at(t,()=>g.loadAttack()));each(1.6,9.6,2.6,crossed);
@@ -75,12 +79,15 @@ function build(g){
  }else if(p==='face3'){
   each(.3,6.2,.16,i=>spiral(i,3,104));each(1,12,1.5,i=>{const s=g.soul;for(let k=-1;k<=1;k++){const t=Math.atan2(s.y-196,s.x-384)+k*.14;g.spawn({kind:'seed',r:5,x:384,y:196,vx:Math.cos(t)*165*sp(),vy:Math.sin(t)*165*sp(),delay:.45,life:4});}g.emit('cue');});each(6.6,11.8,.16,i=>spiral(-i,3,112));each(2,11.6,2.6,i=>{const left=i%2===0,gap=g.arena.y+40+(i*67)%(g.arena.h-80);for(let y=g.arena.y+14;y<g.arena.y+g.arena.h;y+=30)if(Math.abs(y-gap)>40)g.spawn({kind:'daisy',r:8,x:left?10:758,y,vx:(left?1:-1)*150*sp(),delay:.6,life:6});g.emit('cue');});each(3,11,2.4,i=>count(i,'DELETE'));
  }else if(p==='turn'){
+  rewind(2,7);
   each(.25,9.8,2.4,i=>{g.angleTarget+=(i%3===2?-1:1)*Math.PI/2;g.face=[1,3,2,6][i%4];cue('TURN');});each(.8,9.8,1.6,i=>g.ring(384,346,8,77,i*.31));each(1.4,9.8,2.8,i=>g.aimed(i%2?a.x-20:a.x+a.w+20,a.y+a.h/2,3,120));g.at(4.9,()=>g.setControls('quarter',4));
  }else if(p==='mouth'){
+  rewind(2.8,6.2);
   each(.3,8.8,.94,i=>g.jaw(i));each(1.6,8.8,2.6,i=>g.aimed(i%2?160:608,300+(i%2)*100,4,113));
  }else if(p==='hands'){
   g.drift={x:a.x,y:a.y,amplitude:68,start:0};g.at(1,()=>g.setControls('reverse',5));g.at(7,()=>g.setControls('quarter',3.6));each(.7,9.8,1.2,i=>g.aimed(i%2?g.targetArena.x:g.targetArena.x+g.targetArena.w,270+(i%3)*65,3,113));each(2.2,9.8,3,vine);
  }else if(p==='name'){
+  rewind(2.4,5.6,8);
   each(.3,8.8,.76,i=>words(i,['SETH','LV 10','LOVE','DUST','EXP']));each(1.6,8.8,2.6,i=>g.beam(g.soul.x,g.soul.y,i%2?Math.PI/4:-Math.PI/4,12,1.25,.25));g.at(3.6,()=>{g.fakeHp=true;cue('HP: MINE');});g.at(6.8,()=>g.fakeHp=false);
  }else if(p==='screen'){
   g.well=25;each(.2,9.6,1.45,i=>g.ring(384,320,13,93,i*.31));each(1.8,9.6,2.6,crossed);[3.4,7].forEach(t=>g.at(t,()=>{g.mirror=!g.mirror;g.invulnerability=Math.max(g.invulnerability,.6);cue(g.mirror?'NOBODY IN THE GLASS':'THE GLASS TURNS BACK');g.emit('warp');}));
@@ -89,9 +96,11 @@ function build(g){
  }else if(p==='over'){
   each(.3,3.2,1.1,i=>g.aimed(i%2?195:570,250,5,123));g.at(4.4,()=>g.beginFakeOver(4.6));each(9.4,12.2,.9,i=>g.jaw(i));
  }else if(p==='you'){
+  rewind(3,6.6);
   dual();each(.4,10,.9,i=>{const aa=i%2?g.echo:g.arena,s=i%2?g.echoSoul():g.soul;g.aimed(aa.x+aa.w/2,aa.y-15,3,113);for(const seed of g.bullets.slice(-3)){const theta=Math.atan2(s.y-seed.y,s.x-seed.x);seed.vx=Math.cos(theta)*112*sp();seed.vy=Math.sin(theta)*112*sp();}});each(1.8,10,2.8,crossed);
  // ---- Act three: inside him. ----
  }else if(p==='body'){
+  rewind(5,9.6,15.6);
   // Vines lashing in from the dark, petals, jaw, arms; then all of it.
   const lash=i=>{const e={x:i%2?800:-32,y:200+(i*53)%110},s=g.soul;g.beam(s.x,s.y,Math.atan2(s.y-e.y,s.x-e.x),14,.95,.3);};
   const petals=i=>{for(let k=0;k<7;k++){const t=Math.PI*(.12+.76*k/6)+(i%2?.06:-.06),x=BODY.ring.x+Math.cos(t)*100,y=BODY.ring.y+Math.sin(t)*60;g.spawn({kind:'petal',r:6,x,y,vx:Math.cos(t)*120*sp(),vy:Math.sin(t)*120*sp(),delay:.5,life:5});}g.emit('cue');};
@@ -110,6 +119,7 @@ function build(g){
   g.at(6.4,()=>{g.changeArena({x:258,y:226,w:252,h:252});g.circle=true;g.soul.x=472;g.soul.y=352;cue('KEEP CIRCLING',2);});g.every(7,12.6,1.9,i=>orbit(i));g.every(7.8,12.6,2.6,i=>g.spawn({kind:'beam',x:384,y:352,angle:i*.71,width:9,warning:1.1*g.config.warning,live:1.3,spin:i%2?-.45:.45}));
   g.at(13,()=>{dual();cue('OPPOSITE HEARTS',2);});g.every(13.5,19.4,1.3,i=>crossed(i));g.every(14,19.4,2.2,i=>riftVolley(g,i%2?g.echo.x+g.echo.w/2:g.arena.x+g.arena.w/2,g.arena.y-10,9,82,i*.3));
  }else if(p==='gerson'){
+  rewind(3.2,5.6);
   // GERSON: arrows from four sides; the hammer turns the box and shells bounce; then shells on the strings.
   g.replay='gerson';g.changeArena({x:264,y:258,w:240,h:200});
   g.every(.3,6.2,.52,i=>arrow(i));g.at(1,()=>cue('FOUR SIDES. NO SHIELD.',2));
@@ -123,6 +133,7 @@ function build(g){
   g.at(9,()=>{g.bullets=[];g.sweepUntil=g.attackTime+3.5;spawnSweep(g,1);cue('SWEEP / GREEN POCKET IS SAFE',2.2);});
   g.at(19.6,()=>{g.bullets=[];g.broadcast.phase='OFF AIR';g.broadcast.overheat=1;});
  }else if(p==='muffet'){
+  rewind(6,9);
   // MUFFET: three strings, spiders in procession, donuts on the off-beats, the pet eating a column.
   g.replay='muffet';g.changeArena({x:120,y:262,w:528,h:196},'purple');g.lane=1;cue('FOLLOW THE SILK',2);
   g.every(.3,19,1.25,i=>procession(i,i%4===3?4:3,150+(i%3)*12));g.every(4,19,1.9,donut);
@@ -134,7 +145,7 @@ function build(g){
   g.at(6.4,()=>{g.changeArena({x:264,y:252,w:240,h:220});cue('BLASTERS',1.6);});g.every(6.8,12.8,.95,i=>blast(i));
   g.at(13,()=>{g.changeArena({x:204,y:252,w:360,h:220});cue('BLUE: STAND STILL / ORANGE: MOVE',2.4);});g.every(13.4,19.4,1.5,coreBeam);g.every(14.2,19.4,2.2,i=>blast(i+3));
  }else if(p==='last'){
-  // His last gauntlet: everything he took from everyone, all at once, and then he begs.
+  // His last gauntlet: everything he took from everyone, all at once. He doesn't beg. He LOADs it again.
   const lash=i=>{const e={x:i%2?800:-32,y:200+(i*53)%110},s=g.soul;g.beam(s.x,s.y,Math.atan2(s.y-e.y,s.x-e.x),14,.95,.3);};
   g.changeArena({x:168,y:250,w:432,h:216});each(.4,5.6,.9,i=>{lash(i);if(i%2)g.ring(384,300,10,104,i*.35);});
   g.at(6,()=>{g.changeArena({x:96,y:266,w:576,h:196});cue('NO ENCORE',1.6);});each(6.4,10.4,1,i=>encoreCurtain(g,i,70));
@@ -142,9 +153,9 @@ function build(g){
   g.at(15.4,()=>{g.changeArena({x:264,y:258,w:240,h:200});cue('NO SHIELD',1.6);});each(15.8,20,.55,i=>arrow(i,220));
   g.at(20.4,()=>{g.changeArena({x:120,y:262,w:528,h:196},'purple');g.lane=1;cue('NO NEST',1.6);});each(20.8,25,1.2,i=>procession(i,3,160));g.at(23,()=>pet(clamp(g.soul.x,180,588)));
   g.at(25.4,()=>{g.changeArena({x:180,y:282,w:408,h:160},'blue');cue('NO ONE TO CATCH YOU',1.6);});each(25.8,29.6,.66,i=>bones(i,215));g.at(27.6,()=>blast(1));
-  g.at(30,()=>{dual();});each(30.4,34,.9,crossed);g.at(33,()=>g.say('I CAN FIX THIS!',9,3));
+  g.at(30,()=>{dual();});each(30.4,34,.9,crossed);g.at(30.4,()=>g.saveAttack());g.at(33,()=>{g.say('Again.',6,2);g.loadAttack();});
   g.at(34.4,()=>{g.changeArena({x:168,y:250,w:432,h:216});});each(34.8,39.6,.7,i=>{if(i%2)lash(i);else g.ring(384,300,12,110,i*.3);});
-  g.at(38.4,()=>{g.face=11;g.say('Please.',11,3);});g.at(40.2,()=>{g.bullets=[];g.face=11;});
+  g.at(37.6,()=>g.say('You were never getting out of here.',2,3));g.at(40.2,()=>{g.bullets=[];g.face=3;g.glitch(1,'LOAD');});
  }
 }
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));

@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-10-27 — Flowey false genocide: dire and hopeless
+
+The designer wanted this route far more dire and hopeless, a real demonstration of Flowey's anger and power. The false-pacifist Flowey was just bored.
+
+- **Music:** the designer's supplied track (Inverted Fate "Checkmate") is the theme.
+- **Script rewrite:** cruel and sardonic.
+  - **The partnership:** he manipulated it; he put Seth and Aqua in each other's paths and held every door. They were hopeless little brats who needed his help, then started getting stronger.
+  - **The resets:** he has run this over and over for his perfect ending, and he WILL get it. If they'd finished the job he'd have left them alone; now "This isn't a fight. It's course correction." Even if Seth wins, he'll just go back.
+  - **The last attack** is now COURSE CORRECTION. He no longer begs anywhere.
+- **Static:**
+  - Every SAVE and LOAD, rig, rug, death retry, chase LOAD and act change tears the screen with static, torn rows and a hiss.
+  - LOADs count up from #4,813.
+  - Mid-attack he SAVEs, then LOADs you and every bullet back, in eight attacks plus the finale.
+  - Inside him, the static never really stops.
+- **Chases:** crowds of laughing Floweys line the walls and throw aimed pellets.
+- **Harder:**
+  - His own attacks repeat about 40% more often than the false-pacifist fight's, and the replays 10% more often than in their own games.
+  - **Measured pressure** (share of HP per minute vs false pacifist): about 1.43× for a random dodger and 1.35× for a still player. The escapes now take about 25% more hits because of the Flowey crowd.
+- **The ending, rebuilt:**
+  - He taunts instead of pleading.
+  - The first slash really gets him (hundreds of damage, his hurt cry, the hurt frame).
+  - He laughs in Seth's face: "Sans was right, you know? You might as well have let Sans win. Aqua's gone. And Asgore's ahead..." Then YOU'RE ALREADY DEAD.
+  - Seth attacks over and over (16 strikes; Z swings sooner) through the wilt and dissolve frames until he's dust.
+  - Silence, then "Somewhere, a file is still saved." and THE FLOWER IS DUST.
+
 ## 2026-10-27 — Flowey: false genocide (the second neutral)
 
 The second Flowey version is built, as a FALSE GENOCIDE variant on the Flowey card (`games/flowey-genocide.html`). Seth killed everyone, then spared Aqua; she broke and ran. Flowey wants Seth gone so she gets her game back.

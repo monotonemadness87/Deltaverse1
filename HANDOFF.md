@@ -228,17 +228,24 @@ Three acts, following the designer's Undertale Yellow reference (`docs/reference
 
 Only pacifist-route bosses return as replayed attacks. The six fragments are pages from one Purple SOUL's life, not six human souls. Keep the functional false/moving commands, fake Game Over and stolen mechanics. Seth can deny him the soul; the body does not stand up and leave, and the king eventually receives it. Flowey uses his canon Undertale battle frames, here and in Gerson and Sans + Alphys; when talking, only his mouth moves. His supplied voice blip, evil blip, hurt cry and laugh are in the fight. His own line attacks are vines, not laser beams: a flickering warning, then the vine whips in from off-screen (never from his eyes or body); replayed bosses keep their own beam art. FIGHT must feel rewarding: in act one his health bar takes real damage until he rigs it at the end of each cycle (LOAD, extra zeros, your attack set to 0); in act three the hits stick. In act three he is his canon sprite, huge (5×), with original thorned vines behind him; the designer rejected an original creature design, so don't invent a new body for him.
 
-**False genocide (`flowey-genocide.html`).** Seth killed everyone, then spared Aqua at the end of Last Playmate. That spare shattered her point of view and she ran off somewhere in the Underground. Flowey thinks that if he gets rid of Seth, he can restore her confidence and put things back on track. Contract:
-- **The same three-act shape, a far worse nightmare.** He starts in his canon register ("Howdy", "golly", "hee hee"), cracks early, is pure fury by act three and begging at the end.
-- **Seth is LV 10 / 56 HP.** Attacks cost about 1.45× as much HP per minute as the false-pacifist fight (about 1.3× for a player who stands still). The chases (escapes) cost the same as before.
-- **The rigs are aimed at a killer:** his bar refills from Seth's EXP, then the bar is relabelled AQUA (hitting it anyway gets "...Huh. It didn't."), then ATK 0 / LOVE 0.
-- **The chase rooms are emptied:** drained of colour, with dust where the monsters were; Waterfall's hazards are Gerson's arrows.
-- **Only genocide bosses return in act three:** Encore's emptied theatre, Rift's cataclysm, Gerson, Spamson NEO, Muffet, and Sans + Alphys. Each uses its own game's mechanics and art; Flowey's own straight-line attacks stay vines.
-- **The six pages are Seth's route.** The last page is the spare. Once it is back, his strikes stop being pulled (×2.2 damage).
-- **It must end with Seth killing Flowey.** Seth tears out of him; Flowey is small again and pleads ("You can't kill me. I'm your—"). Only FIGHT works. The Notebook strike, his hurt cry, the wilt and dissolve frames, about 2 s of silence, then Seth's epilogue.
-- **Seth survives** (the designer's call is still open; flagged when the route was built). The king is still ahead.
+**False genocide (`flowey-genocide.html`).** Seth killed everyone, then spared Aqua at the end of Last Playmate. That spare shattered her point of view and she ran off somewhere in the Underground. Flowey has run this over and over, trying to get his perfect ending, and he WILL. He put Seth and Aqua in each other's paths and held every door. They were hopeless brats who needed his help, but they started getting stronger. If they had finished the job, he would have left them alone. Now it isn't a fight, it's course correction: even if Seth wins, he just goes back. The false-pacifist Flowey was bored; this one is furious. The designer wants this route dire, hopeless and overwhelming. Contract:
+- **Tone:** cruel and sardonic throughout, never begging. The theme is the designer's supplied track (Inverted Fate "Checkmate").
+- **Static:** every SAVE, LOAD, rig, rug, death retry, chase LOAD and act change tears the screen with static and a hiss. LOADs carry a counter in the thousands (`LOAD #4,813`…). He also SAVEs and LOADs inside attacks, rewinding Seth and every bullet.
+- **Seth is LV 10 / 56 HP:** attacks cost about 1.4× the false-pacifist fight's HP per minute.
+- **Chases:** crowds of laughing Floweys line the walls and throw aimed pellets. That makes the escapes about 25% harder than false pacifist; the designer asked for it.
+- **The rigs are aimed at a killer:** EXP → his HP, then a bar named AQUA ("...Huh. It didn't."), then ATK 0 / LOVE 0. The chase rooms are emptied, and act three replays only genocide bosses with their own mechanics and art. His own line attacks stay vines. The sixth page, the spare, makes Seth's strikes ×2.2.
+- **The ending must kill Flowey, in this order:**
+  1. Seth tears out of him.
+  2. Small again, Flowey taunts him ("Even if you win here? I'll just go back.").
+  3. Only FIGHT works.
+  4. The first slash really gets him.
+  5. He laughs in Seth's face: "Sans was right, you know? You might as well have let Sans win. Aqua's gone. And Asgore's ahead..."
+  6. YOU'RE ALREADY DEAD.
+  7. Seth, in anger, attacks over and over until he is dust (16 strikes; mashing Z swings sooner).
+  8. Silence, then the epilogue: "Somewhere, a file is still saved."
+- **Seth survives** (still the designer's call to change). The king is still ahead.
 
-The script is the designer-approved S-tier revision. Lines marked kept are verbatim. The sources and build script live in `tools/flowey-genocide/`: run `geno_assets.py` to recrop the replayed bosses' art from their own games, then `geno_build.py games/flowey.html games/flowey-genocide.html`.
+The script is the designer-approved S-tier revision. Lines marked kept are verbatim. The sources and build script live in `tools/flowey-genocide/`: run `geno_assets.py` to recrop the replayed bosses' art from their own games, then `geno_build.py games/flowey.html games/flowey-genocide.html`. `track.mp3` there is the route's supplied theme.
 
 ### Tenna/Spamson, Spamson NEO, Encore and Rift
 
