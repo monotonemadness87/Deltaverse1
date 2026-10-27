@@ -2,7 +2,13 @@
 
 ## 2026-10-27 — Flowey: vines instead of laser beams
 
-His own straight-line attacks now look like thorned vines lashing across the box instead of white laser beams. Lines, warnings and hitboxes are unchanged. This covers the crossed lines, the beams in his tricks and traps, and the eye attacks inside him, which grow out of his eye toward you. The warning is a pulsing green dotted line with a sprout at the edge. Replayed bosses keep their own beams: Encore's spotlight, Rift's, and Sans's blue and orange.
+His own straight-line attacks are now thorned vines instead of white laser beams. Lines, timings and hitboxes are unchanged.
+
+- **The warning** flickers along the line, as a blaster's does. It brightens as the strike nears; with reduced motion on, it's steady.
+- **The strike:** the vine whips in from off-screen, out of the dark, and draws back.
+- **Nothing on screen is the source.** Inside him, the vines come in from the sides rather than from his eyes or body.
+- **Coverage:** the crossed lines, the beams in his tricks and traps, and act three's vine strikes.
+- **Replayed bosses keep their own beams:** Encore's spotlight, Rift's, and Sans's blue and orange.
 
 ## 2026-10-24 — Flowey: mouths fly jaws-first
 

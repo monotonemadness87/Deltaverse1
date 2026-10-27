@@ -742,8 +742,8 @@ function build(g){
   dual();each(.4,10,.9,i=>{const aa=i%2?g.echo:g.arena,s=i%2?g.echoSoul():g.soul;g.aimed(aa.x+aa.w/2,aa.y-15,3,113);for(const seed of g.bullets.slice(-3)){const theta=Math.atan2(s.y-seed.y,s.x-seed.x);seed.vx=Math.cos(theta)*112*sp();seed.vy=Math.sin(theta)*112*sp();}});each(1.8,10,2.8,crossed);
  // ---- Act three: inside him. The box is gone; only its reach remains. ----
  }else if(p==='body'){
-  // His new body, one part at a time: eyes, petals, jaw, arms; then all of it.
-  const laser=i=>{const e=i%2?BODY.eyeR:BODY.eyeL,s=g.soul;g.formCue={part:i%2?'eyeR':'eyeL',until:g.attackTime+1};g.beam(e.x,e.y,Math.atan2(s.y-e.y,s.x-e.x),14,.95,.3);g.bullets.at(-1).fromOrigin=true;};
+  // His body, one part at a time: vines lashing in from the dark, petals, jaw, arms; then all of it.
+  const laser=i=>{const e={x:i%2?800:-32,y:200+(i*53)%110},s=g.soul;g.beam(s.x,s.y,Math.atan2(s.y-e.y,s.x-e.x),14,.95,.3);};
   const petals=i=>{for(let k=0;k<7;k++){const t=Math.PI*(.12+.76*k/6)+(i%2?.06:-.06),x=BODY.ring.x+Math.cos(t)*100,y=BODY.ring.y+Math.sin(t)*60;g.spawn({kind:'petal',r:6,x,y,vx:Math.cos(t)*120*sp(),vy:Math.sin(t)*120*sp(),delay:.5,life:5});}g.emit('cue');};
   const bite=i=>{g.formCue={part:'jaw',until:g.attackTime+1.4};const aa=g.arena,gap=(i*3)%6;for(let k=0;k<8;k++)if(k!==gap&&k!==gap+1)g.spawn({kind:'tooth',x:aa.x+aa.w*(k+.5)/8,y:BODY.jaw.y+30,w:20,h:26,vy:150*sp(),delay:.75,life:4});g.emit('cue');};
   const sweep=i=>{const left=i%2===0,a2=g.arena,gap=a2.y+30+((i*61)%(a2.h-60)),x=left?a2.x-20:a2.x+a2.w+20;g.formCue={part:left?'armL':'armR',until:g.attackTime+1};for(const [y0,y1] of [[a2.y,gap-36],[gap+36,a2.y+a2.h]])if(y1>y0)g.spawn({kind:'thornbar',x,y:(y0+y1)/2,w:16,h:y1-y0,vx:(left?1:-1)*150*sp(),delay:.6,life:6});g.emit('cue');};
@@ -1216,10 +1216,10 @@ function chaseView(){const c=game.chase,room=c.room,cam=game.camera||game.soul,o
  const sx=game.soul.x+ox,sy=game.soul.y+oy,v=ctx.createRadialGradient(sx,sy,120,sx,sy,380);v.addColorStop(0,'#0000');v.addColorStop(1,'#000e');ctx.fillStyle=v;ctx.fillRect(0,0,768,472);ctx.restore();
  if(c.room.title)text(c.room.title,24,16,1.6,'#bbb');if(c.flash>0){ctx.fillStyle='#fff';ctx.globalAlpha=reduceMotion?Math.min(.3,c.flash):Math.min(1,c.flash*2);ctx.fillRect(0,0,768,472);ctx.globalAlpha=1;}
  if(game.state==='warning')text(game.attackName,384,214,3,'#fff',true);}
-// A vine lash: a thin green warning line with a sprout at the edge, then a thorned vine whips across and draws back.
+// A vine lash: a flickering warning along the line (like a blaster's), then a thorned vine whips in from off-screen and draws back.
 function vineLash(b){const warn=b.age<b.warning,t=b.age-b.warning,w=Math.max(10,b.width),fade=t>b.live?Math.max(0,1-(t-b.live)/.18):1;ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.angle);
- if(warn){const u=b.age/b.warning,pulse=reduceMotion?.6:.45+.35*Math.sin(b.age*30);ctx.globalAlpha=pulse;ctx.strokeStyle='#4fae4b';ctx.lineWidth=1;ctx.setLineDash([7,5]);ctx.beginPath();ctx.moveTo(b.fromOrigin?0:-850,0);ctx.lineTo(850,0);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=.35*u;ctx.fillStyle='#4fae4b';ctx.fillRect(b.fromOrigin?0:-850,-w/2,b.fromOrigin?850:1700,w);ctx.globalAlpha=1;const wob=reduceMotion?0:Math.sin(b.age*40)*2,sx=b.fromOrigin?0:-470;ctx.fillStyle='#4fae4b';ctx.fillRect(sx,-6+wob,8,12);ctx.fillStyle='#e9f5df';ctx.fillRect(sx+4,-9+wob,3,3);ctx.restore();return;}
- const start=b.fromOrigin?0:-850,grow=reduceMotion?1:Math.min(1,t/.1),len=(850-start)*grow,x0=start,x1=x0+len,v=Math.round(Math.max(18,w*1.4));ctx.globalAlpha=fade;
+ if(warn){const on=reduceMotion||Math.floor(b.age*15)%2===0,late=b.age>b.warning*.6;ctx.globalAlpha=on?(late?.95:.6):.15;ctx.strokeStyle=late?'#9dff7a':'#4fae4b';ctx.lineWidth=late?2:1;ctx.beginPath();ctx.moveTo(-850,-w/2);ctx.lineTo(850,-w/2);ctx.moveTo(-850,w/2);ctx.lineTo(850,w/2);ctx.stroke();ctx.restore();return;}
+ const grow=reduceMotion?1:Math.min(1,t/.1),len=1700*grow,x0=-850,x1=x0+len,v=Math.round(Math.max(18,w*1.4));ctx.globalAlpha=fade;
  ctx.fillStyle='#0a0612';ctx.fillRect(x0,-v/2-2,len,v+4);ctx.fillStyle='#3b8f3c';ctx.fillRect(x0,-v/2,len,v);ctx.fillStyle='#6fcf5e';ctx.fillRect(x0,-v/2+2,len,Math.round(v*.35));ctx.fillStyle='#24602a';ctx.fillRect(x0,v/2-4,len,3);
  for(let x=x0+12;x<x1-8;x+=20){const up=((x-x0)/20|0)%2;ctx.fillStyle='#0a0612';ctx.fillRect(x-1,up?-v/2-9:v/2,6,9);ctx.fillStyle='#e9f5df';ctx.fillRect(x,up?-v/2-8:v/2,4,7);}
  ctx.fillStyle='#6fcf5e';ctx.fillRect(x1-8,-v/2-4,10,v+8);ctx.restore();}
