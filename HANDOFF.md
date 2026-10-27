@@ -243,6 +243,13 @@ Only pacifist-route bosses return as replayed attacks. The six fragments are pag
   6. YOU'RE ALREADY DEAD.
   7. Seth, in anger, attacks over and over until he is dust (16 strikes; mashing Z swings sooner).
   8. Silence, then the epilogue: "Somewhere, a file is still saved."
+- **Determination:** 5 points, internal (shown only on GAME OVER and in CHECK). Each death spends one; dying with none RESETs the fight to the intro. It refills once, on first reaching COURSE CORRECTION.
+- **ACTs:**
+  - REMEMBER: +1 determination, at most every 4 turns.
+  - RESIST: the next attack costs 40% less.
+  - THINK OF AQUA: +1 STOLEN PIE, 3 at most.
+  - CHECK: shows determination.
+- **Seth's slash sound** plays on every strike of his final frenzy.
 - **Seth survives** (still the designer's call to change). The king is still ahead.
 
 The script is the designer-approved S-tier revision. Lines marked kept are verbatim. The sources and build script live in `tools/flowey-genocide/`: run `geno_assets.py` to recrop the replayed bosses' art from their own games, then `geno_build.py games/flowey.html games/flowey-genocide.html`. `track.mp3` there is the route's supplied theme (Checkmate), trimmed to 0:02.5–2:24 so it loops cleanly.

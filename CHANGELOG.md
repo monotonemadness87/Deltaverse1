@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-10-27 — Flowey false genocide: determination, ACTs that matter, Seth's slash
+
+- **Seth's slash:** the supplied slash sound plays on his first strike at the end and on every strike of the frenzy after it.
+- **Determination (an internal meter, 5 points):**
+  - Each death spends one before the checkpoint retry. Die with none left and Flowey RESETs the whole fight to the intro ("Out of determination? Hee hee hee. From the TOP.").
+  - It refills in full the first time Seth reaches COURSE CORRECTION. Retrying the final attack doesn't refill it again.
+  - It isn't on the HUD. The GAME OVER screen shows DETERMINATION n / 5, or YOUR DETERMINATION IS GONE with START OVER, and CHECK shows it too.
+- **ACTs now do something:**
+  - **REMEMBER:** +1 determination, at most once every 4 turns. Inside him it still calls the page back.
+  - **RESIST:** the next attack's hits cost 40% less (7 → 4 on Normal).
+  - **THINK OF AQUA** (was CALL): adds a STOLEN PIE (28 HP) to your items, three times at most. Flowey hates it.
+  - **CHECK:** also shows your determination.
+- **Sound file:** `tools/flowey-genocide/sfx/slash.mp3`.
+
 ## 2026-10-27 — Flowey: swooshing vines, the yowl, and the laughing crowd
 
 From the designer's playtest.
