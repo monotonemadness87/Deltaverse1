@@ -21,7 +21,7 @@ for n,(x,y,w,h) in PROPS.items():save(P.crop((x,y,x+w,y+h)),n,h={'shell':30,'arr
 d,_=uri_after(t,'this.aquaKnife=img(');save(Image.open(io.BytesIO(d)),'aqua',h=300)
 d,_=uri_after(t,'this.shock=img(');S=Image.open(io.BytesIO(d));save(S.crop((284,132,284+851,132+806)),'gersonDust',h=300)
 t=open(G+'muffet.html').read()
-for key,name,h in [('body/MUFFET_TURN.png','muffet',172),('props/spider-small.png','spider',26),('props/donut.png','donut',26),('props/spider-pet.png','pet',96)]:
+for key,name,h in [('body/MUFFET_TURN.png','muffet',172),('faces/MUFFET_CRUEL_GLEE.png','muffetFace',300),('props/spider-small.png','spider',26),('props/donut.png','donut',26),('props/spider-pet.png','pet',96)]:
     d,_=uri_after(t,'"%s":'%key);save(Image.open(io.BytesIO(d)),name,h=h)
 t=open(G+'sans-genocide.html').read()
 d,_=uri_after(t,'this.alphys=await Promise.all([load(');im=Image.open(io.BytesIO(d)).convert('RGBA')

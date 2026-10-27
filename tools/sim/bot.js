@@ -5,7 +5,7 @@ const GAMES_DIR = path.resolve(__dirname, '../../games');
 const GAMES = {
   encore: { cls: 'BattleEngine' }, rift: { cls: 'BattleEngine' }, lab: { cls: 'BattleEngine' },
   gerson: { cls: 'GersonBattle', nav1: true }, mettalot: { cls: 'ShowBattle' }, sans: { cls: 'Battle' }, 'sans-genocide': { cls: 'Battle' },
-  flowey: { cls: 'MindBattle' }, 'flowey-genocide': { cls: 'MindBattle' }, spamtenna: { cls: 'LobbyBattle', nav1: true }, 'spamson-neo': { cls: 'NeoBattle' },
+  flowey: { cls: 'MindBattle' }, 'flowey-genocide': { cls: 'MindBattle', seekPage: true }, spamtenna: { cls: 'LobbyBattle', nav1: true }, 'spamson-neo': { cls: 'NeoBattle' },
   aqua: { cls: 'AquaBattle', args: () => [{ memory: null, saveMemory: () => {}, finalOnly: false }] },
   'aqua-final': { cls: 'AquaBattle', file: 'aqua', args: () => [{ memory: null, saveMemory: () => {}, finalOnly: true }] },
 };
@@ -34,6 +34,8 @@ function run(name, { seed = 1, seconds = 600, invincible = false, dir = GAMES_DI
     if (st === 'dead' || st === 'dying' || st === 'gameover') { deadSince ??= t; if (t - deadSince > 2.6) { if (game.retry) call(() => game.retry()); else if (game.reset) call(() => game.reset()); else call(() => game.confirm()); deadSince = null; report.deaths++; } }
     else { deadSince = null; if (t >= nextAction) { const r = rand(); if (r < .6) call(() => game.confirm()); else if (r < .8) call(() => G.nav1 ? game.navigate(rand() < .5 ? -1 : 1) : game.navigate(rand() < .5 ? -1 : 1, 0)); else if (r < .87) call(() => game.back?.()); nextAction = t + .06 + rand() * .45; } }
     const input = { ...held, slow: false, fire, move: { x: (held.right ? 1 : 0) - (held.left ? 1 : 0), y: (held.down ? 1 : 0) - (held.up ? 1 : 0) }, shield };
+    // Pages that drift and must be shot can't be reached by random input: in a page phase, steer for the page once it is free.
+    if (G.seekPage && game.state === 'memory' && game.fragment && !game.fragment.sealed) { const f = game.fragment, s = game.soul; Object.assign(input, { right: f.x - s.x > 6, left: f.x - s.x < -6, down: game.mode !== 'yellow' && f.y - s.y > 6, up: game.mode !== 'yellow' && f.y - s.y < -6, fire: game.mode === 'yellow' && (t % 1.05) < .7 }); }
     if (call(() => game.update(dt, input)) === 'ERR') break;
     if (godMode && game.state !== 'dead' && Number.isFinite(game.hp) && Number.isFinite(game.maxHP) && game.hp > 0) game.hp = game.maxHP;
     game.drain?.();

@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-10-27 — Flowey false genocide: pages like Omega Flowey, sprouting Floweys, RESIST to 2
+
+- **RESIST:** the guarded attack's hits now cost 2 on Normal (1 Gentle, 3 Hard), down from 4.
+- **The pages are Seth's own specials, turned on him:** each page phase replays one of Seth's notebook specials from the Aqua fight in Flowey's petals, seeds, daisies and vines:
+
+  | Page | Special |
+  |---|---|
+  | THE EMPTY HOUSE | PAGE STORM: petal fans from two corners |
+  | THE BROKEN DOOR | MARGIN TRAP: seed walls closing from top and bottom with a margin, a vine down your column |
+  | NO EXPERIENCE | SHELL PRESS: daisy walls open at the floor or at jump height |
+  | THE UNFINISHED KILL | NEO BURST: a fan of vines from one side, plus seed walls |
+  | THE OTHER PLAYER | WEB SCRIPT: petal threads close all but one lane |
+  | THE SPARE | OMEGA NOTEBOOK: six emitters fanning petals while you shoot the page |
+
+- **Pages are earned, like Omega Flowey's souls:**
+  - The page starts sealed in a cage of thorns and tears free after 9 s (THE SPARE: 8 s, and 3 shots instead of 4), so you have to survive the special first. Before, walking straight to it took about a second.
+  - Once free it keeps drifting along the floor or its lane where the soul mode needs it, slower on THE SPARE so the shots can be aimed.
+  - Z calls it back from 12 s; REMEMBER's call comes at 13 s.
+- **Measured:** the pages now cost about 2.2× as much HP per minute as before (about 2.5× the false-pacifist pages), on par with the hardest replays. That's over the ±50% line, so it's flagged to the designer.
+- **Chase Floweys:** they now use the designer's overworld sprite (black kept inside its outline). Each one sprouts as it comes into view: a hole opens, the head peeks out squashed, it springs up past full height and settles, then bobs as it laughs and squashes when it throws. Only a fully grown Flowey throws. The sprout is drawn procedurally after the reference gif, which isn't bundled. Reduced motion: a short fade-in.
+- **Test bot:** in page phases the regression bot (`tools/sim/bot.js`) now steers for a freed page and fires charged shots at THE SPARE. Random input can't catch a drifting page, so without this the bot could no longer finish the fight.
+- **Glitches:**
+  - Now and then a static cut shows his laughing face, with one of the crowd laughs. This happens about every third static burst, and twice per page phase.
+  - Muffet's glitch frame now uses her CRUEL GLEE face instead of her full body.
+
 ## 2026-10-27 — Flowey false genocide: determination, ACTs that matter, Seth's slash
 
 - **Seth's slash:** the supplied slash sound plays on his first strike at the end and on every strike of the frenzy after it.

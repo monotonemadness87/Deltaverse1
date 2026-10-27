@@ -15,7 +15,8 @@ def get_module(name):
 def rep(s,old,new,count=1):
     n=s.count(old);assert n==count,(n,old[:100]);return s.replace(old,new)
 replace_module('story.js',rd('story.js'));replace_module('patterns.js',rd('patterns.js'))
-srcs={n:'data:image/png;base64,'+base64.b64encode(open(os.path.join(D,'assets',n+'.png'),'rb').read()).decode() for n in ['gerson0','gerson2','hammer','arrow','shell','muffet','spider','donut','pet','alphys','aqua','gersonDust']}
+srcs={n:'data:image/png;base64,'+base64.b64encode(open(os.path.join(D,'assets',n+'.png'),'rb').read()).decode() for n in ['gerson0','gerson2','hammer','arrow','shell','muffet','spider','donut','pet','alphys','aqua','gersonDust','muffetFace']}
+srcs['overworld']='data:image/png;base64,'+base64.b64encode(open(os.path.join(D,'art','overworld-flowey.png'),'rb').read()).decode()
 art=rd('geno-art.js').replace('__SOURCES__',json.dumps(srcs))
 a=t.find('modules["art-layout.js"]');t=t[:a]+art.rstrip('\n')+'\n'+t[a:]
 
@@ -83,12 +84,25 @@ e=rep(e,"if(p.face>=0&&/^Hee hee hee/.test(p.text))this.emit('laugh');","if(p.fa
 # Determination: each death spends one before the retry; with none left, he RESETs the whole fight.
 # It comes back in full the first time Seth reaches the final attack. ACTs are worth a turn.
 e=rep(e,"options(){return this.state==='act'?['REMEMBER','RESIST','CALL','CHECK']","options(){return this.state==='act'?['REMEMBER','RESIST','THINK OF AQUA','CHECK']")
-e=rep(e,"this.hp=Math.max(0,this.hp-this.config.damage);","this.hp=Math.max(0,this.hp-(this.guardRound===this.round?Math.max(1,Math.round(this.config.damage*.6)):this.config.damage));")
+e=rep(e,"this.hp=Math.max(0,this.hp-this.config.damage);","this.hp=Math.max(0,this.hp-(this.guardRound===this.round?Math.max(1,Math.round(this.config.damage*.3)):this.config.damage));")
 e=rep(e,"retry(){if(this.state==='dead'&&(this.deathAge||0)<1.8)return;const c=this.checkpoint;","retry(){if(this.state==='dead'&&(this.deathAge||0)<1.8)return;if(this.dt<=0){this.reset();this.glitch(1.6,'RESET');this.message([line('Out of determination? Hee hee hee.',3),line('From the TOP.',2),...INTRO],'menu');return;}this.dt--;const c=this.checkpoint;")
 e=rep(e,"this.round=round;const a=PLAN[round-1];","this.round=round;const a=PLAN[round-1];if(a.id==='last'&&!this.lastRefill){this.lastRefill=true;this.dt=this.dtMax;this.effects.push({type:'revive',text:'YOUR DETERMINATION RETURNS',life:2.6});}")
 # Seth's slash sound on the first strike and every strike of the frenzy.
 e=rep(e,"this.emit('enemyHurt');this.emit('strike');}","this.emit('enemyHurt');this.emit('sethSlash');this.emit('strike');}")
 e=rep(e,"dy:((this.rageHits*43)%60)});this.emit('enemyHurt');}","dy:((this.rageHits*43)%60)});this.emit('enemyHurt');this.emit('sethSlash');}")
+# The page phases: Seth's own specials, turned on him (patterns.js pageAttack), with a page that wanders until it is called.
+e=rep(e,'const {buildAttack,PLAN,DARK_STEP}=require("patterns.js");','const {buildAttack,PLAN,DARK_STEP,pageAttack}=require("patterns.js");')
+e=rep(e,"this.every(1.4,18,1.05,i=>{if(this.fragments[index])return;const a=this.arena;for(let k=0;k<4;k++)this.spawn({kind:'seed',x:a.x+30+(i*67+k*110)%(a.w-60),y:a.y-12,r:4,vx:Math.sin(i+k)*24,vy:78*this.config.speed,life:5});});this.every(2.5,18,2.6,i=>{if(this.fragments[index])return;const a=this.arena;this.aimed(i%2?a.x:a.x+a.w,a.y+20,3,135);});","pageAttack(this,index);")
+e=rep(e," callMemory(){if(!this.fragment||this.mode==='yellow')return;this.bullets=[];"," callMemory(){if(!this.fragment||this.mode==='yellow')return;this.fragment.called=true;this.bullets=[];")
+# His laughing face, now and then, through the static: with one of the crowd laughs.
+e=rep(e,"this.cutUntil=this.clock+dur;this.emit('static');}","this.cutUntil=this.clock+dur;this.emit('static');if(shot==='laugh')this.emit(Math.random()<.5?'crowdLaugh0':'crowdLaugh1');}")
+# Like Omega Flowey's souls, the page has to be earned: it is sealed in thorns for the first 9 s of the special,
+# then tears free and keeps wandering. Calling it (Z) opens at 12 s; REMEMBER's call comes at 13 s.
+e=rep(e,"if(this.fragment&&this.mode!=='yellow'&&Math.hypot(s.x-this.fragment.x,s.y-this.fragment.y)<this.fragment.r+9){this.recover();return;}","if(this.fragment&&!this.fragment.sealed&&this.mode!=='yellow'&&Math.hypot(s.x-this.fragment.x,s.y-this.fragment.y)<this.fragment.r+9){this.recover();return;}")
+e=rep(e,"if(this.fragment&&this.mode==='yellow'&&Math.hypot(shot.x-this.fragment.x,shot.y-this.fragment.y)<this.fragment.r+5)","if(this.fragment&&!this.fragment.sealed&&this.mode==='yellow'&&Math.hypot(shot.x-this.fragment.x,shot.y-this.fragment.y)<this.fragment.r+5)")
+e=rep(e,"if(this.memory>=0&&this.mode!=='yellow'&&this.attackTime>=7)this.callMemory();","if(this.memory>=0&&this.mode!=='yellow'&&this.attackTime>=12)this.callMemory();")
+e=rep(e,"this.at(11,()=>{if(this.assist){this.callMemory();this.assist=false;}});","this.at(13,()=>{if(this.assist){this.callMemory();this.assist=false;}});")
+e=rep(e,"this.at(7,()=>{if(this.mode!=='yellow'&&!this.fragments[index])this.effects.push({type:'control',text:'Z / CALL THE PAGE BACK',life:2.6});});","this.at(12,()=>{if(this.mode!=='yellow'&&!this.fragments[index])this.effects.push({type:'control',text:'Z / CALL THE PAGE BACK',life:2.6});});")
 replace_module('engine.js',e)
 
 # ---------------- chase rooms: his friends line the walls, laughing, and throw pellets ----------------
@@ -96,7 +110,7 @@ c=get_module('chase.js')
 c=rep(c,"c.rects=rects(c);c.total=c.legs.reduce((s,l)=>s+l.len,0);",
         "c.rects=rects(c);c.total=c.legs.reduce((s,l)=>s+l.len,0);c.floweys=[];for(let d=110,i=0;d<c.total-50;d+=88+((i*53)%60),i++){const p=pointAt(c,d),side=i%2?1:-1,off=WIDTH/2+30+((i*31)%26),x=p.x-p.leg.dy*off*side,y=p.y+p.leg.dx*off*side;if(c.rects.some(r=>x>r.x-22&&x<r.x+r.w+22&&y>r.y-22&&y<r.y+r.h+22))continue;c.floweys.push({x,y,phase:i*.37,thrown:-9});}c.nextThrow=1.5;")
 c=rep(c,"if(c.age>=c.next){c.next=c.age+(g.chaseMontage>=0?1.1:1.05);spawnAhead(g,c,s);}",
-        "if(c.age>=c.next){c.next=c.age+(g.chaseMontage>=0?1.1:1.05);spawnAhead(g,c,s);}\n if(c.floweys?.length&&c.age>=c.nextThrow){c.nextThrow=c.age+1.9;const near=c.floweys.filter(f=>{const d=Math.hypot(f.x-s.x,f.y-s.y);return d>90&&d<250;}),f=near[Math.floor(c.age*7)%Math.max(1,near.length)];if(f){f.thrown=c.age;const th=Math.atan2(s.y-(f.y-30),s.x-f.x);for(let k=-1;k<=1;k++)c.hazards.push({kind:'seed',x:f.x,y:f.y-30,vx:Math.cos(th+k*.26)*124*g.config.speed,vy:Math.sin(th+k*.26)*124*g.config.speed,age:0,delay:.5,life:2.6,r:5});}}\n if(c.floweys)for(const f of c.floweys){if(f.seen||Math.hypot(f.x-s.x,f.y-s.y)>300)continue;f.seen=true;if(c.age-(c.lastLaugh??-9)>.16){c.lastLaugh=c.age;c.laughs=(c.laughs||0)+1;g.emit('crowdLaugh'+c.laughs%2);}}")
+        "if(c.age>=c.next){c.next=c.age+(g.chaseMontage>=0?1.1:1.05);spawnAhead(g,c,s);}\n if(c.floweys?.length&&c.age>=c.nextThrow){c.nextThrow=c.age+1.9;const near=c.floweys.filter(f=>{const d=Math.hypot(f.x-s.x,f.y-s.y);return f.seen&&c.age-f.seenAt>1&&d>90&&d<250;}),f=near[Math.floor(c.age*7)%Math.max(1,near.length)];if(f){f.thrown=c.age;const th=Math.atan2(s.y-(f.y-32),s.x-f.x);for(let k=-1;k<=1;k++)c.hazards.push({kind:'seed',x:f.x,y:f.y-32,vx:Math.cos(th+k*.26)*124*g.config.speed,vy:Math.sin(th+k*.26)*124*g.config.speed,age:0,delay:.5,life:2.6,r:5});}}\n if(c.floweys)for(const f of c.floweys){if(f.seen||Math.hypot(f.x-s.x,f.y-s.y)>300)continue;f.seen=true;f.seenAt=c.age;if(c.age-(c.lastLaugh??-9)>.16){c.lastLaugh=c.age;c.laughs=(c.laughs||0)+1;g.emit('crowdLaugh'+c.laughs%2);}}")
 replace_module('chase.js',c)
 # ---------------- audio: the supplied track, and a burst of static ----------------
 au=get_module('audio.js')
@@ -167,14 +181,14 @@ function dust(t){if(t>1.5||t<0)return;ctx.save();ctx.fillStyle='#d8d8d8';ctx.glo
 // A vine lash:""")
 p=rep(p," if(game.paused){ctx.fillStyle='#000c';"," staticFX();\n if(game.paused){ctx.fillStyle='#000c';")
 p=rep(p," if(game.invulnerability<=0||Math.floor(game.clock*14)%2===0)heart(game.soul.x,game.soul.y,20,'purple');",
-        " for(const f of c.floweys||[]){if(f.x<vx0-40||f.x>vx1+40||f.y<vy0-40||f.y>vy1+90)continue;const threw=c.age-f.thrown<.5,laugh=Math.floor((reduceMotion?0:game.clock)*6+f.phase*10)%2;flowey.draw(ctx,threw?94:laugh?93:37,f.x,f.y,1);}\n if(game.invulnerability<=0||Math.floor(game.clock*14)%2===0)heart(game.soul.x,game.soul.y,20,'purple');")
+        " for(const f of c.floweys||[])if(f.seen&&!(f.x<vx0-40||f.x>vx1+40||f.y<vy0-40||f.y>vy1+90))sprout(f,c);\n if(game.invulnerability<=0||Math.floor(game.clock*14)%2===0)heart(game.soul.x,game.soul.y,20,'purple');")
 p=rep(p,"else if(e.type==='damage'){const y=(game.act===3?30:224)-(1.4-e.life)*18;text(e.text,384,y,3","else if(e.type==='damage'){const y=(game.plea?120:game.act===3?30:224)-(1.4-e.life)*18-(e.dy||0);text(e.text,384+(e.dx||0),y,3")
 p=rep(p,'const {MEMORIES}=require("story.js");','const {MEMORIES,VERDICT}=require("story.js");')
 p=rep(p,"audio.blip(game.act===3||[2,6,9,10].includes(game.face))","audio.blip(game.round>0||game.act===3||![0,1,3,8].includes(game.face))")
 # The cut on screen: static bookends, then the past in grey, red-tinted, VHS-captioned. Slashes are a white gash; a broken box flies apart.
 p=rep(p,"// Seth's frenzy:",r"""function noise(){if(noiseFrames)return noiseFrames;noiseFrames=[];for(let k=0;k<4;k++){const c=document.createElement('canvas');c.width=256;c.height=192;const x=c.getContext('2d'),img=x.createImageData(256,192);let s=k*7919+13;for(let i=0;i<img.data.length;i+=4){s=(s*16807)%2147483647;const v=(s>>7)&255;img.data[i]=img.data[i+1]=img.data[i+2]=v;img.data[i+3]=255;}x.putImageData(img,0,0);noiseFrames.push(c);}return noiseFrames;}
 function memoryShot(shot){const j=reduceMotion?0:Math.round(Math.sin(game.clock*61)*3);ctx.save();ctx.filter='grayscale(1) contrast(1.7) brightness('+({gerson:1.6,encore:1.9,spamson:1.4}[shot]||.95)+')';
- if(shot==='aqua')geno.draw('aqua',384+j,300,380,420);else if(shot==='gerson')geno.draw('gersonDust',384+j,300,420,420);else if(shot==='muffet')geno.draw('muffet',384+j,300,330,420);
+ if(shot==='aqua')geno.draw('aqua',384+j,300,380,420);else if(shot==='gerson')geno.draw('gersonDust',384+j,300,420,420);else if(shot==='muffet')geno.draw('muffetFace',384+j,290,420,420);else if(shot==='laugh'){ctx.filter='contrast(1.4)';flowey.draw(ctx,Math.floor(game.clock*11)%2?93:37,384+j,560,10);}
  else if(shot==='encore'&&encoreSprite.complete)ctx.drawImage(encoreSprite,420,0,690,1024,264+j,60,240,356);else if(shot==='crown')crownArt.pose(3,384+j,290,420);
  else if(shot==='sans')sansArt.sans(ctx,4,384+j,300,400);else if(shot==='spamson')spamArt.character(ctx,'spamson',384+j,110,330,'panic',true);
  else{ctx.filter='contrast(1.4)';flowey.draw(ctx,[10,37,9][Math.floor(game.cutFX.at*7)%3],384+j,560,10);}
@@ -197,6 +211,15 @@ p=p.replace("text('YOU STILL REMEMBER',384,323,2,'#a9b58c',true);","text(game.dt
 p=p.replace("text('RETURN',384,391,2,'#ffff00',true);","text(game.dt>0?'RETURN':'START OVER',384,391,2,'#ffff00',true);")
 assert p.count('YOUR DETERMINATION IS GONE')==2 and p.count("'START OVER'")==2
 p=rep(p,"list.push({id:'return',label:'Retry this encounter'","list.push({id:'return',label:game.dt>0?`Retry this encounter (determination ${game.dt} of ${game.dtMax})`:'Out of determination: start the fight over'")
+# The chase Floweys: the designer's overworld sprite. Each sprouts as it comes into view: a hole opens, the head peeks out squashed,
+# he springs up past full height and settles, then laughs (a bob) and squashes when he throws. Reduced motion: a short fade in.
+p=rep(p,"// Seth's frenzy:",r"""function sprout(f,c){const im=geno.images.overworld;if(!im?.complete||!im.naturalWidth)return;const t=c.age-f.seenAt,W=im.naturalWidth,H=im.naturalHeight;let sx=1,sy=1,alpha=1;
+ if(reduceMotion)alpha=Math.min(1,t/.3);else{const hole=Math.min(1,t/.18),r=Math.round(16*hole);ctx.fillStyle='#000';ctx.fillRect(Math.round(f.x-r),Math.round(f.y-3),r*2,5);ctx.fillStyle='#555';ctx.fillRect(Math.round(f.x-r),Math.round(f.y+2),r*2,1);
+  if(t<.18)return;if(t<.42){const u=(t-.18)/.24;sy=.22+.38*u;sx=1.35-.15*u;}else if(t<.62){const u=(t-.42)/.2;sy=.6+.65*Math.sin(u*Math.PI/2);sx=1.2-.35*u;}else if(t<.9){const u=(t-.62)/.28;sy=1.25-.25*u;sx=.85+.15*u;}}
+ const grown=t>=.9,bob=grown&&!reduceMotion?Math.round(Math.abs(Math.sin(game.clock*13+f.phase*7))*2):0;if(c.age-f.thrown<.3&&!reduceMotion){sx*=1.12;sy*=.88;}
+ const w=Math.round(W*sx),h=Math.round(H*sy);ctx.save();ctx.globalAlpha*=alpha;ctx.beginPath();ctx.rect(f.x-W,f.y-H*2,W*2,H*2);ctx.clip();ctx.imageSmoothingEnabled=false;ctx.drawImage(im,Math.round(f.x-w/2),Math.round(f.y-h-bob),w,h);ctx.restore();}
+// Seth's frenzy:""")
+p=rep(p,"if(game.fragment){const f=game.fragment,m=MEMORIES[game.memory];","if(game.fragment&&game.fragment.sealed){const f=game.fragment;ctx.save();ctx.fillStyle='#0a0612';for(let k=-1;k<=1;k++){ctx.fillRect(f.x+k*11-4,f.y-26,8,52);ctx.fillRect(f.x-26,f.y+k*11-4,52,8);}ctx.fillStyle='#3b8f3c';for(let k=-1;k<=1;k++){ctx.fillRect(f.x+k*11-3,f.y-25,6,50);ctx.fillRect(f.x-25,f.y+k*11-3,50,6);}ctx.fillStyle='#e9f5df';for(let k=-2;k<=2;k++){ctx.fillRect(f.x+k*10-1,f.y-29,2,4);ctx.fillRect(f.x-29,f.y+k*10-1,4,2);}ctx.restore();}\n if(game.fragment){const f=game.fragment,m=MEMORIES[game.memory];")
 t=t[:m]+p
 t=rep(t,'<title>FLOWEY — Inside Your Best Friend</title>','<title>FLOWEY — False Genocide</title>')
 t=rep(t,'content="Flowey wants your soul. His rigged battle, the rooms you walked through, and then the inside of the flower: six pages of yourself to recover."','content="You killed everyone, then spared her. Flowey wants you gone so she gets her game back. The emptied rooms, the bosses you killed, and the flower that has to die."')

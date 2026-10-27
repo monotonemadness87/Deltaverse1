@@ -11,6 +11,8 @@ python3 -I tools/flowey-genocide/geno_build.py games/flowey.html games/flowey-ge
 - `patterns.js`: the fight plan; the genocide replays live in its `build()`.
 - `geno-art.js`: the art module; the build fills in the cropped PNGs.
 - `track.mp3`: the designer's supplied theme for this route (Inverted Fate "Checkmate"); the build embeds it.
+- `art/overworld-flowey.png`: the designer's overworld Flowey for the chases, cleaned from their screenshot (black kept inside the outline).
+- `sfx/`: the designer's supplied sounds (laughs, yowl, Seth's slash), cover art stripped.
 - `geno_build.py`: the engine and page patches. Each replacement asserts that it matched exactly once.
 
 Rebuild the genocide file whenever `games/flowey.html` changes.

@@ -30,7 +30,7 @@ const DARK_STEP=PLAN.findIndex(s=>s.type==='dark');
 const REPLAYS=['theatre','cataclysm','gerson','neo','muffet','misery'];
 function buildAttack(g){
  const every=g.every,scale=REPLAYS.includes(g.pattern)?.9:.6;g.every=(s,e,d,fn)=>every.call(g,s,e,d*scale,fn);try{build(g);}finally{g.every=every;}
- if(g.scene!=='face')for(let t=1.7+(g.round%3)*.6;t<g.duration-1;t+=g.act===3?2.9:4.2)g.at(t,()=>g.glitch(g.act===3?.45:.3));
+ if(g.scene!=='face')for(let t=1.7+(g.round%3)*.6,k=0;t<g.duration-1;t+=g.act===3?2.9:4.2,k++){g.at(t,()=>g.glitch(g.act===3?.45:.3));if((k+g.round)%3===1)g.at(t+.6,()=>g.cut('memory',.2,'laugh',''));}
 }
 function build(g){
  const p=g.pattern,a=g.arena,each=(s,e,d,fn)=>g.every(s,e,d,fn),sp=()=>g.config.speed;
@@ -171,8 +171,44 @@ function build(g){
   g.at(37.6,()=>g.say('You were never getting out of here.',2,3));g.at(40.2,()=>{g.bullets=[];g.face=3;g.glitch(1,'LOAD');});
  }
 }
+// The six pages are Seth's own notebook specials from the Aqua fight, turned on him: Flowey has read the notebook.
+// Each is the special's geometry in his petals, seeds, daisies and vines, and the page itself drifts out of reach.
+const PAGE_SPECIALS=['PAGE STORM','MARGIN TRAP','SHELL PRESS','NEO BURST','WEB SCRIPT','OMEGA NOTEBOOK'];
+function pageAttack(g,index){
+ const a=g.arena,sp=()=>g.config.speed,s=()=>g.soul,open=()=>!g.fragments[index],cx=a.x+a.w/2,cy=a.y+a.h/2;
+ const petal=(x,y,ang,speed,delay=.4)=>g.spawn({kind:'petal',r:6,x,y,vx:Math.cos(ang)*speed*sp(),vy:Math.sin(ang)*speed*sp(),delay,life:5});
+ const seed=(x,y,vx,vy,delay=.35)=>g.spawn({kind:'seed',r:6,x,y,vx:vx*sp(),vy:vy*sp(),delay,life:5});
+ const run=(start,interval,fn)=>g.every(start,18,interval,i=>{if(!open())return;fn(i);g.emit('cue');});
+ g.at(.3,()=>g.effects.push({type:'control',text:PAGE_SPECIALS[index]+' / HIS NOW',life:2.4}));
+ for(const t of [5.5,12.5])g.at(t,()=>{if(open())g.cut('memory',.2,'laugh','');});
+ // The page will not hold still: it wanders the box (along the floor or its lane where the soul is bound), until it is called.
+ g.every(.05,18,.05,()=>{const f=g.fragment;if(!f||f.called)return;const t=g.attackTime,amp=index===5?.2:.3,rate=index===5?.55:.85;f.x=cx+Math.sin(t*rate+index)*a.w*amp;if(index!==2&&index!==4)f.y=cy+Math.sin(t*1.25+index*2)*a.h*.26;});
+ if(g.fragment){g.fragment.sealed=true;if(index===5)g.fragment.hp=3;g.at(index===5?8:9,()=>{if(!g.fragment)return;g.fragment.sealed=false;g.glitch(.8,'TORN FREE');g.effects.push({type:'control',text:'THE PAGE TEARS FREE / CATCH IT',life:2.4});});}
+ let flip=1;
+ if(index===0){
+  // PAGE STORM: two corners fan petals at you, one a beat behind the other.
+  const src=[{x:a.x+14,y:a.y+20},{x:a.x+a.w-14,y:a.y+a.h-20}];
+  run(1.2,1,i=>{const p=src[i%2],o=src[(i+1)%2],th=Math.atan2(s().y-p.y,s().x-p.x);for(const d of [.35,.6])for(let k=-4;k<=4;k++)petal(p.x,p.y,th+k*.14+(d<.5?-.05:.05),160,d);const t2=Math.atan2(s().y-o.y,s().x-o.x);for(let k=-2;k<=2;k++)petal(o.x,o.y,t2+k*.16,145,.55);});
+ }else if(index===1){
+  // MARGIN TRAP: seed walls close from the top and bottom, each with one margin open; a vine runs down your column.
+  run(1.2,1.3,i=>{flip=-flip;for(const side of [-1,1]){const gap=Math.max(a.x+38,Math.min(a.x+a.w-38,s().x+side*flip*80));for(let x=a.x+10;x<a.x+a.w;x+=20)if(Math.abs(x-gap)>30)seed(x,side<0?a.y-14:a.y+a.h+14,0,-side*150,.3);}if(i%2)g.beam(s().x,cy,Math.PI/2,16,1.05,.24);});
+ }else if(index===2){
+  // SHELL PRESS (blue): daisy walls roll in from a side, open at the floor (stay down) or at jump height (jump); petals from above.
+  run(1.3,1.55,i=>{const low=i%2===0,side=i%3===1?1:-1,floor=a.y+a.h;for(let y=a.y+14;y<floor;y+=22){const gapLow=y>floor-40,gapHigh=y>floor-110&&y<floor-60;if(low?gapLow:gapHigh)continue;g.spawn({kind:'daisy',r:8,x:side<0?a.x-16:a.x+a.w+16,y,vx:-side*185*sp(),delay:.5,life:5});}const y=a.y-10;for(let k=-2;k<=2;k++)petal(cx,y,Math.atan2(s().y-y,s().x-cx)+k*.17,140,.6);});
+ }else if(index===3){
+  // NEO BURST: a cannon of vines fans out from one side; seed walls close from top and bottom.
+  run(1.2,2.5,i=>{const side=i%2?1:-1,ex=side<0?a.x-30:a.x+a.w+30,ey=cy,th=Math.atan2(s().y-ey,s().x-ex);for(let k=-2;k<=2;k++)g.beam(ex,ey,th+k*.32,k===0?24:16,1.15+Math.abs(k)*.05,.3);for(const sd of [-1,1]){const gap=Math.max(a.x+38,Math.min(a.x+a.w-38,s().x+sd*side*90));for(let x=a.x+10;x<a.x+a.w;x+=20)if(Math.abs(x-gap)>30)seed(x,sd<0?a.y-14:a.y+a.h+14,0,-sd*140,.9);}});
+ }else if(index===4){
+  // WEB SCRIPT (purple lanes): petal threads run two lanes at once; the open lane gets its thread late. Then a vine takes a lane or a column.
+  run(1.2,1.35,i=>{const lanes=[a.y+36,cy,a.y+a.h-36],openLane=((i*2)%3+3)%3,from=i%2?1:-1;for(let l=0;l<3;l++)for(let k=0;k<6;k++)g.spawn({kind:'petal',r:6,x:from<0?a.x-14-k*22:a.x+a.w+14+k*22,y:lanes[l],vx:-from*200*sp(),vy:0,delay:l===openLane?.95:.35,life:6});if(i%2)g.beam(s().x,cy,Math.PI/2,18,1.05,.26);});
+ }else{
+  // OMEGA NOTEBOOK (yellow): six emitters, three a side, fan petals at you while you shoot the page; a vine at your height every other volley.
+  const src=[0,1,2].flatMap(i=>[{x:a.x-14,y:a.y+28+i*(a.h-56)/2},{x:a.x+a.w+14,y:a.y+28+i*(a.h-56)/2}]);
+  run(1.3,1.15,i=>{for(const [n,p] of src.entries()){if((n+i)%2)continue;const th=Math.atan2(s().y-p.y,s().x-p.x);for(let k=-2;k<=2;k++)petal(p.x,p.y,th+k*.15,150,.45+(n%3)*.08);}if(i%2)g.beam(cx,s().y,0,20,1.05,.28);});
+ }
+}
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 // Kept under the old name: the HUD and tooling read ATTACKS.length.
 const ATTACKS=PLAN;
-Object.assign(exports,{PLAN,ATTACKS,DARK_STEP,BODY,buildAttack,ROOM,SQUARE,FACE,BIG});
+Object.assign(exports,{PLAN,ATTACKS,DARK_STEP,BODY,buildAttack,pageAttack,PAGE_SPECIALS,ROOM,SQUARE,FACE,BIG});
 };
