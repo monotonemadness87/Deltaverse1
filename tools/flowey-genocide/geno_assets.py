@@ -24,4 +24,14 @@ t=open(G+'muffet.html').read()
 for key,name,h in [('body/MUFFET_TURN.png','muffet',172),('props/spider-small.png','spider',26),('props/donut.png','donut',26),('props/spider-pet.png','pet',96)]:
     d,_=uri_after(t,'"%s":'%key);save(Image.open(io.BytesIO(d)),name,h=h)
 t=open(G+'sans-genocide.html').read()
-d,_=uri_after(t,'this.alphys=await Promise.all([load(');im=Image.open(io.BytesIO(d)).convert('RGBA');print('alphys raw',im.size);im.save(O+'/alphys.png')
+d,_=uri_after(t,'this.alphys=await Promise.all([load(');im=Image.open(io.BytesIO(d)).convert('RGBA')
+# Alphys is cut out on black like Sans: fill everything inside her outline black, so she stays solid over Flowey's body.
+w,h=im.size;px=im.load();outside=set();stack=[(x,y) for x in range(w) for y in (0,h-1)]+[(x,y) for y in range(h) for x in (0,w-1)]
+while stack:
+    x,y=stack.pop()
+    if (x,y) in outside or not(0<=x<w and 0<=y<h) or px[x,y][3]>=128:continue
+    outside.add((x,y));stack+=[(x+1,y),(x-1,y),(x,y+1),(x,y-1)]
+for y in range(h):
+    for x in range(w):
+        if px[x,y][3]<128 and (x,y) not in outside:px[x,y]=(0,0,0,255)
+print('alphys',im.size);im.save(O+'/alphys.png')

@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-27 — Flowey: solid black in Sans, Encore and Alphys
+
+Sans's, Encore's and Alphys's sprites are cut out on black: their black parts (Sans's jacket and eye sockets, Encore's coat) are transparent. On their own black stages that never shows, but in Flowey's replays they sit over his dimmed body, which showed through.
+- **Sans and Encore:** each pose is now built once with everything inside its outline filled black. Small breaks in an outline still count as closed. This applies in both Flowey fights.
+- **Alphys:** her false-genocide crop is filled the same way.
+- **Unchanged:** Gerson, Muffet, Rift's crown and Mettalot's ghost already had real black.
+- **The theatre's Encore** is no longer drawn at 85% opacity, which had let the background back through.
+
 ## 2026-10-27 — Flowey: every borrowed attack audited against its source fight; Checkmate trimmed
 
 After the Sans and blaster fixes, every module Flowey borrows was compared with the current source game, image by image and line by line.
