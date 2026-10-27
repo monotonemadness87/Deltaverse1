@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-10-27 — Flowey: swooshing vines, the yowl, and the laughing crowd
+
+From the designer's playtest.
+- **Vines swoosh in (both Flowey fights):** his own line attacks no longer appear all at once.
+  - After the flicker warning, the vine launches from just off one screen edge and travels across to the far one in 0.42 s, easing out. Launches alternate sides.
+  - Only the length it has covered can hit.
+  - The vine is drawn over the whole screen, not clipped to the box, so you see it come in.
+  - Late in the warning, chevrons at the entry edge show which way it's coming from.
+  - Replayed bosses' beams are unchanged.
+- **The yowl:** the supplied Omega Flowey yowl plays as each vine launches. It's pitched slightly differently each time and plays at most once every 0.12 s.
+- **False genocide, chase crowd:** each Flowey on the walls laughs once, the first time it comes into view. It's one of the two supplied laughs (the creepy laugh or 000029c2), at a random pitch and volume, so they overlap and stagger instead of one laugh on a loop.
+- **False genocide, ending:** his laughs at the end (the "Hee hee hee hee hee." in Seth's face and the YOU'RE ALREADY DEAD. screen) use the 000029c2 laugh.
+- **Files:** the sounds are in `tools/flowey-genocide/sfx/`, with their embedded cover art stripped.
+
 ## 2026-10-27 — Flowey: solid black in Sans, Encore and Alphys
 
 Sans's, Encore's and Alphys's sprites are cut out on black: their black parts (Sans's jacket and eye sockets, Encore's coat) are transparent. On their own black stages that never shows, but in Flowey's replays they sit over his dimmed body, which showed through.
