@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-27 — Flowey: vines instead of laser beams
+
+His own straight-line attacks now look like thorned vines lashing across the box instead of white laser beams. Lines, warnings and hitboxes are unchanged. This covers the crossed lines, the beams in his tricks and traps, and the eye attacks inside him, which grow out of his eye toward you. The warning is a pulsing green dotted line with a sprout at the edge. Replayed bosses keep their own beams: Encore's spotlight, Rift's, and Sans's blue and orange.
+
 ## 2026-10-24 — Flowey: mouths fly jaws-first
 
 The biting mouths (MOUTH OF THE WORLD and the FALL UP floor jaws) were drawn backwards, opening away from where they were going. They now face the way they move.
