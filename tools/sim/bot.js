@@ -5,11 +5,11 @@ const GAMES_DIR = path.resolve(__dirname, '../../games');
 const GAMES = {
   encore: { cls: 'BattleEngine' }, rift: { cls: 'BattleEngine' }, lab: { cls: 'BattleEngine' },
   gerson: { cls: 'GersonBattle', nav1: true }, mettalot: { cls: 'ShowBattle' }, sans: { cls: 'Battle' }, 'sans-genocide': { cls: 'Battle' },
-  flowey: { cls: 'MindBattle' }, spamtenna: { cls: 'LobbyBattle', nav1: true }, 'spamson-neo': { cls: 'NeoBattle' },
+  flowey: { cls: 'MindBattle' }, 'flowey-genocide': { cls: 'MindBattle' }, spamtenna: { cls: 'LobbyBattle', nav1: true }, 'spamson-neo': { cls: 'NeoBattle' },
   aqua: { cls: 'AquaBattle', args: () => [{ memory: null, saveMemory: () => {}, finalOnly: false }] },
   'aqua-final': { cls: 'AquaBattle', file: 'aqua', args: () => [{ memory: null, saveMemory: () => {}, finalOnly: true }] },
 };
-const END = new Set(['won', 'spared', 'fled', 'victory', 'ending', 'epilogue', 'end', 'credits', 'finished', 'complete', 'mercy-end']);
+const END = new Set(['won', 'spared', 'fled', 'victory', 'ending', 'epilogue', 'end', 'credits', 'finished', 'complete', 'mercy-end', 'killed', 'escaped']);
 function prng(seed) { let s = seed >>> 0 || 1; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
 function numericIssues(obj, path = '', out = [], depth = 0) {
   if (depth > 5 || obj == null) return out;

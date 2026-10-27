@@ -2,7 +2,7 @@
 """Rebuild PURPLE's offline hub from hub/ shell + games/*.html; never executes JS.
 
 The hub is too large for a single Git file, so the repo stores the launcher shell
-(with a __PACK__ placeholder) and the fifteen exact game HTMLs. Packing reproduces
+(with a __PACK__ placeholder) and the exact game HTMLs. Packing reproduces
 the original gzip bytes: fixed 10-byte header, zlib level 6 raw deflate, CRC32, size.
 """
 import argparse

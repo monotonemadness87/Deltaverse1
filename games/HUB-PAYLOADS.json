@@ -6,18 +6,23 @@
   },
   {
     "file": "aqua-final.html",
-    "bytes": 9446170,
-    "sha256": "043b197278f1cafeb31a0dfb0faee8f679601ce120235cf8d12f75b24a5e8233"
+    "bytes": 9455239,
+    "sha256": "932a92b291b1b3b5f3e1b8c4d2aacbdb2ea0bb6217b12d83dea94c2ccdcb5c0f"
   },
   {
     "file": "aqua.html",
-    "bytes": 9446187,
-    "sha256": "012801a80930e69aca19439e821731d5a5eca3fef385b5c1bca92be1c3c31da9"
+    "bytes": 9455256,
+    "sha256": "f6502c151f660d764c7477e1d0b10121a031b19cff22b4352fe2e45b8d4c59d5"
   },
   {
     "file": "encore.html",
     "bytes": 12435922,
     "sha256": "15e5221e7dfecb4ac74f759a0b03c0adc98572e6d765aa74f670be58b0f53ada"
+  },
+  {
+    "file": "flowey-genocide.html",
+    "bytes": 23860653,
+    "sha256": "a4a71297bdfbac2bbbf4c9e7f98487cf440f29c94b93b9af7e1e29e0ca164798"
   },
   {
     "file": "flowey.html",

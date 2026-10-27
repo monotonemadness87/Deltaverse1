@@ -1,5 +1,50 @@
 # Changelog
 
+## 2026-10-27 — Flowey: false genocide (the second neutral)
+
+The second Flowey version is built, as a FALSE GENOCIDE variant on the Flowey card (`games/flowey-genocide.html`). Seth killed everyone, then spared Aqua; she broke and ran. Flowey wants Seth gone so she gets her game back.
+
+- **Script:** the S-tier revision, with every kept line verbatim. He opens in his canon register and cracks early; by act three he's raging, and at the end he begs.
+- **Seth is LV 10 / 56 HP.** On Normal a hit costs 7 HP (4 on Gentle, 9 on Hard).
+- **Act one:** the same structure, re-aimed at a killer:
+  - NO MORE LESSONS, EXP RECEIVED, YOUR FAVORITE BUTTON (every falling button says FIGHT), JUST ONCE, COUNT THEM (numbers counting the dead), TURN THE KNIFE, LOVE LETTER, THE WORD YOU KEPT (MERCY deleted), THE ABSENT PLAYER (the other heart is his), and the rest.
+  - **The rigs:** your EXP drains into his health, then the bar is relabelled AQUA, then ATK 0 / LOVE 0.
+- **The chases:** the rooms are emptied. They're drained of colour, with dust where the monsters were, and Waterfall's hazards are Gerson's arrows. Chase difficulty matches the false-pacifist fight: the same hits for the same bot, at a slightly smaller share of HP.
+- **Act three replays only genocide bosses**, each with its own mechanics and art:
+  - Encore's emptied theatre.
+  - Rift's cataclysm: a lattice with one open column, orbiting blades, opposite hearts.
+  - Gerson: arrows from four sides, his hammer turning the box, shells on the strings.
+  - Spamson NEO: upright strings, receivers, falling heads and one cannon sweep.
+  - Muffet: spider processions, donuts, the pet eating a column.
+  - Sans + Alphys: bones to jump, blasters, the CORE's blue and orange beams.
+  - The last attack, I CAN FIX THIS, runs through all of it, and near the end he says "Please."
+- **The pages are Seth's route.** The sixth page is the spare; once it is back, his strikes stop pulling back (×2.2 damage).
+- **The ending:**
+  - Seth tears out of him. Flowey is small again and pleads.
+  - Only FIGHT works; the other buttons answer "The notebook is still in your hand."
+  - The Notebook strike lands, then his hurt cry and the canon wilt and dissolve frames.
+  - About 2 s of silence, Seth's epilogue, and THE FLOWER IS GONE.
+- **Difficulty:** measured with 8 seeds per attack, as share of HP lost per minute versus the false-pacifist fight:
+  - Act one and the replays: about 1.46× for a random dodger and about 1.30× for a player who stands still.
+  - The pages: about 1.27×.
+- **Hub:** the Flowey card has FALSE PACIFIST and FALSE GENOCIDE buttons, each with its own subtitle, tag and copy.
+- **Build:** the sources and build script are in `tools/flowey-genocide/`. The build starts from `flowey.html`, so rebuild the genocide file whenever that changes.
+
+## 2026-10-27 — Aqua R35: the spare
+
+TALK opens only once her final attack ends. Until then, nothing changes.
+
+- **Three talks:** Partners, The Nest and Not Enemies. Each is answered, then she tries an attack that falls apart:
+  - MAKE IT FUN restarts twice, and half its warnings fizzle.
+  - SEVEN PLANS is fragments of her old attacks, each abandoned.
+  - THE LAST TURN is one wobbling knife that drops before it reaches you.
+- **The breakdown attacks are weaker:** 60% damage, never below 1 HP, longer invincibility frames. A player who never moves loses about 18 of 56 HP across all three.
+- **SPARE:** it turns yellow after the third talk. Pressed earlier, it gets one of three dismissals.
+- **Sparing her:** she runs off-screen (with reduced motion, she fades), and the card reads NEUTRAL / FLOWEY: FALSE GENOCIDE.
+- **FIGHT after a talk** gets one line, then the existing kill ending.
+- **Narration lines** in her dialogue (face −1) now draw without a portrait, in the main box, with a plain click.
+- **Stamp:** both `aqua.html` and `aqua-final.html` are R35.
+
 ## 2026-10-27 — Flowey: vines instead of laser beams
 
 His own straight-line attacks are now thorned vines instead of white laser beams. Lines, timings and hitboxes are unchanged.

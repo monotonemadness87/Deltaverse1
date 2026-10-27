@@ -1,0 +1,109 @@
+# flowey.html (false pacifist) -> flowey-genocide.html (false genocide). Same engine; new story, patterns, replays and ending.
+import base64,os,sys,json
+D=os.path.dirname(os.path.abspath(__file__))
+src,dst=sys.argv[1],sys.argv[2]
+t=open(src,encoding='utf-8').read()
+rd=lambda f:open(os.path.join(D,f),encoding='utf-8').read()
+def span(name):
+    a=t.find('modules["%s"]=(exports,require)=>{'%name);assert a>=0,name
+    nxt=t.find('\nmodules["',a+10);main=t.find('\nconst {installNotebook}',a)
+    end=min(x for x in (nxt,main) if x>=0);return a,t.rfind('\n};',a,end)+3
+def replace_module(name,new):
+    global t;a,b=span(name);t=t[:a]+new.rstrip('\n')+t[b:]
+def get_module(name):
+    a,b=span(name);return t[a:b]
+def rep(s,old,new,count=1):
+    n=s.count(old);assert n==count,(n,old[:100]);return s.replace(old,new)
+replace_module('story.js',rd('story.js'));replace_module('patterns.js',rd('patterns.js'))
+srcs={n:'data:image/png;base64,'+base64.b64encode(open(os.path.join(D,'assets',n+'.png'),'rb').read()).decode() for n in ['gerson0','gerson2','hammer','arrow','shell','muffet','spider','donut','pet','alphys']}
+art=rd('geno-art.js').replace('__SOURCES__',json.dumps(srcs))
+a=t.find('modules["art-layout.js"]');t=t[:a]+art.rstrip('\n')+'\n'+t[a:]
+
+# ---------------- engine ----------------
+e=get_module('engine.js')
+e=rep(e,'const {INTRO,AFTER,AMBIENT,DARK,INSIDE,MEMORIES,MEMORY_LINES,FINAL,RELEASE,EPILOGUE,CUT,STRIKE_LINES,RUGS,line}=require("story.js");',
+        'const {INTRO,AFTER,AMBIENT,DARK,INSIDE,MEMORIES,MEMORY_LINES,FINAL,RELEASE,EPILOGUE,CUT,STRIKE_LINES,RUGS,line,ESCAPE,PLEA,KILL,TRAPS,LOCKS,RETRY}=require("story.js");')
+# Seth at LV 10, 56 HP. Hits cost about 45% more of it per minute than the false-pacifist fight.
+e=rep(e,"gentle:{speed:.82,damage:2,warning:1.2,cooldown:.93},normal:{speed:1.08,damage:3,warning:1,cooldown:.68},hard:{speed:1.3,damage:4,warning:.88,cooldown:.5}",
+        "gentle:{speed:.86,damage:4,warning:1.2,cooldown:.93},normal:{speed:1.12,damage:7,warning:1,cooldown:.68},hard:{speed:1.34,damage:9,warning:.88,cooldown:.5}")
+# The escapes stay as hard as the false-pacifist ones: a catch costs the same share of HP.
+e=rep(e,"if(!this.chase)c.speed*=1.18;","if(!this.chase)c.speed*=1.18;else{c.damage=Math.round(c.damage*.75);c.speed*=1.08/1.12;}")
+e=rep(e,"this.lv=1;this.hp=this.maxHP=30;","this.lv=10;this.hp=this.maxHP=56;this.plea=false;this.killed=false;this.mercyLocks=0;this.aquaHit=false;")
+e=rep(e,"{name:'A WARM MEMORY',heal:9,count:3},{name:'YOUR OWN VOICE',heal:14,count:2}","{name:'A WARM MEMORY',heal:16,count:3},{name:'YOUR OWN VOICE',heal:24,count:2}")
+e=rep(e,"locked(id){if(this.finale)return false;","locked(id){if(this.plea)return id!=='fight';if(this.finale)return false;")
+e=rep(e,"else if(this.next==='escaped'||this.next==='cut')","else if(this.next==='plea')this.beginPlea();else if(this.next==='killed'){this.state='killed';this.timer=0;this.emit('end');}else if(this.next==='escaped'||this.next==='cut')")
+e=rep(e,"   if(this.locked(id)){this.face=id==='mercy'?8:3;",
+        "   if(this.plea&&this.locked(id)){this.emit('deny');this.message([line('The notebook is still in your hand.',-1)],'menu');return;}\n   if(this.locked(id)){this.face=id==='mercy'?8:3;")
+e=rep(e,"this.say(id==='mercy'?'Golly! You STILL think that does something?':id==='item'?'No snacks until I say so.':'Oops! Guess you’re not allowed to do that.',this.face,2.4)",
+        "this.say(id==='mercy'?LOCKS.mercy[this.mercyLocks++%2]:id==='item'?LOCKS.item:LOCKS.other,this.face,2.4)")
+e=rep(e,"  if(this.state==='strike'){const accuracy=","  if(this.state==='strike'&&this.plea){this.killFlowey(clamp(1-Math.abs(this.cursor-384)/310,0,1));return;}\n  if(this.state==='strike'){const accuracy=")
+old_act=e[e.index("  if(this.state==='act'){const id=this.option;"):]
+old_act=old_act[:old_act.index('\n')]
+e=rep(e,old_act,"  if(this.state==='act'){const id=this.option;if(id===0){this.assist=true;this.message([line('You remember the last page of your notebook.',-1),line('Hey! Put that down!',4)]);}else if(id===1){this.resisted=true;this.message([line('You grip the notebook. Your hands stop shaking.',-1),line('Hee hee. We’ll see.',1)]);}else if(id===2){this.assist=true;this.message([line('You call out for anyone.\\nOnly your voice comes back.',-1),line('Who did you think was left?',7)]);}else if(this.act===1)this.message([line('FLOWEY. He wants your SOUL.\\nHe has never once let you win.',-1),line('Check? Golly. I’m a FLOWER.',3)]);else this.message([line(`FLOWEY. Your soul is inside him.\\n${this.count} / 6 torn pages recovered.`,-1)]);return;}")
+e=rep(e,"this.say(['Did you think dying would get you out?','I put you back! Where’s my thank-you?','You STILL remember? That’s getting annoying.','Again? Golly, you really are an idiot.'][Math.min(this.deaths-1,3)],","this.say(RETRY[Math.min(this.deaths-1,3)],")
+# The last page is the spare: once it is back, his strikes stop being pulled.
+e=rep(e,"Math.round((170+430*q)*(1+.12*this.count))","Math.round((170+430*q)*(1+.12*this.count)*(this.fragments[5]?2.2:1))")
+e=rep(e,"pick=pool[this.strikes++%pool.length];this.message(pick);","pick=f.label==='AQUA'&&!this.aquaHit&&this.act===1&&dmg?(this.aquaHit=true,STRIKE_LINES.aqua[0]):pool[this.strikes++%pool.length];this.message(pick);")
+e=rep(e,"if(kind==='load'){f.hp=f.max;this.effects.push({type:'file',text:'FILE 0 LOADED',life:2});}else if(kind==='max'){f.max=99999;f.hp=99999-(600-Math.min(600,f.hp));this.effects.push({type:'file',text:'MAX HP 600 → 99999',life:2.2});}else if(kind==='atk'){f.atkZero=true;f.inf=true;this.effects.push({type:'file',text:'YOUR ATTACK: 0',life:2.2});}",
+        "if(kind==='load'){f.hp=f.max;this.effects.push({type:'file',text:'YOUR EXP → HIS HP',life:2.2});}else if(kind==='max'){f.label='AQUA';f.hp=f.max;this.effects.push({type:'file',text:'FLOWEY → AQUA',life:2.2});}else if(kind==='atk'){f.atkZero=true;f.inf=true;this.effects.push({type:'file',text:'ATK 0 / LOVE 0',life:2.2});}")
+e=rep(e,"if(step.id==='last'){this.beginFinal();return;}","if(step.id==='last'){this.message(ESCAPE,'plea');return;}")
+e=rep(e,"this.say(m.thought,10,5);","{const [t1,t2]=m.thought.split('\\n');this.say(t1,10,t2?2.8:5);if(t2)this.at(2.8,()=>this.say(t2,10,3.2));}")
+e=rep(e,"this.at(7,()=>this.say(index===5?'That last page? Press Z. Go on.':'Aww, you can almost reach it! Keep trying!',11,4));","this.at(7,()=>this.say(m.hint,index===5?9:11,4));")
+e=rep(e,"changeArena(a,mode='red'){this.broadcast=null;","changeArena(a,mode='red'){this.circle=false;this.broadcast=null;")
+e=rep(e,"if(this.timer>4.5)this.message(line('Aw. You missed.',1));","if(this.timer>4.5&&!this.plea)this.message(line('Aw. You missed. Don’t get rusty on me.',1));")
+e=rep(e,"  if(this.state==='absorb'){","  if(this.state==='tear'){if(this.timer>1.6)this.message(PLEA,'menu');return;}\n  if(this.state==='kill'){if(this.timer>4.3){this.killed=true;this.message(KILL,'killed');}return;}\n  if(this.state==='absorb'){")
+e=rep(e,"else if(b.kind==='beam'){if(b.spin","else if(b.kind==='pet'){if(b.age<b.warning||b.age>b.warning+b.live)continue;}else if(b.kind==='orbit'){b.theta+=b.spin*dt;if(b.age<b.release){b.x=b.cx+Math.cos(b.theta)*b.radius;b.y=b.cy+Math.sin(b.theta)*b.radius;}else{if(!b.flung){b.flung=true;b.vx=Math.cos(b.theta)*150*this.config.speed;b.vy=Math.sin(b.theta)*150*this.config.speed;}b.x+=b.vx*dt;b.y+=b.vy*dt;}}else if(b.kind==='beam'){if(b.spin")
+e=rep(e,"this.selected=this.finale?0:1;this.text=this.finale?","this.selected=this.finale||this.plea?0:1;this.text=this.plea?'The notebook is still in your hand.':this.finale?")
+e=rep(e,"this.say({HEAL:'Aww, did that hurt? It said HEAL. I swear!',MERCY:'You really will press ANYTHING, huh?',SPARE:'Oh, sure. I\\'ll spare you. Some more pellets!',CONTINUE:'Good! I was hoping you\\'d say that.',RETRY:'You wanted another try. Here it comes!',QUIT:'Leaving so soon? But we\\'re having FUN!',SAVE:'Thanks! I\\'ll keep that for later.',LOAD:'Hee hee. Back where you belong.',FIGHT:'You can\\'t hurt me from IN here, idiot.',ACT:'Here\\'s an action: RUN.',ITEM:'Oops! That one was mine.',PAUSE:'No, no. You don\\'t get to rest yet.'}[label]||'Golly! That looked important!',3,3.6);",
+        "this.say((label==='FIGHT'&&this.act===3?TRAPS.FIGHT3:TRAPS[label])||TRAPS.fallback,3,3.6);")
+e=rep(e," beginFinal(){"," // Out of him: he is small again, and only FIGHT is left.\n beginPlea(){this.plea=true;this.initField();this.act=1;this.state='tear';this.timer=0;this.face=5;this.foe={...this.foe,hp:1,max:1,shown:1,label:'FLOWEY',inf:false,atkZero:false};this.emit('warp');}\n killFlowey(q){this.state='kill';this.timer=0;this.face=5;this.foeHurt=.6;this.effects.push({type:'damage',text:String(Math.round(36+128*q)),life:1.4});this.emit('enemyHurt');this.emit('strike');}\n beginFinal(){")
+e=rep(e,"return{state:this.state,act:this.act,","return{state:this.state,act:this.act,plea:this.plea,killed:this.killed,")
+replace_module('engine.js',e)
+
+# ---------------- page script ----------------
+m=t.find('\nconst {installNotebook}');p=t[m:]
+p=rep(p,'const {FloweyArt,pellet,daisy,WILT}=require("flowey-art.js");','const {FloweyArt,pellet,daisy,WILT,HURT,DISSOLVE}=require("flowey-art.js");\nconst {GenoArt}=require("geno-art.js");')
+p=rep(p,"const spamArt=new SpamMemoryArt();","const spamArt=new SpamMemoryArt(),geno=new GenoArt(ctx);")
+# The emptied rooms: the same corridors, drained of colour, with dust where the monsters were.
+p=rep(p,"ctx.fillStyle=room.wall;ctx.fillRect(0,0,768,472);ctx.translate(ox,oy);","ctx.filter='saturate(.22) brightness(.88)';ctx.fillStyle=room.wall;ctx.fillRect(0,0,768,472);ctx.translate(ox,oy);")
+p=rep(p," // The far door.\n"," ctx.fillStyle='#a8a8a8';for(let i=0;i<16;i++){const p=pointAt(c,(i+.5)*c.total/16),off=(i*37)%64-32,x=p.x-p.leg.dy*off,y=p.y+p.leg.dx*off;if(x<vx0||x>vx1||y<vy0||y>vy1)continue;ctx.fillRect(x-8,y,16,3);ctx.fillRect(x-5,y-2,10,2);ctx.fillRect(x-2,y-4,4,2);}\n // The far door.\n")
+p=rep(p," // His vines, coming up the path behind you.\n"," ctx.filter='none';\n // His vines, coming up the path behind you.\n")
+p=rep(p,"  else if(h.kind==='tear'){ctx.fillStyle='#e6f3ff';ctx.beginPath();ctx.arc(h.x,h.y,5,0,Math.PI*2);ctx.fill();ctx.fillRect(h.x-1,h.y-10,2,6);}",
+        "  else if(h.kind==='tear'){ctx.save();ctx.filter='grayscale(1) brightness(1.7)';geno.draw('arrow',h.x,h.y,16,22,Math.atan2(h.vy||1,h.vx||0)+Math.PI/2);ctx.restore();}")
+p=rep(p,"function backdrop(){","function backdrop(){if(game.plea){ctx.fillStyle='#000';ctx.fillRect(0,0,768,576);return;}")
+p=rep(p," if(game.chase||game.state==='absorb')return;\n",
+        " if(game.chase||game.state==='absorb')return;\n if(game.plea){if(game.state==='tear'||game.killed)return;if(game.state==='kill'){const t=game.timer,shake=t<.5&&!reduceMotion?Math.round(Math.sin(game.clock*80)*3):0,n=t<.5?HURT:t<1.3?WILT[Math.min(3,Math.floor((t-.5)/.2))]:t<2.1?DISSOLVE[Math.min(3,Math.floor((t-1.3)/.2))]:-1;if(n>=0)flowey.draw(ctx,n,384+shake,214,3);return;}flowey.speaker(ctx,game.face,talking,game.clock,384,214,3,1,game.foeHurt>0);return;}\n")
+figures=r""" if(game.replay==='theatre'&&encoreSprite.complete&&encoreSprite.naturalWidth){ctx.save();ctx.filter='grayscale(1) brightness(.8)';ctx.globalAlpha=.85;ctx.drawImage(encoreSprite,420,0,690,1024,317,30,135,185);ctx.restore();text('A MILLION EMPTY SEATS',384,217,1,'#aaa',true);}
+ if(game.replay==='cataclysm'){ctx.save();ctx.filter='grayscale(1)';crownArt.pose(5,384,128,190,false,.9);ctx.restore();text('NOTHING LEFT TO HOLD',384,219,1,'#aaa',true);}
+ if(game.replay==='gerson'){ctx.save();ctx.filter='grayscale(1)';const swing=game.effects.some(e=>e.type==='swing');geno.draw(swing?'gerson2':'gerson0',384,128,190,170);ctx.restore();text('WHAT FOR?',384,219,1,'#aaa',true);}
+ if(game.replay==='neo'){ctx.save();ctx.filter='grayscale(1)';spamArt.character(ctx,'spamson',384,52+(reduceMotion?0:Math.sin(game.clock*2)*2),154,game.broadcast?.overheat>.7?'panic':'grin',true);ctx.restore();text(game.broadcast?.phase||'OFF AIR',384,218,1,'#aaa',true);}
+ if(game.replay==='muffet'){ctx.save();ctx.filter='grayscale(1)';geno.draw('muffet',384,128+(reduceMotion?0:Math.sin(game.clock*3)*2),170,172);ctx.restore();text('THE EMPTY NEST',384,219,1,'#aaa',true);}
+ if(game.replay==='misery'){ctx.save();ctx.filter='grayscale(1)';sansArt.sans(ctx,4,334,126,190);geno.draw('alphys',462,160,124,106);ctx.restore();text('MISERY',384,221,1,'#aaa',true);}
+"""
+p=rep(p," if(onScreen){onScreen=false;",figures+" if(onScreen){onScreen=false;")
+hazards=r""" if(b.kind==='arrow'){const pre=b.delay&&b.age<b.delay;ctx.save();ctx.filter='grayscale(1) brightness(1.8)';if(pre){ctx.globalAlpha=reduceMotion||Math.floor(b.age*14)%2?.45:.18;}geno.draw('arrow',b.x,b.y,30,40,b.angle+Math.PI/2);ctx.restore();return;}
+ if(b.kind==='pet'){const a=game.arena,warn=b.age<b.warning,u=warn?0:Math.min(1,(b.age-b.warning)/b.live);ctx.save();if(warn){ctx.globalAlpha=reduceMotion||Math.floor(b.age*12)%2?.3:.14;ctx.fillStyle='#c9c9c9';ctx.fillRect(b.x-b.w/2,a.y,b.w,a.h);ctx.globalAlpha=.7;ctx.filter='grayscale(1)';geno.draw('pet',b.x,a.y+a.h+18-Math.min(1,b.age/b.warning)*30,b.w+24,(b.w+24)*.74);}else{ctx.filter='grayscale(1) brightness(1.3)';geno.draw('pet',b.x,a.y+a.h-u*a.h,b.w+30,(b.w+30)*.74);ctx.globalAlpha=.35;ctx.fillStyle='#fff';ctx.fillRect(b.x-b.w/2,a.y,b.w,a.h);}ctx.restore();return;}
+"""
+p=rep(p,"function hazard(b){if(b.delay&&b.age<b.delay)return;","function hazard(b){\n"+hazards+" if(b.delay&&b.age<b.delay)return;")
+kinds=r""" if(b.kind==='shell'){ctx.save();ctx.filter='grayscale(1) brightness(1.4)';geno.draw('shell',b.x,b.y,26,26,reduceMotion?0:b.age*7);ctx.restore();return;}
+ if(b.kind==='spider'){ctx.save();ctx.filter='grayscale(1) brightness(1.3)';geno.draw('spider',b.x,b.y+(reduceMotion?0:Math.floor(b.age*10)%2),34,22);ctx.restore();return;}
+ if(b.kind==='donut'){ctx.save();ctx.filter='grayscale(1) brightness(1.3)';geno.draw('donut',b.x,b.y,24,22,reduceMotion?0:b.age*(b.vx>0?8:-8));ctx.restore();return;}
+ if(b.kind==='orbit'){ctx.save();ctx.filter='grayscale(1)';crownArt.prop(b.art||'sword',b.x,b.y,14,24,b.theta+Math.PI/2);ctx.restore();return;}
+"""
+p=rep(p," if(b.friendly){heart(b.x,b.y,14,'green');return;}",kinds+" if(b.friendly){heart(b.x,b.y,14,'green');return;}")
+p=rep(p," if(['escaped','cut'].includes(game.state)){",
+        " if(game.state==='tear'){ctx.fillStyle='#fff';ctx.globalAlpha=reduceMotion?.3:Math.max(0,1-game.timer/1.6);ctx.fillRect(0,0,768,576);ctx.globalAlpha=1;}\n if(game.state==='killed'){ctx.fillStyle='#000';ctx.fillRect(0,0,768,576);text('THE FLOWER IS GONE',384,190,4,'#e6e1d2',true);prose('Your soul beats in your own chest.\\nAqua is somewhere in the Underground.\\nThe king is still ahead.',112,270,560,2,3);text('NEUTRAL / FALSE GENOCIDE',384,400,1.5,'#9b93a8',true);text('RESET TO PLAY AGAIN',384,489,1.5,'#888',true);}\n else if(['escaped','cut'].includes(game.state)){")
+p=rep(p," else if(game.state==='absorb'){}"," else if(['absorb','tear','kill','killed'].includes(game.state)){}")
+p=rep(p,"if(!['escaped','cut','absorb'].includes(game.state)){text(game.fakeHp?'MINE':'YOU',32,484,2,game.fakeHp?'#b5c356':'#e5ecdb');text('LV 1',140,485,2);",
+        "if(!['escaped','cut','absorb','killed'].includes(game.state)){text(game.fakeHp?'MINE':'SETH',32,484,2,game.fakeHp?'#b5c356':'#e5ecdb');text('LV 10',140,485,2);")
+p=rep(p,"function commands(){if(game.broadcast||","function commands(){if(game.killed||['tear','kill'].includes(game.state)||game.broadcast||")
+p=rep(p,"&&!game.epilogue&&game.round>0,","&&!game.epilogue&&!game.plea&&game.round>0,")
+p=rep(p,"text('FLOWEY',x-8,y-2,1,'#ddd');","text(f.label||'FLOWEY',x-8,y-2,1,f.label==='AQUA'?'#3ee0ed':'#ddd');")
+p=rep(p,"game.state==='dialogue'&&game.speaker==='self'?game.memory:-1,game.paused||game.state==='dead');",
+        "game.state==='dialogue'&&game.speaker==='self'?game.memory:-1,game.paused||game.state==='dead');if(game.plea)audio.track.volume=game.state==='kill'||game.killed?0:.08;")
+p=rep(p," if(game.echo){ctx.fillStyle='#000';ctx.fillRect(game.echo.x,game.echo.y,game.echo.w,game.echo.h);box(game.echo.x,game.echo.y,game.echo.w,game.echo.h,'#c5a6c6',4);}",
+        " if(game.echo){const r=game.echo;if(boxless){ctx.save();ctx.strokeStyle='#6f6280';ctx.globalAlpha=.55;ctx.lineWidth=2;for(const [px,py,dx,dy] of [[r.x,r.y,1,1],[r.x+r.w,r.y,-1,1],[r.x,r.y+r.h,1,-1],[r.x+r.w,r.y+r.h,-1,-1]]){ctx.beginPath();ctx.moveTo(px+dx*16,py);ctx.lineTo(px,py);ctx.lineTo(px,py+dy*16);ctx.stroke();}ctx.restore();}else{ctx.fillStyle='#000';ctx.fillRect(r.x,r.y,r.w,r.h);box(r.x,r.y,r.w,r.h,'#c5a6c6',4);}}")
+t=t[:m]+p
+t=rep(t,'<title>FLOWEY — Inside Your Best Friend</title>','<title>FLOWEY — False Genocide</title>')
+t=rep(t,'content="Flowey wants your soul. His rigged battle, the rooms you walked through, and then the inside of the flower: six pages of yourself to recover."','content="You killed everyone, then spared her. Flowey wants you gone so she gets her game back. The emptied rooms, the bosses you killed, and the flower that has to die."')
+open(dst,'w',encoding='utf-8').write(t);print('ok',len(t))

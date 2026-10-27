@@ -62,7 +62,7 @@ The hub is currently an encounter launcher, **not a continuous campaign save**. 
 | Waterfall | Mettalot — Waterfall After Dark | Gerson — What For? |
 | Hotland | Ant Tenna + Spamson — The Next Big Thing, currently pacifist only in launcher | Spamson NEO — A Deal in the Dark, then Muffet — The Dark Nest |
 | CORE | Sans — No Promises | Sans + Alphys — Misery Likes Company |
-| New Home | Flowey — Inside Your Best Friend (neutral; two versions planned, the false-pacifist one is built) | Aqua — Last Playmate |
+| New Home | Flowey — two neutral versions: FALSE PACIFIST (Inside Your Best Friend) and FALSE GENOCIDE (She Gets Her Game Back) | Aqua — Last Playmate (KILL or the R35 SPARE) |
 
 Aqua finale practice is a shortcut into the same canonical fight. Battle Lab, LAST BELL and Ant vs Termite are Extras. LAST BELL's separate universe and the colony simulation do not establish Underground lore.
 
@@ -180,6 +180,15 @@ R28 appears on HUD and in pause; for historical reference, the omitted full stan
 
 The prior saved standalone R28 file was downloaded again and matched tested bytes. Its digest above is historical reference; the lean package contains the hub variant instead, which intentionally has different dialogue and bytes. The user's older received bytes were not available; do not claim caching was proven or that their report was mistaken.
 
+### The spare (R35)
+
+After her final attack ends, ACT becomes TALK. Before that, nothing changes: SPARE gets the usual dismissal and FIGHT still leads to the kill.
+- **Three talks:** Partners, The Nest (Muffet's nest; he could have let her die there), and Not Enemies. Each is answered, then she tries an attack and it falls apart. Those are three new weaker, shakier attacks: MAKE IT FUN (restarts twice, half its warnings fizzle), SEVEN PLANS (fragments of her old attacks, each abandoned) and THE LAST TURN (one wobbling knife that drops before it reaches him). They hit for 60% damage, never below 1 HP, with longer invincibility frames.
+- **SPARE turns yellow after the third talk.** Pressed earlier, it gets "Nice try." / "Is that a bit?..." / "Stop pressing that...".
+- **Sparing her:** her kept lines play, then she runs off-screen (with reduced motion she fades instead), and the card reads NEUTRAL / FLOWEY: FALSE GENOCIDE. Ending id: `spared`.
+- **FIGHT after any talk** gets one line, then the existing finisher and kill ending.
+- **Narration pages** inside her dialogue use face −1: no portrait, the text sits in the main box, and a plain click replaces her voice.
+
 ## Other encounter contracts
 
 ### Muffet — The Dark Nest
@@ -210,7 +219,7 @@ Gerson: approved 17-turn pacing; Flowey helps but is absent from the middle. Set
 
 Mettalot: Purple SOUL, showmanship/ratings, Napstablook, distinct quiz/rhythm/dance. Phase2 at750, finale around1500–1750, target2000. Spin controls, seeking tears and laser pointer must function.
 
-Flowey: both Flowey fights are neutral, not pacifist. Two versions are planned; the built one is the false-pacifist neutral, where Seth spared everyone. Flowey is disappointed: two humans, and Seth chose to be a weak, sentimental sap. Together, Seth and Aqua might have been a real threat to the king. As things stand, he takes Seth's soul, and maybe then Aqua will stop being so disappointing.
+Flowey: both Flowey fights are neutral, not pacifist, and both are built: two variants on one hub card. The false-pacifist neutral (`flowey.html`) is the one where Seth spared everyone. Flowey is disappointed: two humans, and Seth chose to be a weak, sentimental sap. Together, Seth and Aqua might have been a real threat to the king. As things stand, he takes Seth's soul, and maybe then Aqua will stop being so disappointing.
 
 Three acts, following the designer's Undertale Yellow reference (`docs/reference-study/flowey-study.md`):
 1. His rigged battle in the box. Short attacks; face-barrage SAVEs that lead straight into chase LOADs through rooms Seth walked.
@@ -218,6 +227,18 @@ Three acts, following the designer's Undertale Yellow reference (`docs/reference
 3. Inside him, boxless. Phases alternate with the six pages, and Seth's Torn Notebook acts on his turns.
 
 Only pacifist-route bosses return as replayed attacks. The six fragments are pages from one Purple SOUL's life, not six human souls. Keep the functional false/moving commands, fake Game Over and stolen mechanics. Seth can deny him the soul; the body does not stand up and leave, and the king eventually receives it. Flowey uses his canon Undertale battle frames, here and in Gerson and Sans + Alphys; when talking, only his mouth moves. His supplied voice blip, evil blip, hurt cry and laugh are in the fight. His own line attacks are vines, not laser beams: a flickering warning, then the vine whips in from off-screen (never from his eyes or body); replayed bosses keep their own beam art. FIGHT must feel rewarding: in act one his health bar takes real damage until he rigs it at the end of each cycle (LOAD, extra zeros, your attack set to 0); in act three the hits stick. In act three he is his canon sprite, huge (5×), with original thorned vines behind him; the designer rejected an original creature design, so don't invent a new body for him.
+
+**False genocide (`flowey-genocide.html`).** Seth killed everyone, then spared Aqua at the end of Last Playmate. That spare shattered her point of view and she ran off somewhere in the Underground. Flowey thinks that if he gets rid of Seth, he can restore her confidence and put things back on track. Contract:
+- **The same three-act shape, a far worse nightmare.** He starts in his canon register ("Howdy", "golly", "hee hee"), cracks early, is pure fury by act three and begging at the end.
+- **Seth is LV 10 / 56 HP.** Attacks cost about 1.45× as much HP per minute as the false-pacifist fight (about 1.3× for a player who stands still). The chases (escapes) cost the same as before.
+- **The rigs are aimed at a killer:** his bar refills from Seth's EXP, then the bar is relabelled AQUA (hitting it anyway gets "...Huh. It didn't."), then ATK 0 / LOVE 0.
+- **The chase rooms are emptied:** drained of colour, with dust where the monsters were; Waterfall's hazards are Gerson's arrows.
+- **Only genocide bosses return in act three:** Encore's emptied theatre, Rift's cataclysm, Gerson, Spamson NEO, Muffet, and Sans + Alphys. Each uses its own game's mechanics and art; Flowey's own straight-line attacks stay vines.
+- **The six pages are Seth's route.** The last page is the spare. Once it is back, his strikes stop being pulled (×2.2 damage).
+- **It must end with Seth killing Flowey.** Seth tears out of him; Flowey is small again and pleads ("You can't kill me. I'm your—"). Only FIGHT works. The Notebook strike, his hurt cry, the wilt and dissolve frames, about 2 s of silence, then Seth's epilogue.
+- **Seth survives** (the designer's call is still open; flagged when the route was built). The king is still ahead.
+
+The script is the designer-approved S-tier revision. Lines marked kept are verbatim. The sources and build script live in `tools/flowey-genocide/`: run `geno_assets.py` to recrop the replayed bosses' art from their own games, then `geno_build.py games/flowey.html games/flowey-genocide.html`.
 
 ### Tenna/Spamson, Spamson NEO, Encore and Rift
 
