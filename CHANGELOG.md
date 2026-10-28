@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-10-28 — Marigold replaces Rift in Snowdin
+
+The designer retired Rift. Snowdin's encounter is now **MARIGOLD — The Forgotten Memorial** (`games/marigold.html`, built from `tools/marigold/`):
+- **Who she is:** a ghost knight of the old Royal Guard, possessing Chara's copper memorial.
+- **The walk:** a playable walk to her: Snowdin forest, the Forgotten Gallery with six readable murals, the ledge, the memorial.
+- **THE TRAP (pacifist):**
+  - Flowey lures Seth to her and she is overjoyed.
+  - CALL AQUA four times and she comes from Waterfall to defend Seth.
+  - TALK three times, the third about who Marigold was, which needs Aqua there. Then SPARE ends with "Because I think it's pretty."
+- **THE HUNT (genocide):**
+  - She hunts Seth down herself. It's much harder.
+  - Aqua's calls give real advice, at the cost of making her angrier.
+- **No neutral fight.**
+- **Rift's file:** `rift.html` moved to `archive/`, kept only so the Flowey fights' art sync still finds the crown art. `tools/sync_borrowed_art.py` now looks there. The hub's Snowdin card, caption and route boot now point at Marigold.
+- **Art:**
+  - Marigold's frames are cleaned from the designer's example sheet.
+  - Human Seth is an original overworld sprite after the Flower Seth sheet.
+  - Aqua's portraits and body are copied live from her fight.
+- **Music:** a synthesized waltz stands in until a theme is supplied.
+- **Not done yet:** the Flowey fights still replay Rift ("THE CHILD IS STILL ASLEEP", CATACLYSM, page 1 THE BROKEN DOOR, the FILE 2 cut). Those need rewriting for Marigold.
+
 ## 2026-10-27 — Flowey false genocide: the omega (page) attacks aren't fatal
 
 Hits during a page phase (the "omega" attacks) can take Seth down to 1 HP, but never kill him or cost determination. Everything else in the fight is still fatal.

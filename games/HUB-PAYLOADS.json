@@ -45,6 +45,11 @@
     "sha256": "ae380768820b108fbf2a07ae7f8df7807aab67e43e0e2e61fa8cd732709c8edb"
   },
   {
+    "file": "marigold.html",
+    "bytes": 5957863,
+    "sha256": "9ae76973083a89529f91f6a086d0d6d5c79e4bd30c5a05c2c618edac05219679"
+  },
+  {
     "file": "mettalot.html",
     "bytes": 3682030,
     "sha256": "5895a09c9fa4a08f549aa9ff439021207e36c6c3823cc5564873df2ed5af7e8d"
@@ -53,11 +58,6 @@
     "file": "muffet.html",
     "bytes": 24364590,
     "sha256": "4ca237ac38e634def7f4f195f0668cbf04ea88200c8a8955d256fba1e13ee085"
-  },
-  {
-    "file": "rift.html",
-    "bytes": 8004879,
-    "sha256": "66337435c7329eae18c1e1a7a72597516de0096604e6104c06f7b1afc9562592"
   },
   {
     "file": "sans-genocide.html",

@@ -58,7 +58,7 @@ The hub is currently an encounter launcher, **not a continuous campaign save**. 
 | Region | Pacifist / neutral | Genocide |
 | --- | --- | --- |
 | Ruins | Encore — Last Curtain | Encore's emptied-theatre variant |
-| Snowdin boundary | Rift — The Hollow Crown | Rift's cataclysm variant |
+| Snowdin | Marigold — The Forgotten Memorial: THE TRAP (pacifist only; no neutral fight) | Marigold — THE HUNT |
 | Waterfall | Mettalot — Waterfall After Dark | Gerson — What For? |
 | Hotland | Ant Tenna + Spamson — The Next Big Thing, currently pacifist only in launcher | Spamson NEO — A Deal in the Dark, then Muffet — The Dark Nest |
 | CORE | Sans — No Promises | Sans + Alphys — Misery Likes Company |
@@ -226,7 +226,7 @@ Three acts, following the designer's Undertale Yellow reference (`docs/reference
 2. The dark, where he takes the soul.
 3. Inside him, boxless. Phases alternate with the six pages, and Seth's Torn Notebook acts on his turns.
 
-Only pacifist-route bosses return as replayed attacks. The six fragments are pages from one Purple SOUL's life, not six human souls. Keep the functional false/moving commands, fake Game Over and stolen mechanics. Seth can deny him the soul; the body does not stand up and leave, and the king eventually receives it. Flowey uses his canon Undertale battle frames, here and in Gerson and Sans + Alphys; when talking, only his mouth moves. His supplied voice blip, evil blip, hurt cry and laugh are in the fight. His own line attacks are vines, not laser beams: a flickering warning, then the vine swooshes in from off one screen edge and travels across to the other, visibly and with the Omega yowl. Only the covered length hits. It never comes from his eyes or body; replayed bosses keep their own beam art. FIGHT must feel rewarding: in act one his health bar takes real damage until he rigs it at the end of each cycle (LOAD, extra zeros, your attack set to 0); in act three the hits stick. In act three he is his canon sprite, huge (5×), with original thorned vines behind him; the designer rejected an original creature design, so don't invent a new body for him. Every boss Flowey borrows uses its source fight's current art: Sans and the Gaster Blasters (`sans.html`), Rift (`rift.html`), Mettalot (`mettalot.html`), and Encore's attack atlas and body (`encore.html`). Spamton/Tenna, Gerson, Muffet and Alphys are cropped from today's games. The false-genocide theatre replays Encore's genocide timeline, not his pacifist one. Sync with `tools/sync_borrowed_art.py games/flowey.html`, then rebuild the false genocide. Never ship older art than the source fights. Sprites cut out on black (Sans, Encore, Alphys) are drawn with their insides filled black (`backed()` in the page script), so nothing shows through them.
+Only pacifist-route bosses return as replayed attacks. The six fragments are pages from one Purple SOUL's life, not six human souls. Keep the functional false/moving commands, fake Game Over and stolen mechanics. Seth can deny him the soul; the body does not stand up and leave, and the king eventually receives it. Flowey uses his canon Undertale battle frames, here and in Gerson and Sans + Alphys; when talking, only his mouth moves. His supplied voice blip, evil blip, hurt cry and laugh are in the fight. His own line attacks are vines, not laser beams: a flickering warning, then the vine swooshes in from off one screen edge and travels across to the other, visibly and with the Omega yowl. Only the covered length hits. It never comes from his eyes or body; replayed bosses keep their own beam art. FIGHT must feel rewarding: in act one his health bar takes real damage until he rigs it at the end of each cycle (LOAD, extra zeros, your attack set to 0); in act three the hits stick. In act three he is his canon sprite, huge (5×), with original thorned vines behind him; the designer rejected an original creature design, so don't invent a new body for him. Every boss Flowey borrows uses its source fight's current art: Sans and the Gaster Blasters (`sans.html`), Rift (`archive/rift.html`; Rift is retired, and his replays in both Flowey fights still need rewriting for Marigold), Mettalot (`mettalot.html`), and Encore's attack atlas and body (`encore.html`). Spamton/Tenna, Gerson, Muffet and Alphys are cropped from today's games. The false-genocide theatre replays Encore's genocide timeline, not his pacifist one. Sync with `tools/sync_borrowed_art.py games/flowey.html`, then rebuild the false genocide. Never ship older art than the source fights. Sprites cut out on black (Sans, Encore, Alphys) are drawn with their insides filled black (`backed()` in the page script), so nothing shows through them.
 
 **False genocide (`flowey-genocide.html`).** Seth killed everyone, then spared Aqua at the end of Last Playmate. That spare shattered her point of view and she ran off somewhere in the Underground. Flowey has run this over and over, trying to get his perfect ending, and he WILL. He put Seth and Aqua in each other's paths and held every door. They were hopeless brats who needed his help, but they started getting stronger. If they had finished the job, he would have left them alone. Now it isn't a fight, it's course correction: even if Seth wins, he just goes back. The false-pacifist Flowey was bored; this one is furious. The designer wants this route dire, hopeless and overwhelming. Contract:
 - **Tone:** cruel and sardonic throughout, never begging. The theme is the designer's supplied track (Inverted Fate "Checkmate").
@@ -257,13 +257,55 @@ Only pacifist-route bosses return as replayed attacks. The six fragments are pag
 
 The script is the designer-approved S-tier revision. Lines marked kept are verbatim. The sources and build script live in `tools/flowey-genocide/`: run `geno_assets.py` to recrop the replayed bosses' art from their own games, then `geno_build.py games/flowey.html games/flowey-genocide.html`. `track.mp3` there is the route's supplied theme (Checkmate), trimmed to 0:02.5–2:24 so it loops cleanly.
 
-### Tenna/Spamson, Spamson NEO, Encore and Rift
+### Tenna/Spamson, Spamson NEO and Encore
 
 Lobby residents seek stardom/hero status by capturing the human. Spamson wears only the stolen cannon arm there, not the entire robot. Tenna/Spamson partnership matters; Purple with Yellow+Purple duo mechanics. Distinguish this from genocide winged Spamson NEO.
 
 Genocide Spamson injects stolen determination only after0HP. Muffet captures him before Seth finishes him. Persistence/no dust/strange taste explain her curiosity, not automatic scientific knowledge of determination.
 
-Encore: preserve letter, audience, curtain, final bow and route-specific mercy. Rift: armor is a lock around dangerous space, sleeping child and small light; breaking it isn't automatically mercy. Their genocide variants must materially differ.
+Encore: preserve letter, audience, curtain, final bow and route-specific mercy. Its genocide variant must materially differ.
+
+### Marigold — The Forgotten Memorial
+
+Marigold replaced Rift in Snowdin. The designer retired Rift ("doesn't fit the lore of Undertale cleanly"); `rift.html` now lives in `archive/` only so the Flowey fights' art sync still works. Sources and build: `tools/marigold/` (see its README).
+
+**Who she is (designer canon):**
+- A ghost monster. In Undertale ghosts are a kind of monster, not the dead. Her lineage held bodiless form to be improper and wore vessels symbolic of who they were. In the war that meant suits of armor.
+- She was a knight of the King's Royal Guard of ghosts, led by a wise, long-lived turtle (Gerson).
+- Ghosts were valued because they couldn't die, until a rare kind of human mage (determination turned into magic) learned to kill them. Those mages also built the Barrier.
+- The humans eradicated ghost-kind first. A family of farmers (the Blooks) survived by fleeing early. Of the warriors, one known survivor, forgotten: her.
+- She knew Chara and idolised her: "a true monster at heart", the only good human, trapped in flesh and bone. She cannot understand leniency.
+- She possessed Chara's copper memorial (oxidised green, buttercups, a crown that grows thorns, one hollow socket, red and green eyes). Some of Asriel's dust is on it, and through it traces of Chara's SOUL. That is her identity bleed: sometimes she forgets she isn't Chara. She barely remembers her own life, and she would have it no other way.
+- She devotes herself to the Dreemurrs. She does the killing so Asgore doesn't have to, and calls Toriel a COWARD for leaving him.
+- She learned of the lab experiments, believes the Prince (Flowey) lives on and believes in the plan, and promised him a human SOUL so he could feel again. She thinks herself unworthy to absorb SOULs; he is. Flowey is vulnerable to her and avoids her: she once made him cry, kneeling to tell him it wasn't his fault.
+- Seth is a determination mage: the same kind of human that killed her people. Determination alone isn't enough to make magic (Frisk).
+
+**Contract:**
+- **Routes:**
+  - THE TRAP (pacifist): Flowey lures Seth down the old path and Marigold is overjoyed that his plan worked.
+  - THE HUNT (genocide): she sought Seth out herself, furious and vindicated. It is much harder.
+  - Neutral: no fight (Flowey talks her out of it).
+- **The walk:** forest (Flowey's lure on the trap) → the Forgotten Gallery (six murals of the designer's text) → the ledge → the memorial (trap) or her ambush on the ledge (hunt). "Skip the walk" in options.
+- **Seth:** pacifist LV 1 / 30 HP, 2 damage per hit on Normal (1 Gentle, 3 Hard). Genocide LV 5 / 36 HP, 4 per hit (3 / 5). Checkpoint with full HP and supplies every 4 attacks.
+- **Poison:** buttercup pollen drains HP over time, never below 1 HP.
+- **CALL AQUA:** every call angers Marigold.
+  - On the trap: a little more speed, and +1 damage from the fourth call. Four calls of banter talk Aqua round; she arrives two attacks later and defends Seth, cutting away the projectile nearest him every couple of seconds. This is a step in her pacifist redemption arc, which runs across the pacifist fights.
+  - On the hunt: the first call is a brush-off (she's grinding in Waterfall). Later calls are advice from Seth's notes:
+    - the next attack's warnings run 40% longer;
+    - strikes do +35% (hit the cracked copper);
+    - poison is weaker;
+    - lance warnings run longer.
+  - The hunt's anger cost is steep: +5% speed and +6% density per call, and +1 damage from the third call.
+- **Spare (trap only):** TALK about the statue, the Prince, then (only once Aqua is there) who she was. Then SPARE is yellow. Her ending: "Because I think it's pretty." On the hunt, mercy is refused.
+- **Kill:**
+  - The trap can kill her after 6 attacks.
+  - The hunt can't kill her until THORNS OF AGONY (its 13th attack) has been survived.
+  - She leaves no dust: the statue is empty.
+- **Art and music:**
+  - Her frames are cleaned from the designer's example sheet.
+  - Human Seth is an original sprite after the Flower Seth sheet.
+  - Aqua's art is copied live from `aqua.html`.
+  - The music is a synthesized placeholder until a theme is supplied.
 
 ## Dialogue voices
 
