@@ -57,14 +57,17 @@ def main():
                         .replace('__SETH_FRAMES__', json.dumps(json.load(open(os.path.join(art, 'seth.json'))), separators=(',', ':')))
                         .replace('__MARIGOLD_PNG__', data_uri(os.path.join(art, 'marigold.png'), 'image/png'))
                         .replace('__SETH_PNG__', data_uri(os.path.join(art, 'seth.png'), 'image/png'))
-                        .replace('__FLOWEY_PNG__', data_uri(os.path.join(ROOT, 'tools', 'flowey-genocide', 'art', 'overworld-flowey.png'), 'image/png')))
+                        .replace('__FLOWEY_PNG__', data_uri(os.path.join(ROOT, 'tools', 'flowey-genocide', 'art', 'overworld-flowey.png'), 'image/png'))
+                        .replace('__ROOMS__', json.dumps({n[:-4]: data_uri(os.path.join(art, 'rooms', n), 'image/png') for n in sorted(os.listdir(os.path.join(art, 'rooms')))}, separators=(',', ':'))))
+        if name == 'audio.js':
+            body = body.replace('__SOUNDS__', json.dumps({n[:-4]: data_uri(os.path.join(HERE, 'audio', n), 'audio/mpeg') for n in sorted(os.listdir(os.path.join(HERE, 'audio')))}, separators=(',', ':')))
         assert '__' not in re.sub(r'__proto__', '', body) or name != 'marigold-art.js', name
         parts.append('modules["%s"]=(exports,require)=>{\n%s\n};\n' % (name, body.rstrip('\n')))
     page = read(os.path.join(HERE, 'src', 'page.js')).replace('__SOUL_PNG__', soul)
     assert page.startswith(ANCHOR)
     parts.append(page[1:])
     html = ''.join(parts)
-    for token in ('__FONT_TTF__', '__LICENSE_TXT__', '__SOUL_PNG__', '__MARIGOLD_PNG__', '__SETH_PNG__', '__FLOWEY_PNG__', '__MARIGOLD_FRAMES__', '__SETH_FRAMES__'):
+    for token in ('__FONT_TTF__', '__LICENSE_TXT__', '__SOUL_PNG__', '__MARIGOLD_PNG__', '__SETH_PNG__', '__FLOWEY_PNG__', '__MARIGOLD_FRAMES__', '__SETH_FRAMES__', '__ROOMS__', '__SOUNDS__'):
         assert token not in html, token
     out = sys.argv[1] if len(sys.argv) > 1 else OUT
     with open(out, 'w') as f:

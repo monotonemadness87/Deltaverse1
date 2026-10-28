@@ -1,5 +1,32 @@
 # Changelog
 
+## 2026-10-28 — Marigold: her themes, real sound, new art, and a fight that pops
+
+- **Music:** THE TRAP now plays the designer's "The King's Dream" and THE HUNT plays "Thorns of Agony". Each starts from the top when its battle begins. The walk keeps a quiet music box over wind.
+- **Sound:**
+  - Effects now use UNDERTALE's own sounds, the ones the other fights already ship: hurt, menu select, the slash (her sword and lance, Aqua's cuts), the ding (healing, the spare), the heavy hit (death and her fall).
+  - Every line of text uses the designer's snd_txt1, pitched per speaker: higher for Marigold, lower for Aqua and Seth.
+- **Fixed, sound button:** pressing ♪ first turned sound on and then straight back off, because the first-touch unlock ran before the button's own toggle. Fixed in Marigold and Encore, the only two fights with that code.
+- **Fixed, phones:** holding a touch button could select the symbol on it. Buttons and controls can no longer be selected or long-pressed into a callout. This is set in Marigold's page and by the hub for every game it launches.
+- **Seth:** new overworld sprites built on the designer's Flower Seth sheet:
+  - the front is their idle frame, recoloured to human skin;
+  - the back (long hair, coat) and profile (glasses, notebook) are drawn to match;
+  - all four directions walk. He now stands as tall as Marigold.
+- **Rooms, repainted as proper pixel art:**
+  - **Forest:** layered Snowdin pines with snow along each tier, a snow bank, the path, drifts, bushes and foreground trees he walks behind.
+  - **Gallery:** six carved stone tablets at double size, softly lit, with glowing crystals.
+  - **Ledge:** the stratified cliff, the valley of snowy pines and the lit cabin far below (its lights are off on the hunt).
+  - **Memorial:** pillars, a light shaft, sconces and the buttercup bed.
+  - **The hunt:** each room gets dust, red footprints and thorns.
+- **The battle:**
+  - **Backdrop:** a painted night-forest backdrop (pale moon and buttercups on the trap; red moon and thorns on the hunt).
+  - **Ambience:** drifting petals that thicken as she gets angrier, a glow behind her.
+  - **Hits:** crystal sparks when thorns break, lance streaks, a flash and shake on each sword swing, pollen puffs, red and green vignettes when hurt or poisoned, and a rumble into THORNS OF AGONY.
+  - **Encounter:** an Undertale-style start: "!" over Seth, three flickers, the SOUL drops into the box.
+- **Fixed, art:**
+  - Some of Marigold's attack poses (THORN SUMMON 2–3, SPELL 2–3) came out nearly empty, because those frames touch on the sheet. They are whole now, in her fight and in Flowey's replays.
+  - Her anger tint and hurt flash coloured a whole rectangle around her. They now colour only her.
+
 ## 2026-10-28 — Flowey's Snowdin memories are Marigold's now
 
 Rift is out of both Flowey fights and out of the repo (git history keeps it).

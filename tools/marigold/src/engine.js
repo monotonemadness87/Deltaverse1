@@ -37,7 +37,7 @@ class BattleEngine{
  finishDialogue(){const n=this.next;this.next=null;if(typeof n==='function'){this.state=this.scene==='world'?'world':'menu';n();return;}if(n==='defend')this.startAttack();else if(n==='menu')this.toMenu();else if(n==='world')this.state='world';else{this.state=n;this.timer=0;this.emit('end');}}
  // ------------------------------------------------------------ battle setup
  startBattle(skip=false){
-  this.scene='battle';this.state=skip?'menu':'encounter';this.encounter=0;this.timer=0;this.seed=this.genocide?66013:31337;
+  const w=this.world;this.encFrom={x:w.seth.x-w.camera(),y:w.seth.y-42};this.scene='battle';this.state=skip?'menu':'encounter';this.encounter=0;this.timer=0;this.seed=this.genocide?66013:31337;
   this.setArena(MENU_BOX);this.arena={...MENU_BOX};this.saveCheckpoint();
   if(skip)this.toMenu(true);this.emit(skip?'turn':'encounter');
  }
@@ -169,7 +169,7 @@ class BattleEngine{
  ring(cx,cy,R,gap,{gapW=.9,close=1.6,warn=.6}={}){this.emit('cue');return this.spawn({kind:'ring',x:cx,y:cy,R,r:R,gap,gapW,close:close/this.config.speed,warn:warn*this.config.warn});}
  heart(cx,cy,{size=58,warn=1,close=.9}={}){this.emit('cue');return this.spawn({kind:'heart',x:cx,y:cy,size,scale:1,warn:warn*this.config.warn,close});}
  // ------------------------------------------------------------ physics
- hurt(amount=this.config.damage){if(this.invulnerability>0||this.settings.invincible)return;this.hp=Math.max(0,this.hp-amount);this.invulnerability=this.config.cooldown;this.shake=.18;this.emit('hurt');if(!this.hp){this.state='dead';this.deathAge=0;this.bullets=[];this.timeline=[];this.dark=0;this.emit('dead');}}
+ hurt(amount=this.config.damage){if(this.invulnerability>0||this.settings.invincible)return;this.hp=Math.max(0,this.hp-amount);this.invulnerability=this.config.cooldown;this.shake=.18;this.effects.push({type:'vignette',color:'255,40,60',life:.35});this.emit('hurt');if(!this.hp){this.state='dead';this.deathAge=0;this.bullets=[];this.timeline=[];this.dark=0;this.emit('dead');}}
  hitTest(b,s){
   if(b.kind==='thorn'){if(b.age<b.warn||b.fizzle)return false;const L=b.cur||0;if(L<4)return false;const rx=s.x-b.x,ry=s.y-b.y,t=rx*b.dx+ry*b.dy,perp=Math.abs(rx*b.dy-ry*b.dx);if(t<-3||t>L+2)return false;return perp<(b.w*.32)*(1-t/L*.7)+4;}
   if(b.kind==='lance'){if(b.age<b.warn)return false;const cx=Math.cos(b.angle),cy=Math.sin(b.angle),rx=s.x-b.tx,ry=s.y-b.ty,t=-(rx*cx+ry*cy),perp=Math.abs(rx*cy-ry*cx);return t>-6&&t<b.len&&perp<b.w/2+3;}
@@ -187,7 +187,7 @@ class BattleEngine{
   if(this.boss.poseTime>0){this.boss.poseTime-=dt;if(this.boss.poseTime<=0)this.boss.pose='idle';}
   if(this.boss.dying!==undefined)this.boss.dying+=dt;
   if(this.scene==='world'){this.world.update(dt,input);if(this.state==='dialogue')this.displayChars=Math.min(this.text.length,this.displayChars+dt*36);return;}
-  if(this.state==='encounter'){this.encounter+=dt;if(this.encounter>1.25){this.toMenu(true);this.message(S.N(this.genocide?'* Marigold attacks!':'* Marigold blocks the way!'),'menu');}return;}
+  if(this.state==='encounter'){this.encounter+=dt;if(this.encounter>1.55){this.toMenu(true);this.message(S.N(this.genocide?'* Marigold attacks!':'* Marigold blocks the way!'),'menu');}return;}
   // Arena easing and drifting.
   if(this.motion&&this.state==='defend'){const m=this.motion,t=this.attackTime-m.start,shrink=Math.min(t*(m.shrink||0),m.max||0);this.targetArena={x:m.base.x+shrink/2,y:m.base.y+shrink*.3,w:m.base.w-shrink,h:m.base.h-shrink*.6};}
   for(const k of ['x','y','w','h']){const d=this.targetArena[k]-this.arena[k];this.arena[k]+=Math.abs(d)<.3?d:d*Math.min(1,dt*12);}
@@ -208,11 +208,11 @@ class BattleEngine{
   const born=[];
   for(const b of this.bullets){
    b.age+=dt;if(b.delay&&b.age<b.delay)continue;
-   if(b.kind==='thorn'){const t=b.age-b.warn;b.cur=b.fizzle||t<0?0:t<b.rise?b.len*t/b.rise:t<b.rise+b.live?b.len:Math.max(0,b.len*(1-(t-b.rise-b.live)/b.fall));if(t>=0&&!b.sounded){b.sounded=true;this.emit(b.fizzle?'fizzle':'thorn');}if(t>b.rise+b.live+b.fall)b.gone=true;}
-   else if(b.kind==='lance'){const t=b.age-b.warn;b.tip=t<0?-26*Math.min(1,b.age/b.warn):t*b.speed;b.tx=b.x+Math.cos(b.angle)*b.tip;b.ty=b.y+Math.sin(b.angle)*b.tip;if(t>=0&&!b.sounded){b.sounded=true;this.emit('lance');}if(b.tip>900)b.gone=true;}
-   else if(b.kind==='arc'){const t=b.age-b.warn;b.prev=b.cur;b.cur=t<0?b.a0:b.a0+(b.a1-b.a0)*clamp(t/b.dur,0,1);if(t>=0&&!b.sounded){b.sounded=true;this.emit('swing');}if(t>b.dur+.25)b.gone=true;}
-   else if(b.kind==='bud'){b.x+=b.vx*dt;b.y+=b.vy*dt;if(b.age>=b.fuse){b.gone=true;born.push({kind:'pollen',x:b.x,y:b.y,R:b.R,r:0,age:0,life:1.7});for(let k=0;k<b.petals;k++){const an=k*Math.PI*2/b.petals+.4;born.push({kind:'petal',x:b.x,y:b.y,angle:an,speed:80*this.config.speed,turn:0,r:4,age:0,life:5});}this.emit('pop');}}
-   else if(b.kind==='pollen'){b.r=b.R*Math.min(1,b.age/.3);if(b.age>b.life)b.gone=true;else if(Math.hypot(s.x-b.x,s.y-b.y)<b.r*.82+3&&this.pollenTick<=0&&!this.settings.invincible){this.pollenTick=.3;this.poison=Math.min(this.advice.poison?4:this.genocide?8:5,this.poison+(this.genocide?2:1));this.emit('poisoned');}}
+   if(b.kind==='thorn'){const t=b.age-b.warn;b.cur=b.fizzle||t<0?0:t<b.rise?b.len*t/b.rise:t<b.rise+b.live?b.len:Math.max(0,b.len*(1-(t-b.rise-b.live)/b.fall));if(t>=0&&!b.sounded){b.sounded=true;this.emit(b.fizzle?'fizzle':'thorn');if(!b.fizzle){this.effects.push({type:'spark',x:b.x+b.dx*6,y:b.y+b.dy*6,dx:b.dx,dy:b.dy,life:.4});this.shake=Math.max(this.shake,.05);}}if(t>b.rise+b.live+b.fall)b.gone=true;}
+   else if(b.kind==='lance'){const t=b.age-b.warn;b.tip=t<0?-26*Math.min(1,b.age/b.warn):t*b.speed;b.tx=b.x+Math.cos(b.angle)*b.tip;b.ty=b.y+Math.sin(b.angle)*b.tip;if(t>=0&&!b.sounded){b.sounded=true;this.emit('lance');this.effects.push({type:'streak',x:b.x,y:b.y,angle:b.angle,life:.28});}if(b.tip>900)b.gone=true;}
+   else if(b.kind==='arc'){const t=b.age-b.warn;b.prev=b.cur;b.cur=t<0?b.a0:b.a0+(b.a1-b.a0)*clamp(t/b.dur,0,1);if(t>=0&&!b.sounded){b.sounded=true;this.emit('swing');this.effects.push({type:'flash',life:.14,color:'#ff8a9a'});this.shake=Math.max(this.shake,.09);}if(t>b.dur+.25)b.gone=true;}
+   else if(b.kind==='bud'){b.x+=b.vx*dt;b.y+=b.vy*dt;if(b.age>=b.fuse){b.gone=true;born.push({kind:'pollen',x:b.x,y:b.y,R:b.R,r:0,age:0,life:1.7});for(let k=0;k<b.petals;k++){const an=k*Math.PI*2/b.petals+.4;born.push({kind:'petal',x:b.x,y:b.y,angle:an,speed:80*this.config.speed,turn:0,r:4,age:0,life:5});}this.emit('pop');this.effects.push({type:'puff',x:b.x,y:b.y,r:b.R,life:.45});}}
+   else if(b.kind==='pollen'){b.r=b.R*Math.min(1,b.age/.3);if(b.age>b.life)b.gone=true;else if(Math.hypot(s.x-b.x,s.y-b.y)<b.r*.82+3&&this.pollenTick<=0&&!this.settings.invincible){this.pollenTick=.3;this.poison=Math.min(this.advice.poison?4:this.genocide?8:5,this.poison+(this.genocide?2:1));this.emit('poisoned');this.effects.push({type:'vignette',color:'67,231,80',life:.45});}}
    else if(b.kind==='petal'){b.angle+=b.turn*dt;b.x+=Math.cos(b.angle)*b.speed*dt;b.y+=Math.sin(b.angle)*b.speed*dt;}
    else if(b.kind==='orbit'){if(!b.released){b.theta+=b.spin*dt;b.x=b.cx+Math.cos(b.theta)*b.radius;b.y=b.cy+Math.sin(b.theta)*b.radius;if(b.age>=b.release){b.released=true;const d=Math.atan2(b.cy-b.y,b.cx-b.x),v=150*this.config.speed;b.vx=Math.cos(d)*v;b.vy=Math.sin(d)*v;}}else{b.x+=b.vx*dt;b.y+=b.vy*dt;}}
    else if(b.kind==='ring'){if(b.age>=b.warn){b.r=b.R*(1-clamp((b.age-b.warn)/b.close,0,1));if(b.r<=2)b.gone=true;}}

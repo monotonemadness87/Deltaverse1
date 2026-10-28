@@ -88,7 +88,7 @@ function buildAttack(g,attack){
    at(10.3,()=>g.cue('THE MAGIC THAT KILLED THEM'));every(10.5,15.5,1.5,()=>{const s=soul();g.ring(s.x,s.y,94,R()*Math.PI*2,{gapW:.95,close:1.6});});
    every(15.8,20.5,.9,rows(['bottom','top'],62));every(16,20.5,1.2,orbitSoul(8,70,1.4));break;
   case 'g-agony':
-   at(0,()=>{g.boss.alpha=.35;g.cue('THORNS OF AGONY');});
+   at(0,()=>{g.boss.alpha=.35;g.cue('THORNS OF AGONY');g.shake=.5;g.emit('rumble');g.effects.push({type:'flash',life:.3,color:'#ff3b55'});});
    every(.3,8,.42,()=>{const edge=['bottom','top','left','right'][Math.floor(R()*4)],v=edge==='top'||edge==='bottom';g.thorn(edge,v?soul().x-a.x+(R()-.5)*160:soul().y-a.y+(R()-.5)*120,{w:30,len:(v?a.h:a.w)*(.45+R()*.35)});});
    at(8.4,()=>g.cue('THE GUARD FOLLOWS HER'));every(8.6,14,1.35,ghosts(66,150,true));
    at(14.4,()=>g.cue('NEAR OR FAR'));every(14.6,20,.9,swords(.7));every(15,20,1.1,lanceAt(['left','right']));

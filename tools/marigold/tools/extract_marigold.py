@@ -17,7 +17,8 @@ def comps_in(box):
         if k in ids and ar>120:
             # component mostly inside the box
             ix=max(0,min(x1,bx1)-max(x0,bx0));iy=max(0,min(y1,by1)-max(y0,by0))
-            if ix*iy>=.5*(bx1-bx0)*(by1-by0):keep.append(k)
+            # Poses that touch a neighbour on the sheet share one shape: keep its part inside this box.
+            if ix*iy>=.5*(bx1-bx0)*(by1-by0) or ix*iy>=.3*(x1-x0)*(y1-y0):keep.append(k)
     return keep
 FR={
  'idle0':(22,160,111,330),'idle1':(116,160,205,330),'idle2':(212,160,301,330),'idle3':(309,160,398,330),
@@ -26,7 +27,7 @@ FR={
  'swing0':(494,368,689,543),'swing1':(645,366,915,543),'thrust':(894,395,1121,543),
  'spell0':(1135,388,1265,544),'spell1':(1272,358,1398,544),'spell2':(1398,358,1521,544),
  'summon0':(12,604,171,774),'summon1':(170,604,311,774),'summon2':(311,604,453,774),
- 'shower0':(466,606,546,775),'shower1':(548,606,722,776),'shower2':(722,606,872,777),
+ 'shower0':(466,606,546,775),'shower1':(548,606,722,776),'shower2':(722,606,861,777),
  'hurt0':(873,640,966,775),'hurt1':(965,640,1069,775),
  'defeat0':(1085,650,1173,772),'defeat1':(1177,660,1273,771),'defeat2':(1287,690,1395,783),'defeat3':(1395,690,1503,783),
  'back':(1151,850,1251,988),
