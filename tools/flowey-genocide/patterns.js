@@ -1,6 +1,6 @@
 modules["patterns.js"]=(exports,require)=>{
 const {beginBroadcast,spawnSweep,verticalLanes}=require("spamtenna-scenes.js");
-const {encoreCurtain,encoreSpotlight,riftTargeted,riftVolley}=require("stolen-scenes.js");
+const {encoreCurtain,encoreSpotlight,marigoldThorns,marigoldLance,marigoldRain,marigoldShower,marigoldGuard}=require("stolen-scenes.js");
 const {AMBIENT}=require("story.js");
 const ROOM={x:180,y:248,w:408,h:220},SQUARE={x:299,y:262,w:170,h:170},FACE={x:30,y:226,w:708,h:240},BIG={x:40,y:262,w:688,h:204};
 // Where his act-three body is on screen: eyes, jaw, petal ring centre, arm tips.
@@ -17,7 +17,7 @@ const PLAN=[
  {id:'rug3',type:'rug'},{id:'face3',type:'face',name:'DELETE SETH',duration:13,arena:FACE},{id:'waterfall',type:'chase',name:'THE HAMMER STOPPED',duration:26},{id:'montage',type:'chase',name:'NO SHORTCUTS',duration:14},
  {id:'dark',type:'dark'},
  A('body','A SOUL THAT WILL NOT TEAR',18,BIG),A('theatre','THE EMPTIED THEATRE',20,BIG),{id:'page0',type:'memory',index:0},
- A('cataclysm','CATACLYSM',20,BIG),{id:'page1',type:'memory',index:1},
+ A('marigold','THORNS OF AGONY',20,BIG),{id:'page1',type:'memory',index:1},
  A('gerson','NOTHING FOR YOU',20,BIG),{id:'page2',type:'memory',index:2},
  A('neo','A DEAL ALREADY BROKEN',21,BIG),{id:'page3',type:'memory',index:3},
  A('muffet','THE EMPTY NEST',20,BIG),{id:'page4',type:'memory',index:4},
@@ -27,7 +27,7 @@ const PLAN=[
 const DARK_STEP=PLAN.findIndex(s=>s.type==='dark');
 // He is not bored this time. His own attacks repeat about 40% more often than the false-pacifist fight, the replays 10% more often than their own games,
 // and the screen keeps breaking into static: he SAVEs and LOADs whenever he likes.
-const REPLAYS=['theatre','cataclysm','gerson','neo','muffet','misery'];
+const REPLAYS=['theatre','marigold','gerson','neo','muffet','misery'];
 function buildAttack(g){
  const every=g.every,scale=REPLAYS.includes(g.pattern)?.9:.6;g.every=(s,e,d,fn)=>every.call(g,s,e,d*scale,fn);try{build(g);}finally{g.every=every;}
  if(g.scene!=='face')for(let t=1.7+(g.round%3)*.6,k=0;t<g.duration-1;t+=g.act===3?2.9:4.2,k++){g.at(t,()=>g.glitch(g.act===3?.45:.3));if((k+g.round)%3===1)g.at(t+.6,()=>g.cut('memory',.2,'laugh',''));}
@@ -58,8 +58,7 @@ function build(g){
  const bones=(i,speed=205)=>{const aa=g.targetArena,h=22+(i*13)%34,from=i%2===0;g.spawn({kind:'bone',x:from?aa.x-10:aa.x+aa.w+10,y:aa.y+aa.h-h/2-2,w:12,h,vx:(from?1:-1)*speed*sp(),delay:.3,life:4});};
  const blast=(i)=>{const s=g.soul,t=i*1.9+.6,r=170,x=clamp(s.x+Math.cos(t)*r,40,728),y=clamp(s.y+Math.sin(t)*r,150,520);g.blaster(x,y,Math.atan2(s.y-y,s.x-x),30,1.05*g.config.warning);};
  const coreBeam=(i)=>{const aa=g.targetArena;g.spawn({kind:'beam',x:aa.x+aa.w/2,y:aa.y+aa.h/2,angle:i*.9,width:20,warning:.9*g.config.warning,live:1.7,spin:i%2?-.55:.55,color:i%2?'blue':'orange'});g.emit('cue');};
- // Rift's cataclysm: a lattice with one open column, orbiting blades, crossed cuts.
- const lattice=i=>{const aa=g.targetArena,s=g.soul,vertical=i%2===0,n=vertical?6:3,step=(vertical?aa.w:aa.h)/n,gap=clamp(Math.floor((vertical?s.x-aa.x:s.y-aa.y)/step),0,n-1);for(let k=0;k<n;k++)if(k!==gap)g.beam(vertical?aa.x+(k+.5)*step:aa.x+aa.w/2,vertical?aa.y+aa.h/2:aa.y+(k+.5)*step,vertical?Math.PI/2:0,Math.max(8,step-30),1.2,.3);};
+ // His own ring of flowers: they circle you, then close in (drawn as Marigold's buttercups).
  const orbit=(i,count=8,cx=384,cy=352,radius=96)=>{for(let k=0;k<count;k++)g.spawn({kind:'orbit',art:k%2?'sword':'eye',r:6,cx,cy,x:cx,y:cy,theta:i*.51+k*Math.PI*2/count,radius,spin:i%2?-1.2:1.2,release:1.8,delay:.6,life:4.6});g.emit('cue');};
  // His own slash: a red band flickers across you, the screen cuts to static, and the gash is there when it comes back.
  const slash=(i,at=g.soul)=>{g.spawn({kind:'beam',x:at.x,y:at.y,angle:(i%2?.62:-.62)+((i*37)%5-2)*.14,width:46,warning:.95*g.config.warning,live:.14,color:'slash'});g.emit('cue');};
@@ -125,12 +124,14 @@ function build(g){
   g.at(.1,()=>cue('NO OVERTURE',1.6));g.every(.2,6.4,.8,i=>sweep(i,50));g.every(2,6.4,2.8,()=>g.beam(g.soul.x,g.soul.y,Math.PI/4,12,.72,.22));
   g.at(6.7,()=>cue('DEAD CENTER',1.6));g.every(6.8,13.2,.64,i=>{g.beam(g.soul.x,g.soul.y,[0,Math.PI/2,Math.PI/4,-Math.PI/4][i%4],14,.66,.25);if(i%4===3)wheel(i,10);});
   g.at(13.5,()=>{g.breakBox({x:232,y:252,w:304,h:214});cue('FOURTH WALL',1.6);});g.every(13.8,19.4,.65,i=>slab(['left','top','right','bottom'][i%4],45,.67,.25));g.every(14.6,19.4,1.7,i=>g.beam(g.soul.x,g.soul.y,i%2?Math.PI/4:-Math.PI/4,10,.76,.22));
- }else if(p==='cataclysm'){
-  // RIFT’s cataclysm: the room is a knife, then the crown’s orbit, then two hearts.
-  g.replay='cataclysm';g.changeArena({x:150,y:252,w:468,h:212});
-  g.every(.3,5.8,1.5,lattice);g.every(.8,5.8,1.1,i=>riftTargeted(g,i));
-  g.at(6.4,()=>{g.breakBox({x:258,y:226,w:252,h:252});g.circle=true;g.soul.x=472;g.soul.y=352;cue('KEEP CIRCLING',2);});g.every(7,12.6,1.9,i=>orbit(i));g.every(7.8,12.6,2.6,i=>g.spawn({kind:'beam',x:384,y:352,angle:i*.71,width:9,warning:1.1*g.config.warning,live:1.3,spin:i%2?-.45:.45}));
-  g.at(13,()=>{dual();cue('OPPOSITE HEARTS',2);});g.every(13.5,19.4,1.3,i=>crossed(i));g.every(14,19.4,2.2,i=>riftVolley(g,i%2?g.echo.x+g.echo.w/2:g.arena.x+g.arena.w/2,g.arena.y-10,9,82,i*.3));
+ }else if(p==='marigold'){
+  // MARIGOLD's hunt: thorns and her lance from every side, then the dead Royal Guard marching both ways, then her poison.
+  // Halfway through he starts to talk about her, and the static cuts him off.
+  g.replay='marigold';g.changeArena({x:150,y:252,w:468,h:212});
+  g.every(.3,6,1.15,i=>marigoldThorns(g,i,66));g.every(.8,6,1,i=>marigoldLance(g,i));
+  g.at(6.4,()=>{g.breakBox({x:110,y:262,w:548,h:196});cue('THE LAST GUARD',2);});g.every(6.9,12.6,1.5,i=>marigoldGuard(g,i,64,140,true));g.every(8,12.6,2.4,i=>marigoldLance(g,i+1));
+  g.at(10,()=>g.say('She knelt down and told me it wasn’t my—',10,1.6));g.at(11.5,()=>{g.glitch(1.3,'SKIP');g.say('NEXT.',9,1.4);});
+  g.at(13,()=>{g.breakBox({x:232,y:252,w:304,h:214});cue('SACRED POISON',2);});g.every(13.4,19.4,2.2,i=>marigoldShower(g,i,9,78));g.every(13.8,19.4,1,i=>marigoldRain(g,i,2));
  }else if(p==='gerson'){
   rewind(3.2,5.6);
   // GERSON: arrows from four sides; the hammer turns the box and shells bounce; then shells on the strings.
@@ -162,7 +163,7 @@ function build(g){
   const lash=i=>{const e={x:i%2?800:-32,y:200+(i*53)%110},s=g.soul;g.beam(s.x,s.y,Math.atan2(s.y-e.y,s.x-e.x),14,.95,.3);};
   g.changeArena({x:168,y:250,w:432,h:216});each(.4,5.6,.9,i=>{lash(i);if(i%2)g.ring(384,300,10,104,i*.35);});
   g.at(6,()=>{g.breakBox({x:96,y:266,w:576,h:196});cue('NO ENCORE',1.6);});each(6.4,10.4,1,i=>encoreCurtain(g,i,60));
-  g.at(10.8,()=>{g.breakBox({x:258,y:226,w:252,h:252});g.circle=true;g.soul.x=472;g.soul.y=352;cue('NO LITTLE LIGHT',1.6);});each(11.2,15,1.7,i=>orbit(i));
+  g.at(10.8,()=>{g.breakBox({x:258,y:226,w:252,h:252});g.circle=true;g.soul.x=472;g.soul.y=352;cue('NO FLOWERS LEFT',1.6);});each(11.2,15,1.7,i=>orbit(i));
   g.at(15.4,()=>{g.breakBox({x:264,y:258,w:240,h:200});cue('NO SHIELD',1.6);});each(15.8,20,.55,i=>arrow(i,220));
   g.at(20.4,()=>{g.breakBox({x:120,y:262,w:528,h:196},'purple');g.lane=1;cue('NO NEST',1.6);});each(20.8,25,1.2,i=>procession(i,3,160));g.at(23,()=>pet(clamp(g.soul.x,180,588)));
   g.at(25.4,()=>{g.breakBox({x:180,y:282,w:408,h:160},'blue');cue('NO ONE TO CATCH YOU',1.6);});each(25.8,29.6,.66,i=>bones(i,215));g.at(27.6,()=>blast(1));

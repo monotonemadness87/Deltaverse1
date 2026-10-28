@@ -6,7 +6,7 @@ module from the source fight, renamed to the name Flowey requires:
 
   sans.html     art.js          -> sans-art.js      (class SansArt)
   sans.html     blaster-beam.js -> blaster-beam.js  (skull and beam lifecycle)
-  rift.html     art.js          -> crown-art.js     (class CrownArt, pixel-crisp at draw size; Rift is retired, read from archive/)
+  marigold.html marigold-art.js -> marigold-art.js  (class MarigoldArt: her frames, for the Snowdin memories)
   mettalot.html art.js          -> ghost-art.js     (class GhostArt, palette-snapped)
   encore.html   sprite-atlas.js -> sprite-atlas.js
   encore.html   attack-art.js   -> encore-art.js    (batons, curtain slabs, stars, spotlights)
@@ -32,10 +32,7 @@ def module(text, name):
 
 
 def source(game, name, rename=None, swaps=()):
-    path = ROOT / 'games' / (game + '.html')
-    if not path.exists():
-        path = ROOT / 'archive' / (game + '.html')
-    text = path.read_text(encoding='utf-8')
+    text = (ROOT / 'games' / (game + '.html')).read_text(encoding='utf-8')
     span = module(text, name)
     if not span:
         raise ValueError(f'{game}.html has no {name}')
@@ -57,7 +54,7 @@ def image_after(text, marker):
 MODULES = [
     ('blaster-beam.js', source('sans', 'blaster-beam.js'), 'sans-art.js'),
     ('sans-art.js', source('sans', 'art.js', 'sans-art.js', [('class Art{', 'class SansArt{'), ('Object.assign(exports,{SANS_ANCHORS,SANS_HEADS,sansPose,Art});', 'Object.assign(exports,{SANS_ANCHORS,SANS_HEADS,sansPose,SansArt});')]), None),
-    ('crown-art.js', source('rift', 'art.js', 'crown-art.js'), None),
+    ('marigold-art.js', source('marigold', 'marigold-art.js'), 'encore-art.js'),
     ('ghost-art.js', source('mettalot', 'art.js', 'ghost-art.js'), None),
     ('sprite-atlas.js', source('encore', 'sprite-atlas.js'), 'encore-art.js'),
     ('encore-art.js', source('encore', 'attack-art.js', 'encore-art.js'), None),

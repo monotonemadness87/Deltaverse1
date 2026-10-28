@@ -3,7 +3,7 @@ const path = require('path');
 const { load } = require('./loader');
 const GAMES_DIR = path.resolve(__dirname, '../../games');
 const GAMES = {
-  encore: { cls: 'BattleEngine' }, rift: { cls: 'BattleEngine' }, lab: { cls: 'BattleEngine' },
+  encore: { cls: 'BattleEngine' }, lab: { cls: 'BattleEngine' },
   gerson: { cls: 'GersonBattle', nav1: true }, mettalot: { cls: 'ShowBattle' }, sans: { cls: 'Battle' }, 'sans-genocide': { cls: 'Battle' },
   flowey: { cls: 'MindBattle' }, 'flowey-genocide': { cls: 'MindBattle', seekPage: true }, spamtenna: { cls: 'LobbyBattle', nav1: true }, 'spamson-neo': { cls: 'NeoBattle' },
   aqua: { cls: 'AquaBattle', args: () => [{ memory: null, saveMemory: () => {}, finalOnly: false }] },

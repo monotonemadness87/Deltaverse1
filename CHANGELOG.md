@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-10-28 — Flowey's Snowdin memories are Marigold's now
+
+Rift is out of both Flowey fights and out of the repo (git history keeps it).
+- **False pacifist:**
+  - THE CHILD IS STILL ASLEEP is now SHE KEPT THE FLOWERS, in four parts:
+    - rows of her thorns with a gap near you;
+    - buttercups that burst into petals;
+    - her lance at your height (sometimes your column);
+    - the flower shower closing on where you stood.
+  - Flowey's lines crack: she promised him a SOUL, she knelt in the snow and told him it wasn't his fault, "...Stop looking at me like that!"
+  - The Snowdin chase throws her red thorns instead of ice, and its lines are about the statue.
+  - Memory page THE DOOR is now THE STATUE: "A copper girl in a dead child's crown. You asked who she used to be." Flowey: "She wasn't your friend. She was MINE." / "...She was supposed to be mine."
+- **False genocide:**
+  - CATACLYSM is now THORNS OF AGONY: her thorns and lance, then the dead Royal Guard marching both ways, then a closing flower shower with buttercup rain.
+  - Halfway through, Flowey starts "She knelt down and told me it wasn't my—" and the static cuts him off ("SKIP", "NEXT.").
+  - Page THE BROKEN DOOR is now THE EMPTY STATUE ("The copper did not even turn to dust.").
+  - The FILE 2 — SNOWDIN cut shows her face.
+  - COURSE CORRECTION's "NO LITTLE LIGHT" is now "NO FLOWERS LEFT". Its orbiting blades are buttercups.
+- **Colour:** replays stay grey, but her buttercups keep their yellow.
+- **Art:** `tools/sync_borrowed_art.py` now copies `marigold-art.js` from `marigold.html` in place of Rift's crown art.
+- **Measured:** a random dodger takes about 25 hits/min in the false-pacifist replay. The Rift replay was about 12.5, so that's double, over the ±50% line. It's in line with the other replays (24–31). Standing still: 32 (was 46). False genocide: 31 (was 26) for a random dodger, 41 (was 46) standing still. Both fights still play to their endings in the regression bot.
+
 ## 2026-10-28 — Marigold replaces Rift in Snowdin
 
 The designer retired Rift. Snowdin's encounter is now **MARIGOLD — The Forgotten Memorial** (`games/marigold.html`, built from `tools/marigold/`):
