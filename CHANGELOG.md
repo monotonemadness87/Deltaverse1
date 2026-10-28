@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-28 — Seth walks sideways with his front view
+
+At the designer's request the drawn profile is gone. Walking left uses Seth's front frame, a three-quarter view already turned to his left. Walking right uses the same frame mirrored. Both keep its step frames. The back view stays.
+
 ## 2026-10-28 — Seth's back and profile follow the designer's full-colour art
 
 The designer sent full-colour art of Seth. The front frame (theirs) already matched; the back and side are redrawn to it:

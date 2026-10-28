@@ -1,6 +1,6 @@
 # Human Seth's overworld walk, built on the designer's Flower Seth sheet: the front idle frame is theirs
-# (recoloured to human skin, pure black outline); the back, the profile and every step frame are drawn to match,
-# after their full-colour art: dark hair underlayers, a long coat with flaring tails, baggy trousers, chunky sneakers.
+# (recoloured to human skin, pure black outline) and also serves left and right (mirrored); the back and every step frame
+# are drawn to match, after their full-colour art: dark hair underlayers, a long coat with split tails, baggy trousers, chunky sneakers.
 import sys, json
 from PIL import Image
 
@@ -50,50 +50,6 @@ FRONT = [
 ".....kwwwwnnwwwwnnn.....",
 "......nnnnkkwwwwwn......",
 "............knnnn.......",
-]
-SIDE = [
-"........................",
-"..........kkkkkk........",
-"........kkhhhhhhkk......",
-".......khhhLLhhhhhk.....",
-"......khhhLLhhhhhhhk....",
-".....khhhhhhhhhhhhhhk...",
-".....khhkkhhhhhhhhhhk...",
-"....khhksskHhhhhhhhhhk..",
-"....khksssskHhhhhhhhhk..",
-"....kkkkksskHhhhhhhhhk..",
-"...kwkwkksskHhhhhhhhhk..",
-"...kkkkkssskHhhhhhhhhk..",
-"....ksssssskhHhhhhhhhk..",
-"...kssssssskhHhhhhDhhk..",
-"....kSssssskhHhhhDDhhk..",
-"....kkSsssskhHhhDDhhhk..",
-".....kkSSskhHhhDDhhhhkk.",
-"......kkkkcchHDDhhhhDDk.",
-"......kcccckhDDhhhhDDDk.",
-".....kcccccckDhhhhDDk...",
-".....kccccccckDhhDDk....",
-".....kcccccccckDDDk.....",
-"....kcccHccccccckk......",
-"....kccHcccccccccck.....",
-"....kccHccccccccccck....",
-"....kcHkNNkcccccccck....",
-"....kcHkNwNkcccccccck...",
-"....kckkNwNkccccccccck..",
-"....kskkNNNkcccccccccck.",
-"....kkkkNNNkccccccccccck",
-"....kcccckkcccccccccCCCk",
-"....kCcccccccccccCCCCkk.",
-".....kCCCCCCCCCCCCkkk...",
-".....kknnnnnnnkk........",
-"......knnnnnnnk.........",
-"......knNnnnnnk.........",
-"......knNnnNnnk.........",
-"......knNnkNnnk.........",
-"....kwwwwkwwwwwk........",
-"...kwwwwwkwwwwwk........",
-"...knnnnnknnnnnk........",
-"....kkkkkkkkkkk.........",
 ]
 BACK = [
 "........................",
@@ -202,14 +158,16 @@ def image(g):
 
 
 def main(out):
-    front, side = grid(FRONT), grid(SIDE)
+    front = grid(FRONT)
     back = grid(BACK)
     frames = {}
-    for name, base, feet in (('down', front, [[(2, 11, 0, -1)], [(12, 21, 0, -1)]]), ('up', back, [[(2, 10, 0, -1)], [(11, 21, 0, -1)]]), ('left', side, [[(3, 9, -1, 0), (10, 16, 1, 0)], [(3, 9, 1, -1), (10, 16, -1, 0)]])):
+    for name, base, feet in (('down', front, [[(2, 11, 0, -1)], [(12, 21, 0, -1)]]), ('up', back, [[(2, 10, 0, -1)], [(11, 21, 0, -1)]])):
         a, b = steps(base, feet)
         frames[name + '_stand'], frames[name + '_stepA'], frames[name + '_stepB'] = image(base), image(a), image(b)
+    # Walking sideways uses the front frame, a three-quarter view already turned to his left; mirrored for right.
     for k in ('stand', 'stepA', 'stepB'):
-        frames['right_' + k] = frames['left_' + k].transpose(Image.FLIP_LEFT_RIGHT)
+        frames['left_' + k] = frames['down_' + k]
+        frames['right_' + k] = frames['down_' + k].transpose(Image.FLIP_LEFT_RIGHT)
     names = list(frames)
     atlas = Image.new('RGBA', (W * len(names), 42), (0, 0, 0, 0))
     place = {}
