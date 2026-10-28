@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-28 — Marigold's thorns lunge with Flowey's vine yowl
+
+Her thorn rows and her lance now play the designer's Omega yowl, the same sound Flowey's vines make in both of his fights. As in his fights it plays at most once per 0.12 s, so a whole row of thorns is one lunge rather than a pile-up. Each lunge varies its pitch a little; the lance is slightly higher. Her sword swings keep the slash.
+
 ## 2026-10-28 — Marigold: her themes, real sound, new art, and a fight that pops
 
 - **Music:** THE TRAP now plays the designer's "The King's Dream" and THE HUNT plays "Thorns of Agony". Each starts from the top when its battle begins. The walk keeps a quiet music box over wind.

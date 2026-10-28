@@ -22,7 +22,7 @@ class StageAudio{
    if(!this.master){
     this.master=this.context.createGain();this.master.gain.value=0;this.master.connect(this.context.destination);
     this.music=this.context.createGain();this.music.gain.value=.5;this.music.connect(this.master);this.noise=this.makeNoise();
-    for(const name of ['damage','select','slash','ding','heavy','txt'])fetch(SOUNDS[name]).then(r=>r.arrayBuffer()).then(b=>this.context.decodeAudioData(b)).then(buf=>{this.buffers[name]=buf;}).catch(()=>{});
+    for(const name of ['damage','select','slash','ding','heavy','txt','yowl'])fetch(SOUNDS[name]).then(r=>r.arrayBuffer()).then(b=>this.context.decodeAudioData(b)).then(buf=>{this.buffers[name]=buf;}).catch(()=>{});
    }
    await this.context.resume();
   }catch{/* The themes can still play without Web Audio. */}
@@ -75,9 +75,10 @@ class StageAudio{
    kill:()=>S('heavy',{gain:.9,rate:.7}),
    spare:()=>S('ding',{gain:.8,rate:.9}),
    swing:()=>S('slash',{gain:.55,rate:.85}),
-   lance:()=>S('slash',{gain:.4,rate:1.25}),
+   lance:()=>this.yowl(.55,1.12)||S('slash',{gain:.4,rate:1.25}),
    aquaCut:()=>S('slash',{gain:.6,rate:1.5}),
-   thorn:()=>{this.burst(.08,.07,3600);this.tone(1320+Math.random()*300,.05,'triangle',.04);},
+   // Her thorns and lance lunge like Flowey's vines, so they share his yowl (once per burst, as in his fights).
+   thorn:()=>this.yowl(.42)||(this.burst(.08,.07,3600),this.tone(1320+Math.random()*300,.05,'triangle',.04)),
    fizzle:()=>this.burst(.04,.06,5000),
    cue:()=>this.tone(880,.03,'triangle',.05),
    pop:()=>this.tone(1046,.05,'sine',.05),poisoned:()=>this.tone(220,.12,'sawtooth',.04),poison:()=>this.tone(180,.05,'triangle',.035),
@@ -88,6 +89,7 @@ class StageAudio{
   };
   map[name]?.();
  }
+ yowl(gain,rate=1){const now=this.context?.currentTime??0;if(now-(this.lastYowl??-1)<.12)return true;const ok=this.sample('yowl',{gain,rate:rate*(.94+Math.random()*.12)});if(ok)this.lastYowl=now;return ok;}
  // snd_txt1: only its short click, pitched for the speaker.
  blip(speaker){if(!this.sample('txt',{rate:(VOICE[speaker]||1)*(speaker==='boss'?1+Math.random()*.05:1),gain:.55,duration:.06}))this.tone(200,.03,'square',.06);}
 }
