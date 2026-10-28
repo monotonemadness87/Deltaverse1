@@ -305,7 +305,7 @@ Marigold replaced Rift in Snowdin. The designer retired Rift ("doesn't fit the l
   - Her frames are cleaned from the designer's example sheet.
   - Human Seth is an original sprite after the Flower Seth sheet.
   - Aqua's art is copied live from `aqua.html`.
-  - Music: the designer's themes. THE TRAP plays "The King's Dream" (a Deltarune fan track); THE HUNT plays "Thorns of Agony" (a fan remaster). The walk keeps a quiet synthesized music box with wind.
+  - Music: the designer's themes. THE TRAP plays "The King's Dream" (a Deltarune fan track); THE HUNT plays "Thorns of Agony" (a fan remaster). The walk plays the designer's "Glowing Snow" (DELTARUNE) over synthesized wind: 1.15× faster and higher on the trap, as supplied on the hunt.
   - Effects are UNDERTALE's own sounds that PURPLE already uses (hurt, select, slash, ding, heavy hit). All text uses the designer's snd_txt1, pitched per speaker.
   - The rooms and the battle backdrop are pixel art painted at 1x by `tools/marigold/tools/paint_rooms.py`, with trap and hunt variants.
 

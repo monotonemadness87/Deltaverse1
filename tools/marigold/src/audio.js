@@ -1,17 +1,17 @@
 // The designer's themes: "The King's Dream" for the trap, "Thorns of Agony" for the hunt.
 // Effects are UNDERTALE's own sounds already used across PURPLE (hurt, select, slash, ding, heavy hit), and the
-// designer's snd_txt1 for every line of text. The walk keeps a quiet synthesized music box and wind.
+// designer's snd_txt1 for every line of text. The walk plays "Glowing Snow" over synthesized wind.
 const SOUNDS=__SOUNDS__;
-const MELODY=[[69,2],[65,1],[67,1],[69,1],[74,1],[72,2],[69,1],[65,3],[64,2],[65,1],[67,1],[69,1],[70,1],[69,2],[67,1],[64,3]];
-const hz=m=>440*Math.pow(2,(m-69)/12);
 // Text voices: snd_txt1 at a pitch per speaker.
 const VOICE={narrator:1,boss:1.32,aqua:.86,flowey:1.55,seth:.78};
 class StageAudio{
  constructor(){
   this.enabled=false;this.paused=false;this.context=null;this.master=null;this.mode='off';this.nextTime=0;this.step=0;this.timer=null;this.userMuted=false;this.buffers={};
-  this.tracks={trap:new Audio(SOUNDS.trap),hunt:new Audio(SOUNDS.hunt)};
+  // The walk plays "Glowing Snow": as supplied on the hunt, higher and faster on the trap (one rate, pitch not preserved).
+  this.tracks={trap:new Audio(SOUNDS.trap),hunt:new Audio(SOUNDS.hunt),walk:new Audio(SOUNDS.walk)};
   for(const t of Object.values(this.tracks)){t.loop=true;t.preload='auto';}
-  this.tracks.trap.volume=.5;this.tracks.hunt.volume=.46;
+  this.tracks.trap.volume=.5;this.tracks.hunt.volume=.46;this.tracks.walk.volume=.45;
+  const w=this.tracks.walk;w.preservesPitch=false;w.mozPreservesPitch=false;w.webkitPreservesPitch=false;
  }
  async enable(value){
   this.enabled=value;
@@ -32,7 +32,8 @@ class StageAudio{
  updateGain(){if(this.master)this.master.gain.setTargetAtTime(this.enabled&&!this.paused&&!this.gameOver?.9:0,this.context.currentTime,.05);}
  syncTracks(){
   for(const [name,t] of Object.entries(this.tracks)){
-   const on=this.enabled&&!this.paused&&!this.gameOver&&this.mode===name;
+   const on=this.enabled&&!this.paused&&!this.gameOver&&(this.mode===name||name==='walk'&&(this.mode==='walk'||this.mode==='walkHunt'));
+   if(name==='walk'){const rate=this.mode==='walk'?1.15:1;if(t.playbackRate!==rate)t.playbackRate=rate;}
    if(on&&t.paused)t.play().catch(()=>{});else if(!on&&!t.paused)t.pause();
   }
  }
@@ -45,18 +46,12 @@ class StageAudio{
   if(paused!==this.paused||gameOver!==this.gameOver){this.paused=paused;this.gameOver=gameOver;this.updateGain();}
   this.syncTracks();this.schedule();
  }
- // The walk: a sparse music box over wind.
+ // The walk: gusts of wind under "Glowing Snow", stronger on the hunt.
  schedule(){
   if(!this.enabled||!this.context||!this.master||this.paused)return;const c=this.context;if(this.nextTime<c.currentTime)this.nextTime=c.currentTime+.05;
   if(this.mode!=='walk'&&this.mode!=='walkHunt')return;
-  const beat=.62,hunt=this.mode==='walkHunt',total=MELODY.reduce((n,x)=>n+x[1],0);
-  while(this.nextTime<c.currentTime+.5){
-   const t=this.nextTime,s=this.step,pos=s%total;let acc=0,note=null,start=false;for(const [m,len] of MELODY){if(pos>=acc&&pos<acc+len){note=m;start=pos===acc;break;}acc+=len;}
-   if(start&&!hunt&&s%2===0)this.voice(hz(note+12),t,1.6,'triangle',.035,this.music);
-   if(hunt&&start&&s%4===0)this.voice(hz(note-12),t,1.2,'sine',.03,this.music);
-   if(s%6===0)this.wind(t,beat*6,hunt?.07:.045);
-   this.nextTime+=beat;this.step++;
-  }
+  const gust=3.7,hunt=this.mode==='walkHunt';
+  while(this.nextTime<c.currentTime+.5){this.wind(this.nextTime,gust,hunt?.06:.035);this.nextTime+=gust;}
   clearTimeout(this.timer);this.timer=setTimeout(()=>this.schedule(),150);
  }
  voice(freq,when,dur,type,gain,dest=this.master){const c=this.context,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(.0001,when);g.gain.exponentialRampToValueAtTime(gain,when+.01);g.gain.exponentialRampToValueAtTime(.0001,when+dur);o.connect(g);g.connect(dest);o.start(when);o.stop(when+dur+.02);}

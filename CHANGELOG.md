@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-28 — The walk plays "Glowing Snow"
+
+- **The walk's music:** the designer's "Glowing Snow" (DELTARUNE) replaces the synthesized music box on Marigold's walk.
+  - **Trap:** it plays 1.15× faster and higher (one rate, pitch not preserved).
+  - **Hunt:** it plays as supplied.
+  - **The file:** trimmed of its silent first second and silent last 13 seconds so it loops without a gap, and re-encoded at 128 kbps.
+- **Wind:** soft gusts of wind remain under it, stronger on the hunt.
+- **Into the battle:** her battle theme takes over when the encounter starts.
+
 ## 2026-10-28 — Seth walks sideways with his front view
 
 At the designer's request the drawn profile is gone. Walking left uses Seth's front frame, a three-quarter view already turned to his left. Walking right uses the same frame mirrored. Both keep its step frames. The back view stays.
