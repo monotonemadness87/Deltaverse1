@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-28 — Seth's back and profile follow the designer's full-colour art
+
+The designer sent full-colour art of Seth. The front frame (theirs) already matched; the back and side are redrawn to it:
+- long hair with dark underlayers and spiky tips;
+- the long magenta coat with a high collar and tails that split at the back and flare behind him in profile;
+- baggy periwinkle trousers and chunky white sneakers;
+- the notebook carried at his side when he walks sideways.
+
 ## 2026-10-28 — Marigold's thorns lunge with Flowey's vine yowl
 
 Her thorn rows and her lance now play the designer's Omega yowl, the same sound Flowey's vines make in both of his fights. As in his fights it plays at most once per 0.12 s, so a whole row of thorns is one lunge rather than a pile-up. Each lunge varies its pitch a little; the lance is slightly higher. Her sword swings keep the slash.
