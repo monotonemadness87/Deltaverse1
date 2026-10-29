@@ -49,6 +49,7 @@ def main():
     for name in SHARED:
         parts.append(module(encore, name))
     parts.append(module(aqua, 'art.js').replace('modules["art.js"]=', 'modules["aqua-art.js"]=', 1))
+    parts.append(module(read(os.path.join(ROOT, 'games', 'flowey.html')), 'flowey-art.js'))
     art = os.path.join(HERE, 'art')
     for name in OWN:
         body = read(os.path.join(HERE, 'src', name))
@@ -57,7 +58,6 @@ def main():
                         .replace('__SETH_FRAMES__', json.dumps(json.load(open(os.path.join(art, 'seth.json'))), separators=(',', ':')))
                         .replace('__MARIGOLD_PNG__', data_uri(os.path.join(art, 'marigold.png'), 'image/png'))
                         .replace('__SETH_PNG__', data_uri(os.path.join(art, 'seth.png'), 'image/png'))
-                        .replace('__FLOWEY_PNG__', data_uri(os.path.join(ROOT, 'tools', 'flowey-genocide', 'art', 'overworld-flowey.png'), 'image/png'))
                         .replace('__ROOMS__', json.dumps({n[:-4]: data_uri(os.path.join(art, 'rooms', n), 'image/png') for n in sorted(os.listdir(os.path.join(art, 'rooms')))}, separators=(',', ':'))))
         if name == 'audio.js':
             body = body.replace('__SOUNDS__', json.dumps({n[:-4]: data_uri(os.path.join(HERE, 'audio', n), 'audio/mpeg') for n in sorted(os.listdir(os.path.join(HERE, 'audio')))}, separators=(',', ':')))
@@ -67,7 +67,7 @@ def main():
     assert page.startswith(ANCHOR)
     parts.append(page[1:])
     html = ''.join(parts)
-    for token in ('__FONT_TTF__', '__LICENSE_TXT__', '__SOUL_PNG__', '__MARIGOLD_PNG__', '__SETH_PNG__', '__FLOWEY_PNG__', '__MARIGOLD_FRAMES__', '__SETH_FRAMES__', '__ROOMS__', '__SOUNDS__'):
+    for token in ('__FONT_TTF__', '__LICENSE_TXT__', '__SOUL_PNG__', '__MARIGOLD_PNG__', '__SETH_PNG__', '__MARIGOLD_FRAMES__', '__SETH_FRAMES__', '__ROOMS__', '__SOUNDS__'):
         assert token not in html, token
     out = sys.argv[1] if len(sys.argv) > 1 else OUT
     with open(out, 'w') as f:

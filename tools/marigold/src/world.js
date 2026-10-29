@@ -3,23 +3,25 @@ const S=require("story.js");
 const ROOM_DATA={
  forest:{w:1700,floor:[300,430],objects:[{id:'sign',x:300,y:300,r:52},{id:'bush',x:620,y:322,r:46},{id:'tracks',x:1060,y:388,r:56}]},
  gallery:{w:1500,floor:[330,430],objects:[0,1,2,3,4,5].map(i=>({id:'mural'+i,x:170+i*232,y:330,r:70}))},
- ledge:{w:1120,floor:[338,408],objects:[{id:'edge',x:330,y:408,r:120},{id:'door',x:962,y:338,r:46}]},
+ ledge:{w:1120,floor:[338,408],objects:[{id:'edge',x:330,y:408,r:120},{id:'save',x:560,y:352,r:46},{id:'door',x:962,y:338,r:46}]},
  memorial:{w:640,floor:[318,440],objects:[{id:'plaque',x:430,y:318,r:58}]}
 };
 class World{
  constructor(game){this.game=game;this.reset();}
- reset(){this.room='forest';this.seth={x:80,y:372,dir:'right',step:0,moving:false};this.flags={};this.fade=0;this.fadeTo=null;this.flowey=null;this.marigold=null;this.title=1.6;this.enter();}
+ reset(){this.room='forest';this.seth={x:80,y:372,dir:'right',step:0,moving:false};this.flags={};this.fade=0;this.fadeTo=null;this.flowey=null;this.marigold=null;this.thornWall=null;this.wait=null;this.title=1.6;this.enter();}
  get data(){return ROOM_DATA[this.room];}
  get genocide(){return this.game.genocide;}
  enter(){
-  this.flowey=null;this.marigold=null;this.title=1.6;
+  this.flowey=null;this.marigold=null;this.thornWall=null;this.title=1.6;
   if(this.room==='memorial'&&!this.genocide)this.marigold={x:430,y:350,facing:'back',kneel:true};
-  if(this.room==='ledge'&&this.genocide)this.marigold={x:880,y:372,facing:'front'};
   const first=!this.flags['enter_'+this.room];this.flags['enter_'+this.room]=true;
   if(first&&this.room==='gallery')this.say(S.GALLERY_ENTER);
   if(first&&this.room==='forest'&&this.genocide)this.say(S.FOREST_G.enter);
  }
  say(lines,then){this.game.message(lines,then||'world');}
+ // A short beat with Seth held still (Flowey sprouting, Marigold walking out), then the next thing.
+ pause(time,then){this.game.state='scene';this.wait={time,then};}
+ allRead(){return [0,1,2,3,4,5].every(i=>this.flags['read'+i]);}
  camera(){return Math.max(0,Math.min(this.data.w-640,this.seth.x-320));}
  go(room,x,y){this.fadeTo={room,x,y};this.fade=0;this.game.emit('door');}
  marigoldTurns(){if(this.marigold){this.marigold.facing='front';this.marigold.kneel=false;}this.game.emit('turnaround');}
@@ -33,22 +35,30 @@ class World{
   else if(o.id==='edge')this.say(g?S.LEDGE_G.edge:S.LEDGE_P.edge);
   else if(o.id==='door'){if(g)this.say([S.N('* Thorns have sealed the cave mouth.')]);else this.go('memorial',70,390);}
   else if(o.id==='plaque')this.say(S.PLAQUE);
+  else if(o.id==='save'){this.game.emit('save');this.say(g?S.SAVE_G:S.SAVE_P);}
  }
  trigger(){
   const s=this.seth,g=this.genocide;
-  if(this.room==='forest'&&!g&&!this.flags.flowey&&s.x>760){this.flags.flowey=true;this.flowey={x:Math.min(s.x+150,1600),y:372,age:0};this.say(S.FLOWEY_LURE,()=>{this.flowey.leaving=0;});}
+  // Flowey sprouts out of the snow ahead of Seth, talks once he's up, and sinks back when he's done.
+  if(this.room==='forest'&&!g&&!this.flags.flowey&&s.x>760){this.flags.flowey=true;s.dir='right';s.moving=false;this.flowey={x:Math.min(s.x+150,1600),y:Math.max(330,Math.min(410,s.y+4)),t:0,phase:'sprout'};this.game.emit('sprout');
+   this.pause(1,()=>this.say(S.FLOWEY_LURE,()=>{this.flowey.phase='sink';this.flowey.t=0;this.game.emit('sprout');this.pause(.7,()=>{this.flowey=null;});}));}
   if(this.room==='forest'&&s.x>this.data.w-24)this.go('gallery',40,380);
   if(this.room==='gallery'&&s.x>this.data.w-24)this.go('ledge',40,372);
   if(this.room==='gallery'&&s.x<16)this.go('forest',this.data.w-60,380);
   if(this.room==='ledge'&&s.x<16)this.go('gallery',ROOM_DATA.gallery.w-60,380);
   if(this.room==='ledge'&&!g&&s.x>930&&s.x<994&&s.y<=344)this.go('memorial',70,390);
   if(this.room==='memorial'&&s.x<26)this.go('ledge',962,360);
-  if(this.room==='ledge'&&g&&!this.flags.met&&s.x>700){this.flags.met=true;this.seth.dir='right';this.say(S.MEET_G,()=>this.game.startBattle());}
-  if(this.room==='memorial'&&!g&&!this.flags.met&&Math.hypot(s.x-430,s.y-350)<150){this.flags.met=true;this.say(S.MEET_P,()=>this.game.startBattle());}
+  // The hunt: thorns burst up behind Seth so there is no going back, and she walks out of the cave to meet him.
+  if(this.room==='ledge'&&g&&!this.flags.met&&s.x>680){this.flags.met=true;s.dir='right';s.moving=false;this.thornWall={x:612,t:0};this.marigold={x:962,y:345,facing:'front',walkTo:{x:860,y:372}};this.game.shake=.4;this.game.emit('thorn');this.game.emit('rumble');
+   this.pause(1.6,()=>this.say([...S.MEET_G.slice(0,1),...(this.allRead()?S.READ_G:[]),...S.MEET_G.slice(1)],()=>this.game.startBattle()));}
+  if(this.room==='memorial'&&!g&&!this.flags.met&&Math.hypot(s.x-430,s.y-350)<150){this.flags.met=true;const turn=S.MEET_P.findIndex(p=>p.turn);this.say([...S.MEET_P.slice(0,turn+4),...(this.allRead()?S.READ_P:[]),...S.MEET_P.slice(turn+4)],()=>this.game.startBattle());}
  }
  update(dt,input){
   this.title=Math.max(0,this.title-dt);
-  if(this.flowey){this.flowey.age+=dt;if(this.flowey.leaving!==undefined){this.flowey.leaving+=dt;if(this.flowey.leaving>.8)this.flowey=null;}}
+  if(this.flowey)this.flowey.t+=dt;
+  if(this.thornWall)this.thornWall.t+=dt;
+  const m=this.marigold;if(m?.walkTo){const dx=m.walkTo.x-m.x,dy=m.walkTo.y-m.y,d=Math.hypot(dx,dy),step=Math.min(d,80*dt);if(d<.5)m.walkTo=null;else{m.x+=dx/d*step;m.y+=dy/d*step;}}
+  if(this.wait&&this.game.state==='scene'){this.wait.time-=dt;if(this.wait.time<=0){const then=this.wait.then;this.wait=null;this.game.state='world';then?.();}}
   if(this.fadeTo){this.fade+=dt;if(this.fade>=.32&&!this.fadeTo.done){this.fadeTo.done=true;this.room=this.fadeTo.room;this.seth.x=this.fadeTo.x;this.seth.y=this.fadeTo.y;this.enter();}if(this.fade>=.64){this.fadeTo=null;this.fade=0;}return;}
   if(this.game.state!=='world'){this.seth.moving=false;return;}
   const s=this.seth,sx=Number(!!input.right)-Number(!!input.left),sy=Number(!!input.down)-Number(!!input.up);
@@ -58,6 +68,7 @@ class World{
   const [y0,y1]=this.data.floor;s.y=Math.max(y0,Math.min(y1,s.y));s.x=Math.max(8,Math.min(this.data.w-8,s.x));
   // Solid things: the memorial pedestal and Marigold herself.
   if(this.room==='memorial'&&s.y<336&&Math.abs(s.x-430)<62)s.y=336;
+  if(this.thornWall&&s.x<this.thornWall.x+30)s.x=this.thornWall.x+30;
   if(this.marigold&&Math.abs(s.x-this.marigold.x)<26&&Math.abs(s.y-this.marigold.y)<18)s.x=this.marigold.x+(s.x<this.marigold.x?-26:26);
   this.trigger();
  }

@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-10-29 — Marigold's walk: Flowey sprouts, a SAVE star, the hunt's ambush
+
+- **Flowey (trap):**
+  - **Sprouting:** he now really sprouts. A hole opens in the snow, he peeks out squashed, springs up past full height and settles, and only then starts talking. Afterwards he sinks back into the hole.
+  - **Sprite:** his canon battle frames (borrowed live from `flowey.html`), not the creepy chase sprite. He keeps up the friendly act: friendly face, smug on "DYING to meet you", sly on "...Hee hee." His mouth moves while he talks, in the world and in the dialogue box.
+  - **Size:** drawn at 2×, in proportion with Seth.
+  - **Sound:** his own voice blip and his pop when he appears and leaves.
+- **The hunt's ambush:** a wall of thorns bursts up across the ledge behind Seth (no going back), and Marigold walks out of the cave to meet him before she speaks.
+- **SAVE star:** a twinkling SAVE star on the ledge before the encounter. Trap: "(The smell of buttercups drifts out of the cave.) (It fills you with determination.)" Hunt: "Determination."
+- **Reading the murals pays off:** read all six and she notices ("You read the murals. All of them." / "Then you know what they did to us. And you still came." on the trap; "Good. Then you know exactly what you are." on the hunt).
+- **Text skip:** X fills in the rest of the text, as in UNDERTALE.
+- **Aqua's arrival:** she dashes in from the left edge when she arrives in the battle, instead of appearing.
+
 ## 2026-10-28 — The walk plays "Glowing Snow"
 
 - **The walk's music:** the designer's "Glowing Snow" (DELTARUNE) replaces the synthesized music box on Marigold's walk.

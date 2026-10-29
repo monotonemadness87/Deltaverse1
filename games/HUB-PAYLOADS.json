@@ -21,13 +21,13 @@
   },
   {
     "file": "flowey-genocide.html",
-    "bytes": 17245667,
-    "sha256": "5012d8053a770ae0693fb99e447750d65200869eec6d73bee92f9b885ecb8c5d"
+    "bytes": 17244648,
+    "sha256": "ba02d8b6879a50bfd6c52cb90ee20e05abecccd735122c1b8edfef88e7f34789"
   },
   {
     "file": "flowey.html",
-    "bytes": 17215727,
-    "sha256": "e92fbecd12e580cc98af54297f8a4709f3db690d65a35510a0d0be693371aa0f"
+    "bytes": 17214708,
+    "sha256": "6d6f41896eef2d1db5794debb0959468c107d564e6581750e889b80626b53eef"
   },
   {
     "file": "gerson.html",
@@ -46,8 +46,8 @@
   },
   {
     "file": "marigold.html",
-    "bytes": 15030067,
-    "sha256": "e731959c7f88b28f4921c166483c049c64cdd6df625c99aac3656be8d61c7b65"
+    "bytes": 15068658,
+    "sha256": "a7d39222abdcd48f3bf60ed321a536e2a9fbc8c4205fa9785908b4751d23f58e"
   },
   {
     "file": "mettalot.html",

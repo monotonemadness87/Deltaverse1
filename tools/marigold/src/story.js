@@ -15,14 +15,20 @@ const ROOMS={
  memorial:'THE MEMORIAL'
 };
 const SIGN=[N('* "THE OLD GALLERY IS CLOSED.\n* BY ORDER OF THE ROYAL GUARD."'),N('* The sign is older than the town.')];
+// Flowey's faces are his canon battle frames: 0 friendly, 1 smug, 2 sly. He keeps the friendly act up here.
 const FLOWEY_LURE=[
- F('smile','Howdy! Fancy seeing you all the way out here.'),
- F('smile',"The main road's snowed in. Real shame."),
- F('smile',"But there's an old path through the trees. Nobody uses it anymore."),
- F('wink',"Go on! Somebody up ahead has been DYING to meet you."),
- F('evil','...Hee hee.'),
- N('* Flowey sinks back into the snow.')
+ F(0,'Howdy! Fancy seeing you all the way out here.'),
+ F(0,"The main road's snowed in. Real shame."),
+ F(0,"But there's an old path through the trees. Nobody uses it anymore."),
+ F(1,"Go on! Somebody up ahead has been DYING to meet you."),
+ F(2,'...Hee hee.')
 ];
+// The SAVE star on the ledge, before the encounter.
+const SAVE_P=[N('* (The smell of buttercups drifts out of the cave.)'),N('* (It fills you with determination.)')];
+const SAVE_G=[N('* Determination.')];
+// Marigold notices if you read every mural on the way.
+const READ_P=[M('serious','You read the murals. All of them.'),M('sad','Then you know what they did to us. And you still came.')];
+const READ_G=[M('serious','You read the murals, too.'),M('angry','Good. Then you know exactly what you are.')];
 const FOREST_P={
  bush:[N('* A buttercup, growing out of the snow.'),N("* Someone planted it here on purpose.")],
  tracks:[N('* Small footprints lead deeper into the woods.\n* They were made by very heavy feet.')]
@@ -199,4 +205,4 @@ const KILLED_G=[M('deranged','No... no, no, no...'),M('sad','I was supposed to..
 const STRIKE_P=['The copper only cracked.','Is that all...?','Please stop.','You can hit harder than that. Can\'t you?'];
 const STRIKE_G=['Again. Come on.','Copper is stronger than flesh!','I have taken worse from better mages.','Is that all the determination you have?'];
 
-Object.assign(exports,{ROOMS,SIGN,FLOWEY_LURE,FOREST_P,FOREST_G,GALLERY_ENTER,MURALS,MURAL_EXTRA_P,MURAL_EXTRA_G,LEDGE_P,LEDGE_G,PLAQUE,MEET_P,MEET_G,CHECK,FLAVOR,FLAVOR_READY,STORY_P,STORY_G,TALK_P,TALK_EARLY,TALK_DONE,TALK_G,STAND,CALLS_P,CALL_P_AFTER,CALL_P_HERE,ARRIVAL,CALLS_G,ANNOY_P,ANNOY_G,SPARE_EARLY_P,SPARE_G,FLEE_P,FLEE_G,SPARED,KILLED_P,KILLED_G,STRIKE_P,STRIKE_G,M,N,A});
+Object.assign(exports,{ROOMS,SIGN,FLOWEY_LURE,SAVE_P,SAVE_G,READ_P,READ_G,FOREST_P,FOREST_G,GALLERY_ENTER,MURALS,MURAL_EXTRA_P,MURAL_EXTRA_G,LEDGE_P,LEDGE_G,PLAQUE,MEET_P,MEET_G,CHECK,FLAVOR,FLAVOR_READY,STORY_P,STORY_G,TALK_P,TALK_EARLY,TALK_DONE,TALK_G,STAND,CALLS_P,CALL_P_AFTER,CALL_P_HERE,ARRIVAL,CALLS_G,ANNOY_P,ANNOY_G,SPARE_EARLY_P,SPARE_G,FLEE_P,FLEE_G,SPARED,KILLED_P,KILLED_G,STRIKE_P,STRIKE_G,M,N,A});

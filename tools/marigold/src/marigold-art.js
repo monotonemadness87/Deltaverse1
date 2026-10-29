@@ -6,7 +6,7 @@ const ROOMS=__ROOMS__;
 const img=src=>{const i=new Image();i.src=src;return i;};
 const FACES={neutral:'face_neutral',smile:'face_smile',serious:'face_serious',sad:'face_sad',angry:'face_angry',deranged:'face_deranged',blink:'face_blink0',eye:'face_eye2'};
 class MarigoldArt{
- constructor(ctx){this.ctx=ctx;this.sheet=img("__MARIGOLD_PNG__");this.seth=img("__SETH_PNG__");this.floweyImg=img("__FLOWEY_PNG__");this.rooms={};for(const [k,v] of Object.entries(ROOMS))this.rooms[k]=img(v);}
+ constructor(ctx){this.ctx=ctx;this.sheet=img("__MARIGOLD_PNG__");this.seth=img("__SETH_PNG__");this.rooms={};for(const [k,v] of Object.entries(ROOMS))this.rooms[k]=img(v);}
  ready(i){return i.complete&&i.naturalWidth;}
  has(name){return !!FRAMES[name];}
  size(name){const f=FRAMES[name];return f?{w:f[2],h:f[3]}:{w:0,h:0};}
@@ -28,7 +28,6 @@ class MarigoldArt{
   if(!this.ready(this.seth))return;const phase=moving?['stepA','stand','stepB','stand'][Math.floor(t*6.5)%4]:'stand';const f=SETH[dir+'_'+phase]||SETH.down_stand,c=this.ctx;
   c.save();c.imageSmoothingEnabled=false;c.drawImage(this.seth,f[0],f[1],f[2],f[3],Math.round(x-f[2]),Math.round(y-f[3]*2),f[2]*2,f[3]*2);c.restore();
  }
- flowey(x,y,rise=1){if(!this.ready(this.floweyImg))return;const c=this.ctx,w=this.floweyImg.naturalWidth,h=this.floweyImg.naturalHeight,shown=Math.max(0,Math.min(1,rise));if(!shown)return;c.save();c.imageSmoothingEnabled=false;c.beginPath();c.rect(x-w/2,y-h,w,h);c.clip();c.drawImage(this.floweyImg,Math.round(x-w/2),Math.round(y-h*shown),w,h);c.restore();}
  // ------------------------------------------------------------- rooms
  px(x,y,w,h,col){const c=this.ctx;c.fillStyle=col;c.fillRect(Math.round(x/2)*2,Math.round(y/2)*2,Math.max(2,Math.round(w/2)*2),Math.max(2,Math.round(h/2)*2));}
  buttercup(x,y){this.px(x-1,y,2,8,'#3a6b3a');for(const [dx,dy] of [[-4,-2],[2,-2],[-3,-6],[1,-6],[-1,-4]])this.px(x+dx,y+dy-2,4,4,'#f2c93a');this.px(x-1,y-6,2,2,'#c4452f');}

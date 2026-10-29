@@ -10,9 +10,10 @@ const {StageAudio}=require("audio.js");
 const {KonamiCode}=require("konami.js");
 const {MarigoldArt}=require("marigold-art.js");
 const {AquaArt}=require("aqua-art.js");
+const {FloweyArt}=require("flowey-art.js");
 await document.fonts.load('24px "Determination"');
 const $=id=>document.getElementById(id),canvas=$('battle'),ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
-const game=new BattleEngine(),text=pixelText(ctx),audio=new StageAudio(),art=new MarigoldArt(ctx),aqua=new AquaArt(ctx),keys={},touchKeys={};
+const game=new BattleEngine(),text=pixelText(ctx),audio=new StageAudio(),art=new MarigoldArt(ctx),aqua=new AquaArt(ctx),flowey=new FloweyArt(),keys={},touchKeys={};
 let touch=null,drag=null,last=performance.now(),signature='',accumulator=0,reduceMotion=false,textSound=0,resumeAfterOptions=false;
 const soul=new Image();soul.src="__SOUL_PNG__";const soulVisual=new SoulVisual(ctx,soul);
 const konami=new KonamiCode(()=>{game.settings.invincible=!game.settings.invincible;game.effects.push({type:'cheat',life:2,text:game.settings.invincible?'INVINCIBILITY ON':'INVINCIBILITY OFF'});audio.effect('heal');syncUI();});
@@ -33,7 +34,9 @@ function renderWorld(){
  art.room(w.room,cam,t,gen,[0,1,2,3,4,5].map(i=>!!w.flags['read'+i]));
  const actors=[{y:w.seth.y,draw:()=>art.sethFrame(w.seth.dir,w.seth.moving,w.seth.step,w.seth.x-cam,w.seth.y)}];
  if(w.marigold){const m=w.marigold;actors.push({y:m.y,draw:()=>{const name=m.facing==='back'?'back':'idle'+(Math.floor(t*3)%4);art.frame(name,m.x-cam,m.y+(m.kneel?8:0),1,{clipBottom:m.kneel?10:0});}});}
- if(w.flowey){const f=w.flowey,rise=f.leaving!==undefined?1-f.leaving/.8:Math.min(1,f.age/.5);actors.push({y:f.y,draw:()=>art.flowey(f.x-cam,f.y,rise)});}
+ if(w.flowey){const f=w.flowey;actors.push({y:f.y,draw:()=>drawFlowey(f,f.x-cam)});}
+ if(w.thornWall)actors.push({y:340,draw:()=>thornWall(w.thornWall,w.thornWall.x-cam)});
+ if(w.room==='ledge')actors.push({y:348,draw:()=>saveStar(560-cam,346)});
  actors.sort((a,b)=>a.y-b.y).forEach(a=>a.draw());
  art.foreground(w.room,cam);
  if(game.state==='world'&&!w.fadeTo){const o=w.nearest();if(o){const bob=reduceMotion?0:Math.round(Math.sin(t*5)*2);text('Z',o.x-cam,o.y-118+bob,1,'#ffff00',true);}}
@@ -41,11 +44,27 @@ function renderWorld(){
  if(game.state==='dialogue')worldDialogue(w);
  if(w.fadeTo){ctx.fillStyle=`rgba(0,0,0,${Math.min(1,w.fade<.32?w.fade/.32:1-(w.fade-.32)/.32)})`;ctx.fillRect(0,0,640,480);}
 }
+// Flowey, in his canon battle frames. Sprouting: a hole opens in the snow, he peeks out squashed, springs up past
+// full height and settles. Sinking runs it backwards. While he talks his mouth moves with the text.
+function drawFlowey(f,x){
+ const t=f.phase==='sink'?Math.max(0,.9-f.t*1.3):f.t,y=f.y;let sx=1,sy=1;
+ const hole=f.phase==='sink'?Math.max(0,1-f.t/.7):Math.min(1,t/.18),r=Math.round(26*hole);
+ if(r>0){ctx.fillStyle='#1b2338';ctx.fillRect(Math.round(x-r),Math.round(y-3),r*2,5);ctx.fillStyle='#8e9bb8';ctx.fillRect(Math.round(x-r-2),Math.round(y-4),r*2+4,1);}
+ if(!reduceMotion){if(t<.18)return;if(t<.42){const u=(t-.18)/.24;sy=.22+.38*u;sx=1.35-.15*u;}else if(t<.62){const u=(t-.42)/.2;sy=.6+.65*Math.sin(u*Math.PI/2);sx=1.2-.35*u;}else if(t<.9){const u=(t-.62)/.28;sy=1.25-.25*u;sx=.85+.15*u;}}
+ else if(t<.3)return;
+ const talking=game.state==='dialogue'&&game.speaker==='flowey',face=talking?game.face:0,frame=flowey.frame(face,talking&&game.displayChars<game.text.length&&Math.floor(game.clock*11)%2===1);
+ if(!flowey.ready())return;const c=56,k=2,[fx,fy]=flowey.cell(frame),w=Math.round(c*k*sx),h=Math.round(c*k*sy),sway=t>=.9&&!reduceMotion&&!talking?Math.round(Math.sin(game.clock*2.2)*2):0;
+ ctx.save();ctx.beginPath();ctx.rect(x-c*k,y-c*k*2,c*k*2,c*k*2);ctx.clip();ctx.imageSmoothingEnabled=false;ctx.drawImage(flowey.atlas,fx,fy,c,c,Math.round(x-w/2)+sway,Math.round(y-h),w,h);ctx.restore();
+}
+// The hunt's thorn wall across the ledge behind Seth, bursting up in a ripple.
+function thornWall(tw,x){for(let k=0;k<7;k++){const u=Math.max(0,Math.min(1,(tw.t-k*.05)/.18));if(!u)continue;art.thornSpike(x+(k%2)*10-5,330+k*12,Math.round((26+(k%3)*10)*u));}}
+// UNDERTALE's SAVE point: a small twinkling star.
+function saveStar(x,y){const p=reduceMotion?0:Math.floor(game.clock*5)%3,c=p===1?'#fff7a8':'#ffe23a';ctx.fillStyle=c;ctx.fillRect(x-2,y-10,4,20);ctx.fillRect(x-10,y-2,20,4);ctx.fillRect(x-5,y-5,10,10);ctx.fillStyle='#fff';ctx.fillRect(x-1,y-6,2,2);if(p===2){ctx.fillStyle='#fff7a8';ctx.fillRect(x+9,y-11,2,2);ctx.fillRect(x-12,y+8,2,2);}}
 function worldDialogue(w){
  const top=w.seth.y>250,y=top?16:318;box(32,y,576,146,'#fff',6);
  let tx=56,width=520,max=40;const sp=game.speaker;
  if(sp==='boss'){art.portrait(game.face,52,y+22,104);tx=176;width=410;max=30;}
- else if(sp==='flowey'){art.flowey(104,y+128,1);tx=176;width=410;max=30;}
+ else if(sp==='flowey'){flowey.speaker(ctx,game.face,game.displayChars<game.text.length,game.clock,104,y+130,2);tx=176;width=410;max=30;}
  else if(sp==='aqua'){aqua.face(AQUA_FACE[game.face]??0,104,y+73,104);tx=176;width=410;max=30;}
  typedLines(wrap(game.text,max,width),game.text,shown()).slice(0,4).forEach((l,i)=>text(l,tx,y+20+i*30,2,'#fff'));
  if(game.displayChars>=game.text.length)text('Z',590,y+118,1,'#777');
@@ -155,7 +174,8 @@ function renderBattle(){
  game.locationFX?.draw();
  if(game.state==='encounter'){const t=game.encounter,f=game.encFrom||{x:320,y:300};if(t<.45){game.scene='world';const st=game.state;game.state='frozen';renderWorld();game.state=st;game.scene='battle';const bob=reduceMotion?0:Math.round(Math.sin(t*30)*2);box(f.x-12,f.y-70+bob,24,28,'#fff',2);text('!',f.x,f.y-68+bob,2,'#fff',true);return;}ctx.fillStyle='#000';ctx.fillRect(0,0,640,480);if(t<.9){if(Math.floor((t-.45)*13)%2===0||reduceMotion)heart(f.x,f.y,16,'purple');}else{const k=Math.min(1,(t-.9)/.55),e=k*k*(3-2*k);heart(f.x+(320-f.x)*e,f.y+(300-f.y)*e,16,'purple');}return;}
  art.backdrop(game.genocide,.85);ambience();
- if(game.aquaHere&&!game.genocide)aqua.pose(0,150,128,150);
+ // Aqua dashes in from the left edge when she arrives, then holds her place beside the box.
+ if(game.aquaHere&&!game.genocide){const u=reduceMotion?1:Math.min(1,(game.clock-(game.aquaArrived??-9))/.55),e=1-(1-u)**3;aqua.pose(u<1?4:0,-60+210*e,128,150);}
  bossGlow();drawBoss();speech();
  text('MARIGOLD',24,26,1,game.ready&&game.aquaHere?'#ffff00':'#9ad08a');for(let i=0;i<game.anger;i++){ctx.fillStyle=game.genocide?'#ff3b55':'#d86a7a';ctx.fillRect(110+i*9,28,6,6);}
  if(game.enemyHP<game.enemyMax||game.state==='target'){ctx.fillStyle='#222';ctx.fillRect(256,212,128,3);ctx.fillStyle='#9ad08a';ctx.fillRect(256,212,128*game.enemyHP/game.enemyMax,3);}

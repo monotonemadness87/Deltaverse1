@@ -22,7 +22,7 @@ class StageAudio{
    if(!this.master){
     this.master=this.context.createGain();this.master.gain.value=0;this.master.connect(this.context.destination);
     this.music=this.context.createGain();this.music.gain.value=.5;this.music.connect(this.master);this.noise=this.makeNoise();
-    for(const name of ['damage','select','slash','ding','heavy','txt','yowl'])fetch(SOUNDS[name]).then(r=>r.arrayBuffer()).then(b=>this.context.decodeAudioData(b)).then(buf=>{this.buffers[name]=buf;}).catch(()=>{});
+    for(const name of ['damage','select','slash','ding','heavy','txt','yowl','flowey','sprout'])fetch(SOUNDS[name]).then(r=>r.arrayBuffer()).then(b=>this.context.decodeAudioData(b)).then(buf=>{this.buffers[name]=buf;}).catch(()=>{});
    }
    await this.context.resume();
   }catch{/* The themes can still play without Web Audio. */}
@@ -80,12 +80,12 @@ class StageAudio{
    phone:()=>{this.tone(1200,.08,'square',.05);setTimeout(()=>this.tone(1200,.08,'square',.05),160);},
    aqua:()=>S('slash',{gain:.6,rate:1.1}),door:()=>this.burst(.05,.2,600),read:()=>S('select',{gain:.35,offset:.07,duration:.3,rate:.9}),
    encounter:()=>{this.tone(880,.06);setTimeout(()=>this.tone(440,.08),110);this.burst(.1,.3,1600);},
-   turnaround:()=>this.tone(330,.25,'triangle',.05),rumble:()=>this.burst(.14,.4,180)
+   turnaround:()=>this.tone(330,.25,'triangle',.05),sprout:()=>S('sprout',{gain:.7}),save:()=>S('ding',{gain:.6,rate:1.35}),rumble:()=>this.burst(.14,.4,180)
   };
   map[name]?.();
  }
  yowl(gain,rate=1){const now=this.context?.currentTime??0;if(now-(this.lastYowl??-1)<.12)return true;const ok=this.sample('yowl',{gain,rate:rate*(.94+Math.random()*.12)});if(ok)this.lastYowl=now;return ok;}
  // snd_txt1: only its short click, pitched for the speaker.
- blip(speaker){if(!this.sample('txt',{rate:(VOICE[speaker]||1)*(speaker==='boss'?1+Math.random()*.05:1),gain:.55,duration:.06}))this.tone(200,.03,'square',.06);}
+ blip(speaker){if(speaker==='flowey'&&this.sample('flowey',{gain:.6}))return;if(!this.sample('txt',{rate:(VOICE[speaker]||1)*(speaker==='boss'?1+Math.random()*.05:1),gain:.55,duration:.06}))this.tone(200,.03,'square',.06);}
 }
 Object.assign(exports,{StageAudio});

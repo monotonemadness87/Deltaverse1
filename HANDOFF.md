@@ -285,7 +285,7 @@ Marigold replaced Rift in Snowdin. The designer retired Rift ("doesn't fit the l
   - THE TRAP (pacifist): Flowey lures Seth down the old path and Marigold is overjoyed that his plan worked.
   - THE HUNT (genocide): she sought Seth out herself, furious and vindicated. It is much harder.
   - Neutral: no fight (Flowey talks her out of it).
-- **The walk:** forest (Flowey's lure on the trap) → the Forgotten Gallery (six murals of the designer's text) → the ledge → the memorial (trap) or her ambush on the ledge (hunt). "Skip the walk" in options.
+- **The walk:** forest (Flowey sprouts in his canon frames and friendly face for the lure, on the trap) → the Forgotten Gallery (six murals of the designer's text) → the ledge with its SAVE star → the memorial (trap) or her ambush on the ledge (hunt: a thorn wall rises behind Seth and she walks out of the cave). Reading all six murals adds a line from her. "Skip the walk" in options.
 - **Seth:** pacifist LV 1 / 30 HP, 2 damage per hit on Normal (1 Gentle, 3 Hard). Genocide LV 5 / 36 HP, 4 per hit (3 / 5). Checkpoint with full HP and supplies every 4 attacks.
 - **Poison:** buttercup pollen drains HP over time, never below 1 HP.
 - **CALL AQUA:** every call angers Marigold.

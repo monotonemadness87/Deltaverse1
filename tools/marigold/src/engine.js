@@ -51,7 +51,7 @@ class BattleEngine{
   if(this.state==='target')return['MARIGOLD'];return[];
  }
  navigate(dx,dy){if(this.paused)return;if(this.state==='menu'){this.selected=(this.selected+(dx||dy)+4)%4;this.emit('select');return;}const n=this.options().length;if(!n)return;if(n>2){const row=Math.floor(this.option/2),col=this.option%2,c=dx?row*2+(1-col):(1-row)*2+col;if(c<n)this.option=c;}else this.option=(this.option+(dx||dy)+n)%n;this.emit('select');}
- back(){if(this.paused)return;if(this.options().length){this.state='menu';this.option=0;this.emit('select');}}
+ back(){if(this.paused)return;if(this.state==='dialogue'){this.displayChars=this.text.length;return;}if(this.options().length){this.state='menu';this.option=0;this.emit('select');}}
  chooseMenu(i){if(this.state!=='menu'||this.paused||!Number.isInteger(i)||i<0||i>3)return;this.selected=i;this.confirm();}
  togglePause(){if(['dead','spared','killed'].includes(this.state))return;this.paused=!this.paused;this.emit('pause');}
  // ------------------------------------------------------------ confirm
@@ -135,7 +135,7 @@ class BattleEngine{
   this.bullets=[];this.timeline=[];this.motion=null;this.dark=0;this.setArena(MENU_BOX);this.boss.alpha=1;this.boss.pose='idle';
   const story=(this.genocide?S.STORY_G:S.STORY_P);let lines=story[Math.min(this.dodges-1,story.length-1)].slice();
   if(this.dodges>story.length)lines=[S.M(this.genocide?'angry':'sad','...')];
-  if(!this.genocide&&this.aquaComing>=0&&!this.aquaHere&&this.dodges-this.aquaComing>=2){this.aquaHere=true;lines=[...S.ARRIVAL];this.emit('aqua');}
+  if(!this.genocide&&this.aquaComing>=0&&!this.aquaHere&&this.dodges-this.aquaComing>=2){this.aquaHere=true;this.aquaArrived=this.clock;lines=[...S.ARRIVAL];this.emit('aqua');}
   if(this.dodges%4===0){this.hp=this.maxHP;this.freshStock();lines.push(S.N(this.genocide?'* You catch your breath.\n* Full HP. Supplies restored.':'* The cold air steadies you.\n* Full HP. Supplies restored.'));this.saveCheckpoint();this.emit('heal');}
   this.message(lines,'menu');
  }
