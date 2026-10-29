@@ -58,6 +58,7 @@ class BattleEngine{
  confirm(){
   if(this.paused)return;
   if(this.state==='world'){this.world.interact();return;}
+  if(this.state==='defend'&&this.mode==='cyan'){this.orbitSign*=-1;this.emit('warp');return;}
   if(this.state==='dialogue'){if(this.displayChars<this.text.length){this.displayChars=this.text.length;return;}if(this.pages.length)this.showPage();else this.finishDialogue();return;}
   if(this.state==='dead'){this.retry();return;}
   if(['spared','killed'].includes(this.state)){if(this.timer>1.2)this.reset();return;}
@@ -114,7 +115,7 @@ class BattleEngine{
  }
  // ------------------------------------------------------------ turns
  toMenu(silent=false){
-  this.state='menu';this.bullets=[];this.timeline=[];this.motion=null;this.dark=0;this.setArena(MENU_BOX);this.boss.alpha=1;this.boss.pose='idle';this.speaker='narrator';
+  this.state='menu';this.mode='red';this.bullets=[];this.timeline=[];this.motion=null;this.dark=0;this.setArena(MENU_BOX);this.boss.alpha=1;this.boss.pose='idle';this.speaker='narrator';
   const flavor=S.FLAVOR[this.settings.route];this.text=this.ready&&this.aquaHere?S.FLAVOR_READY:this.turn===0?flavor[0]:flavor[1+(this.turn*3)%(flavor.length-1)];this.displayChars=this.text.length;
   if(!silent)this.emit('turn');
  }
@@ -126,13 +127,14 @@ class BattleEngine{
  startAttack(){
   this.turn++;const list=ATTACKS[this.settings.route];let index=this.dodges;if(index>=list.length)index=list.length-6+((index-list.length)%6);
   const attack=list[index];this.pattern=attack.id;this.attackName=attack.name;this.duration=attack.duration;this.config=this.config_();
+  this.mode=attack.mode||'red';this.orbitTheta=Math.PI/2;this.orbitSign=1;
   this.state='warning';this.timer=0;this.attackTime=0;this.bullets=[];this.effects=this.effects.filter(e=>e.type==='damage');this.timeline=[];this.motion=null;this.dark=0;this.boss.alpha=1;this.aquaGuard=1.2;
   this.setArena(attack.arena);this.soul={x:attack.arena.x+attack.arena.w/2,y:attack.arena.y+attack.arena.h/2};this.invulnerability=.4;
   buildAttack(this,attack);this.timeline.sort((a,b)=>a.at-b.at);this.emit('warning');
  }
  finishWave(){
   this.dodges++;this.storySeen=this.dodges;this.brace=false;this.advice.tells=false;this.poison=0;
-  this.bullets=[];this.timeline=[];this.motion=null;this.dark=0;this.setArena(MENU_BOX);this.boss.alpha=1;this.boss.pose='idle';
+  this.mode='red';this.bullets=[];this.timeline=[];this.motion=null;this.dark=0;this.setArena(MENU_BOX);this.boss.alpha=1;this.boss.pose='idle';
   const story=(this.genocide?S.STORY_G:S.STORY_P);let lines=story[Math.min(this.dodges-1,story.length-1)].slice();
   if(this.dodges>story.length)lines=[S.M(this.genocide?'angry':'sad','...')];
   if(!this.genocide&&this.aquaComing>=0&&!this.aquaHere&&this.dodges-this.aquaComing>=2){this.aquaHere=true;this.aquaArrived=this.clock;lines=[...S.ARRIVAL];this.emit('aqua');}
@@ -177,7 +179,7 @@ class BattleEngine{
   if(b.kind==='ghost')return Math.abs(s.x-b.x)<b.w/2+3&&Math.abs(s.y-b.y)<b.h/2+3||b.spear&&Math.abs(s.y-(b.y+2))<4&&(b.vx>0?s.x>b.x&&s.x<b.x+34:s.x<b.x&&s.x>b.x-34);
   if(b.kind==='ring'){if(b.age<b.warn)return false;const d=Math.hypot(s.x-b.x,s.y-b.y);if(Math.abs(d-b.r)>6)return false;return Math.abs(angleDiff(Math.atan2(s.y-b.y,s.x-b.x),b.gap))>b.gapW/2;}
   if(b.kind==='heart'){if(b.age<b.warn)return false;for(const p of heartPoints(b))if(Math.hypot(s.x-p.x,s.y-p.y)<9)return true;return false;}
-  if(b.kind==='pollen')return false;
+  if(b.kind==='pollen'||b.harmless)return false;
   return Math.hypot(s.x-b.x,s.y-b.y)<(b.r||4)+4;
  }
  update(dt,input={}){
@@ -198,13 +200,20 @@ class BattleEngine{
   this.attackTime+=dt;this.invulnerability=Math.max(0,this.invulnerability-dt);
   for(const e of this.timeline)if(!e.done&&this.attackTime>=e.at){e.done=true;e.action();}
   const s=this.soul,a=this.arena;const sx=Number(!!input.right)-Number(!!input.left),sy=Number(!!input.down)-Number(!!input.up),n=Math.hypot(sx,sy)||1,speed=190*(input.slow?.5:1);
-  s.x+=sx/n*speed*dt;s.y+=sy/n*speed*dt;if(input.touch){const tx=input.touch.x-s.x,ty=input.touch.y-s.y,m=Math.hypot(tx,ty),step=Math.min(m,250*dt);if(m){s.x+=tx/m*step;s.y+=ty/m*step;}}
-  s.x=clamp(s.x,a.x+12,a.x+a.w-12);s.y=clamp(s.y,a.y+12,a.y+a.h-12);
+  if(this.mode==='cyan'){
+   // CYAN, exactly as in Aqua's fight: a fixed ring round the centre; arrows push along it, otherwise it drifts; Z reverses the drift.
+   const cx=a.x+a.w/2,cy=a.y+a.h/2,r=Math.min(a.w,a.h)*.38;let movement=sx||sy;
+   if(input.touch){const want=Math.atan2(input.touch.y-cy,input.touch.x-cx),d=Math.atan2(Math.sin(want-this.orbitTheta),Math.cos(want-this.orbitTheta));movement=Math.abs(d)<.08?0:Math.sign(d);}
+   this.orbitTheta+=(movement||this.orbitSign*.4)*2.2*dt;s.x=cx+Math.cos(this.orbitTheta)*r;s.y=cy+Math.sin(this.orbitTheta)*r;
+  }else{
+   s.x+=sx/n*speed*dt;s.y+=sy/n*speed*dt;if(input.touch){const tx=input.touch.x-s.x,ty=input.touch.y-s.y,m=Math.hypot(tx,ty),step=Math.min(m,250*dt);if(m){s.x+=tx/m*step;s.y+=ty/m*step;}}
+   s.x=clamp(s.x,a.x+12,a.x+a.w-12);s.y=clamp(s.y,a.y+12,a.y+a.h-12);
+  }
   // Poison keeps you low but never finishes you.
   if(this.poison>0){this.poisonTick+=dt;const rate=this.advice.poison?.7:.42;if(this.poisonTick>=rate){this.poisonTick=0;this.poison--;if(this.hp>1){this.hp--;this.emit('poison');}}}
   this.pollenTick=Math.max(0,this.pollenTick-dt);
   // Aqua, once she arrives on the trap route, cuts away the projectile closest to Seth.
-  if(this.aquaHere&&!this.genocide){this.aquaGuard-=dt;if(this.aquaGuard<=0){let best=null,bd=78;for(const b of this.bullets)if(['petal','star','orbit','bud','lance'].includes(b.kind)&&!(b.delay&&b.age<b.delay)&&!(b.kind==='lance'&&b.age<b.warn)){const d=Math.hypot((b.kind==='lance'?b.tx:b.x)-s.x,(b.kind==='lance'?b.ty:b.y)-s.y);if(d<bd){bd=d;best=b;}}if(best){best.gone=true;this.effects.push({type:'aquaCut',x:best.kind==='lance'?best.tx:best.x,y:best.kind==='lance'?best.ty:best.y,life:.35});this.emit('aquaCut');this.aquaGuard=2.3;}else this.aquaGuard=.2;}}
+  if(this.aquaHere&&!this.genocide){this.aquaGuard-=dt;if(this.aquaGuard<=0){let best=null,bd=78;for(const b of this.bullets)if(['petal','star','orbit','bud','lance','circler','ash'].includes(b.kind)&&!b.harmless&&!(b.delay&&b.age<b.delay)&&!(b.kind==='lance'&&b.age<b.warn)){const d=Math.hypot((b.kind==='lance'?b.tx:b.x)-s.x,(b.kind==='lance'?b.ty:b.y)-s.y);if(d<bd){bd=d;best=b;}}if(best){best.gone=true;this.effects.push({type:'aquaCut',x:best.kind==='lance'?best.tx:best.x,y:best.kind==='lance'?best.ty:best.y,life:.35});this.emit('aquaCut');this.aquaGuard=2.3;}else this.aquaGuard=.2;}}
   const born=[];
   for(const b of this.bullets){
    b.age+=dt;if(b.delay&&b.age<b.delay)continue;
@@ -214,6 +223,7 @@ class BattleEngine{
    else if(b.kind==='bud'){b.x+=b.vx*dt;b.y+=b.vy*dt;if(b.age>=b.fuse){b.gone=true;born.push({kind:'pollen',x:b.x,y:b.y,R:b.R,r:0,age:0,life:1.7});for(let k=0;k<b.petals;k++){const an=k*Math.PI*2/b.petals+.4;born.push({kind:'petal',x:b.x,y:b.y,angle:an,speed:80*this.config.speed,turn:0,r:4,age:0,life:5});}this.emit('pop');this.effects.push({type:'puff',x:b.x,y:b.y,r:b.R,life:.45});}}
    else if(b.kind==='pollen'){b.r=b.R*Math.min(1,b.age/.3);if(b.age>b.life)b.gone=true;else if(Math.hypot(s.x-b.x,s.y-b.y)<b.r*.82+3&&this.pollenTick<=0&&!this.settings.invincible){this.pollenTick=.3;this.poison=Math.min(this.advice.poison?4:this.genocide?8:5,this.poison+(this.genocide?2:1));this.emit('poisoned');this.effects.push({type:'vignette',color:'67,231,80',life:.45});}}
    else if(b.kind==='petal'){b.angle+=b.turn*dt;b.x+=Math.cos(b.angle)*b.speed*dt;b.y+=Math.sin(b.angle)*b.speed*dt;}
+   else if(b.kind==='circler'){if(!b.released){b.theta+=b.spin*dt;b.x=b.cx+Math.cos(b.theta)*b.radius;b.y=b.cy+Math.sin(b.theta)*b.radius;}else{b.y+=b.vy*dt;}}
    else if(b.kind==='orbit'){if(!b.released){b.theta+=b.spin*dt;b.x=b.cx+Math.cos(b.theta)*b.radius;b.y=b.cy+Math.sin(b.theta)*b.radius;if(b.age>=b.release){b.released=true;const d=Math.atan2(b.cy-b.y,b.cx-b.x),v=150*this.config.speed;b.vx=Math.cos(d)*v;b.vy=Math.sin(d)*v;}}else{b.x+=b.vx*dt;b.y+=b.vy*dt;}}
    else if(b.kind==='ring'){if(b.age>=b.warn){b.r=b.R*(1-clamp((b.age-b.warn)/b.close,0,1));if(b.r<=2)b.gone=true;}}
    else if(b.kind==='heart'){if(b.age>=b.warn){b.scale=1-clamp((b.age-b.warn)/b.close,0,1);if(b.scale<=.04)b.gone=true;}}

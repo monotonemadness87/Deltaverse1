@@ -80,7 +80,7 @@ class StageAudio{
    phone:()=>{this.tone(1200,.08,'square',.05);setTimeout(()=>this.tone(1200,.08,'square',.05),160);},
    aqua:()=>S('slash',{gain:.6,rate:1.1}),door:()=>this.burst(.05,.2,600),read:()=>S('select',{gain:.35,offset:.07,duration:.3,rate:.9}),
    encounter:()=>{this.tone(880,.06);setTimeout(()=>this.tone(440,.08),110);this.burst(.1,.3,1600);},
-   turnaround:()=>this.tone(330,.25,'triangle',.05),sprout:()=>S('sprout',{gain:.7}),save:()=>S('ding',{gain:.6,rate:1.35}),rumble:()=>this.burst(.14,.4,180)
+   turnaround:()=>this.tone(330,.25,'triangle',.05),sprout:()=>S('sprout',{gain:.7}),warp:()=>this.tone(660,.05,'triangle',.06),save:()=>S('ding',{gain:.6,rate:1.35}),rumble:()=>this.burst(.14,.4,180)
   };
   map[name]?.();
  }

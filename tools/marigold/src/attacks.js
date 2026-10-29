@@ -1,6 +1,6 @@
 // Marigold's attacks: thorncraft, the thorn sword and lance, buttercup pollen, flower showers,
 // and the dread of her dead Royal Guard. The hunt (genocide) is a separate, much harsher score.
-const A=(id,name,arena,duration)=>({id,name,arena,duration});
+const A=(id,name,arena,duration,mode='red')=>({id,name,arena,duration,mode});
 const box=(w,h,y=null)=>({x:320-w/2,y:y??(388-h),w,h});
 const ATTACKS={
  pacifist:[
@@ -14,7 +14,7 @@ const ATTACKS={
   A('guard','THE ROYAL GUARD',box(400,164),15),
   A('shower','FLOWER SHOWER',box(232,180),15),
   A('oath','THE OATH',box(340,176),16),
-  A('carry','CARRY IT ON',box(308,168),16),
+  A('rosie','RING AROUND THE ROSIE',box(240,200),18,'cyan'),
   A('hope','THE HOPE OF THE UNDERGROUND',box(280,176),17),
   A('hesitate','HESITATION',box(248,164),14),
   A('memorial','FORGET-ME-NOT',box(340,180),26)
@@ -30,7 +30,7 @@ const ATTACKS={
   A('g-crown','CROWN OF THORNS',box(220,184),17),
   A('g-dread','DREAD',box(340,176),18),
   A('g-oath','THE OATH',box(360,180),18),
-  A('g-shower','FLOWER SHOWER',box(250,184),18),
+  A('g-rosie','RING AROUND THE ROSIE',box(240,200),18,'cyan'),
   A('g-live','WE WILL LIVE ON',box(340,180),21),
   A('g-agony','THORNS OF AGONY',{x:42,y:100,w:556,h:288},30),
   A('g-stand','STILL STANDING',box(300,176),20)
@@ -49,7 +49,21 @@ function buildAttack(g,attack){
  const ghosts=(gap=58,speed=120,both=false)=>i=>{const left=both?true:i%2===0,gy=a.y+30+R()*(a.h-60);for(let y=a.y+18;y<a.y+a.h-8;y+=40){if(Math.abs(y-gy)<gap/2+10)continue;g.ghost(left,y,{speed});if(both)g.ghost(!left,y+20>a.y+a.h-18?y-20:y+20,{speed:speed*.8});}};
  const orbitSoul=(n=8,r=72,release=1.6)=>i=>g.orbit(soul().x,soul().y,n,r,{spin:i%2?-1.3:1.3,release,phase:i*.4});
  const stars=(n=6,speed=100)=>i=>{for(let k=0;k<n;k++){const an=i*.5+k*Math.PI*2/n;g.star(cx,a.y-14,Math.cos(an)*speed,Math.abs(Math.sin(an))*speed+30);}};
+ // CYAN, as in Aqua's fight: the SOUL rides a ring round the centre. Posies ride the same ring toward it; Z turns back.
+ const ring=()=>({cx,cy,r:Math.min(a.w,a.h)*.38}),soulAngle=()=>g.orbitTheta;
+ const posy=(spin,offset=Math.PI,speed=1)=>{const {cx:x0,cy:y0,r}=ring(),th=soulAngle()+offset;g.spawn({kind:'circler',cx:x0,cy:y0,radius:r,theta:th,spin:spin*speed*g.config.speed,r:6,x:x0+Math.cos(th)*r,y:y0+Math.sin(th)*r,life:7});g.emit('cue');};
+ const towardSoul=(offset=Math.PI)=>g.orbitSign>0?-1:1;
+ const garden=(n=12)=>{const {cx:x0,cy:y0,r}=ring();for(let k=0;k<n;k++){const th=k*Math.PI*2/n;g.spawn({kind:'circler',ring:true,harmless:true,cx:x0,cy:y0,radius:r+34,theta:th,spin:.35,r:6,x:x0+Math.cos(th)*(r+34),y:y0+Math.sin(th)*(r+34),life:40});}};
+ const pocket=(R0=26)=>{const {cx:x0,cy:y0,r}=ring(),th=soulAngle()+g.orbitSign*.95;g.bud(x0+Math.cos(th)*r,y0+Math.sin(th)*r,{vy:0,fuse:1.05,R:R0,petals:0});};
+ const ash=(n=1,vy=72,color='#9a9ca8')=>{for(let k=0;k<n;k++)g.spawn({kind:'ash',x:a.x+14+g.random()*(a.w-28),y:a.y-4,vy:vy*g.config.speed,r:3,color,life:5});};
+ const fallDown=()=>{for(const b of g.bullets)if(b.kind==='circler'){b.released=true;b.harmless=false;b.vx=0;b.vy=(150+g.random()*60)*g.config.speed;}g.shake=.3;g.emit('rumble');};
+ const verse=(t,line)=>at(t,()=>{g.cue(line);g.pose(t<10?'shower'+(Math.floor(t/5)%3):'spell1',1.4);});
  switch(attack.id){
+  case 'rosie':
+   at(0,()=>{garden(12);g.cue('CYAN: ← → TO CIRCLE · Z TURNS BACK');});verse(.9,'♪ RING AROUND THE ROSIE');every(1.2,5.2,1.25,i=>posy(towardSoul()*.95));
+   verse(5.4,'♪ A POCKET FULL OF POSIES');every(5.7,10.2,1.05,()=>pocket(26));every(6.4,10.2,2.4,i=>posy(towardSoul()*.9));
+   verse(10.5,'♪ ASHES, ASHES');every(10.7,15,.42,()=>ash(1,74));
+   verse(15.2,'♪ WE ALL FALL DOWN');at(15.6,fallDown);break;
   // ---------------------------------------------------------------- the trap
   case 'bloom':every(.4,9.5,.78,rain(1,64,22));every(2,10,2.8,spiral(6,70,0,.5));break;
   case 'wall':every(.3,12,1.32,rows(['bottom','top'],66,{w:22}));every(2.4,12,2.6,rain(1,70,20));break;
@@ -81,7 +95,12 @@ function buildAttack(g,attack){
   case 'g-crown':every(.3,16,1.4,i=>{if(i%2){g.thornRow('left',-999,0,{len:a.w/2-30});g.thornRow('right',-999,0,{len:a.w/2-30});}else{g.thornRow('top',-999,0,{len:a.h/2-27});g.thornRow('bottom',-999,0,{len:a.h/2-27});}});every(1,16,1.4,i=>g.lance(i%2?'left':'right',a.y+a.h/2+(i%3-1)*36));at(.2,()=>g.cue('THE CENTER IS SAFE'));break;
   case 'g-dread':at(0,()=>{g.dark=70;g.cue('ONLY THE WARNINGS ARE LIT');});every(.3,17,1.15,rows(['bottom','top','left','right'],62));every(.8,17,1.3,lanceAt(['left','right','top']));at(17.4,()=>{g.dark=0;});break;
   case 'g-oath':at(0,()=>{g.motion={base:{...a},start:0,shrink:8,max:130};g.cue('THE WALLS CLOSE');});every(.5,17,1.45,swords(.78));every(1,17,1.4,lanceAt(['left','right','top','bottom']));break;
-  case 'g-shower':every(.3,17,2.2,orbitSoul(9,78,1.45));every(.9,17,1.6,rain(1,90,26,2));break;
+  case 'g-rosie':
+   // On the hunt the ashes are Snowdin's dust.
+   at(0,()=>{garden(14);g.cue('CYAN: ← → TO CIRCLE · Z TURNS BACK');});verse(.9,'♪ RING AROUND THE ROSIE');every(1,5.2,.95,i=>{posy(towardSoul()*1.15);if(i%3===2)posy(-towardSoul()*.8,Math.PI*.55);});
+   verse(5.4,'♪ A POCKET FULL OF POSIES');every(5.6,10.2,.8,()=>pocket(30));every(6,10.2,1.7,i=>posy(towardSoul()*1.1));
+   verse(10.5,'♪ ASHES, ASHES');every(10.6,15,.3,()=>ash(1,92,'#c9c9cf'));every(11.5,15,1.8,i=>posy(towardSoul()*1.2));
+   verse(15.2,'♪ WE ALL FALL DOWN');at(15.6,fallDown);every(15.8,17.4,.55,i=>g.thorn('bottom',a.w*(.2+.6*((i*37)%10)/10),{w:26}));break;
   case 'g-live':
    every(.2,5,.9,lanceAt(['left','top','right','bottom']));
    at(5.3,()=>g.cue('NEAR OR FAR'));every(5.5,10,1,swords(.72));

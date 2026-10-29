@@ -598,7 +598,7 @@ Object.assign(exports,{ROOMS,SIGN,FLOWEY_LURE,SAVE_P,SAVE_G,READ_P,READ_G,FOREST
 modules["attacks.js"]=(exports,require)=>{
 // Marigold's attacks: thorncraft, the thorn sword and lance, buttercup pollen, flower showers,
 // and the dread of her dead Royal Guard. The hunt (genocide) is a separate, much harsher score.
-const A=(id,name,arena,duration)=>({id,name,arena,duration});
+const A=(id,name,arena,duration,mode='red')=>({id,name,arena,duration,mode});
 const box=(w,h,y=null)=>({x:320-w/2,y:y??(388-h),w,h});
 const ATTACKS={
  pacifist:[
@@ -612,7 +612,7 @@ const ATTACKS={
   A('guard','THE ROYAL GUARD',box(400,164),15),
   A('shower','FLOWER SHOWER',box(232,180),15),
   A('oath','THE OATH',box(340,176),16),
-  A('carry','CARRY IT ON',box(308,168),16),
+  A('rosie','RING AROUND THE ROSIE',box(240,200),18,'cyan'),
   A('hope','THE HOPE OF THE UNDERGROUND',box(280,176),17),
   A('hesitate','HESITATION',box(248,164),14),
   A('memorial','FORGET-ME-NOT',box(340,180),26)
@@ -628,7 +628,7 @@ const ATTACKS={
   A('g-crown','CROWN OF THORNS',box(220,184),17),
   A('g-dread','DREAD',box(340,176),18),
   A('g-oath','THE OATH',box(360,180),18),
-  A('g-shower','FLOWER SHOWER',box(250,184),18),
+  A('g-rosie','RING AROUND THE ROSIE',box(240,200),18,'cyan'),
   A('g-live','WE WILL LIVE ON',box(340,180),21),
   A('g-agony','THORNS OF AGONY',{x:42,y:100,w:556,h:288},30),
   A('g-stand','STILL STANDING',box(300,176),20)
@@ -647,7 +647,21 @@ function buildAttack(g,attack){
  const ghosts=(gap=58,speed=120,both=false)=>i=>{const left=both?true:i%2===0,gy=a.y+30+R()*(a.h-60);for(let y=a.y+18;y<a.y+a.h-8;y+=40){if(Math.abs(y-gy)<gap/2+10)continue;g.ghost(left,y,{speed});if(both)g.ghost(!left,y+20>a.y+a.h-18?y-20:y+20,{speed:speed*.8});}};
  const orbitSoul=(n=8,r=72,release=1.6)=>i=>g.orbit(soul().x,soul().y,n,r,{spin:i%2?-1.3:1.3,release,phase:i*.4});
  const stars=(n=6,speed=100)=>i=>{for(let k=0;k<n;k++){const an=i*.5+k*Math.PI*2/n;g.star(cx,a.y-14,Math.cos(an)*speed,Math.abs(Math.sin(an))*speed+30);}};
+ // CYAN, as in Aqua's fight: the SOUL rides a ring round the centre. Posies ride the same ring toward it; Z turns back.
+ const ring=()=>({cx,cy,r:Math.min(a.w,a.h)*.38}),soulAngle=()=>g.orbitTheta;
+ const posy=(spin,offset=Math.PI,speed=1)=>{const {cx:x0,cy:y0,r}=ring(),th=soulAngle()+offset;g.spawn({kind:'circler',cx:x0,cy:y0,radius:r,theta:th,spin:spin*speed*g.config.speed,r:6,x:x0+Math.cos(th)*r,y:y0+Math.sin(th)*r,life:7});g.emit('cue');};
+ const towardSoul=(offset=Math.PI)=>g.orbitSign>0?-1:1;
+ const garden=(n=12)=>{const {cx:x0,cy:y0,r}=ring();for(let k=0;k<n;k++){const th=k*Math.PI*2/n;g.spawn({kind:'circler',ring:true,harmless:true,cx:x0,cy:y0,radius:r+34,theta:th,spin:.35,r:6,x:x0+Math.cos(th)*(r+34),y:y0+Math.sin(th)*(r+34),life:40});}};
+ const pocket=(R0=26)=>{const {cx:x0,cy:y0,r}=ring(),th=soulAngle()+g.orbitSign*.95;g.bud(x0+Math.cos(th)*r,y0+Math.sin(th)*r,{vy:0,fuse:1.05,R:R0,petals:0});};
+ const ash=(n=1,vy=72,color='#9a9ca8')=>{for(let k=0;k<n;k++)g.spawn({kind:'ash',x:a.x+14+g.random()*(a.w-28),y:a.y-4,vy:vy*g.config.speed,r:3,color,life:5});};
+ const fallDown=()=>{for(const b of g.bullets)if(b.kind==='circler'){b.released=true;b.harmless=false;b.vx=0;b.vy=(150+g.random()*60)*g.config.speed;}g.shake=.3;g.emit('rumble');};
+ const verse=(t,line)=>at(t,()=>{g.cue(line);g.pose(t<10?'shower'+(Math.floor(t/5)%3):'spell1',1.4);});
  switch(attack.id){
+  case 'rosie':
+   at(0,()=>{garden(12);g.cue('CYAN: ← → TO CIRCLE · Z TURNS BACK');});verse(.9,'♪ RING AROUND THE ROSIE');every(1.2,5.2,1.25,i=>posy(towardSoul()*.95));
+   verse(5.4,'♪ A POCKET FULL OF POSIES');every(5.7,10.2,1.05,()=>pocket(26));every(6.4,10.2,2.4,i=>posy(towardSoul()*.9));
+   verse(10.5,'♪ ASHES, ASHES');every(10.7,15,.42,()=>ash(1,74));
+   verse(15.2,'♪ WE ALL FALL DOWN');at(15.6,fallDown);break;
   // ---------------------------------------------------------------- the trap
   case 'bloom':every(.4,9.5,.78,rain(1,64,22));every(2,10,2.8,spiral(6,70,0,.5));break;
   case 'wall':every(.3,12,1.32,rows(['bottom','top'],66,{w:22}));every(2.4,12,2.6,rain(1,70,20));break;
@@ -679,7 +693,12 @@ function buildAttack(g,attack){
   case 'g-crown':every(.3,16,1.4,i=>{if(i%2){g.thornRow('left',-999,0,{len:a.w/2-30});g.thornRow('right',-999,0,{len:a.w/2-30});}else{g.thornRow('top',-999,0,{len:a.h/2-27});g.thornRow('bottom',-999,0,{len:a.h/2-27});}});every(1,16,1.4,i=>g.lance(i%2?'left':'right',a.y+a.h/2+(i%3-1)*36));at(.2,()=>g.cue('THE CENTER IS SAFE'));break;
   case 'g-dread':at(0,()=>{g.dark=70;g.cue('ONLY THE WARNINGS ARE LIT');});every(.3,17,1.15,rows(['bottom','top','left','right'],62));every(.8,17,1.3,lanceAt(['left','right','top']));at(17.4,()=>{g.dark=0;});break;
   case 'g-oath':at(0,()=>{g.motion={base:{...a},start:0,shrink:8,max:130};g.cue('THE WALLS CLOSE');});every(.5,17,1.45,swords(.78));every(1,17,1.4,lanceAt(['left','right','top','bottom']));break;
-  case 'g-shower':every(.3,17,2.2,orbitSoul(9,78,1.45));every(.9,17,1.6,rain(1,90,26,2));break;
+  case 'g-rosie':
+   // On the hunt the ashes are Snowdin's dust.
+   at(0,()=>{garden(14);g.cue('CYAN: ← → TO CIRCLE · Z TURNS BACK');});verse(.9,'♪ RING AROUND THE ROSIE');every(1,5.2,.95,i=>{posy(towardSoul()*1.15);if(i%3===2)posy(-towardSoul()*.8,Math.PI*.55);});
+   verse(5.4,'♪ A POCKET FULL OF POSIES');every(5.6,10.2,.8,()=>pocket(30));every(6,10.2,1.7,i=>posy(towardSoul()*1.1));
+   verse(10.5,'♪ ASHES, ASHES');every(10.6,15,.3,()=>ash(1,92,'#c9c9cf'));every(11.5,15,1.8,i=>posy(towardSoul()*1.2));
+   verse(15.2,'♪ WE ALL FALL DOWN');at(15.6,fallDown);every(15.8,17.4,.55,i=>g.thorn('bottom',a.w*(.2+.6*((i*37)%10)/10),{w:26}));break;
   case 'g-live':
    every(.2,5,.9,lanceAt(['left','top','right','bottom']));
    at(5.3,()=>g.cue('NEAR OR FAR'));every(5.5,10,1,swords(.72));
@@ -836,6 +855,7 @@ class BattleEngine{
  confirm(){
   if(this.paused)return;
   if(this.state==='world'){this.world.interact();return;}
+  if(this.state==='defend'&&this.mode==='cyan'){this.orbitSign*=-1;this.emit('warp');return;}
   if(this.state==='dialogue'){if(this.displayChars<this.text.length){this.displayChars=this.text.length;return;}if(this.pages.length)this.showPage();else this.finishDialogue();return;}
   if(this.state==='dead'){this.retry();return;}
   if(['spared','killed'].includes(this.state)){if(this.timer>1.2)this.reset();return;}
@@ -892,7 +912,7 @@ class BattleEngine{
  }
  // ------------------------------------------------------------ turns
  toMenu(silent=false){
-  this.state='menu';this.bullets=[];this.timeline=[];this.motion=null;this.dark=0;this.setArena(MENU_BOX);this.boss.alpha=1;this.boss.pose='idle';this.speaker='narrator';
+  this.state='menu';this.mode='red';this.bullets=[];this.timeline=[];this.motion=null;this.dark=0;this.setArena(MENU_BOX);this.boss.alpha=1;this.boss.pose='idle';this.speaker='narrator';
   const flavor=S.FLAVOR[this.settings.route];this.text=this.ready&&this.aquaHere?S.FLAVOR_READY:this.turn===0?flavor[0]:flavor[1+(this.turn*3)%(flavor.length-1)];this.displayChars=this.text.length;
   if(!silent)this.emit('turn');
  }
@@ -904,13 +924,14 @@ class BattleEngine{
  startAttack(){
   this.turn++;const list=ATTACKS[this.settings.route];let index=this.dodges;if(index>=list.length)index=list.length-6+((index-list.length)%6);
   const attack=list[index];this.pattern=attack.id;this.attackName=attack.name;this.duration=attack.duration;this.config=this.config_();
+  this.mode=attack.mode||'red';this.orbitTheta=Math.PI/2;this.orbitSign=1;
   this.state='warning';this.timer=0;this.attackTime=0;this.bullets=[];this.effects=this.effects.filter(e=>e.type==='damage');this.timeline=[];this.motion=null;this.dark=0;this.boss.alpha=1;this.aquaGuard=1.2;
   this.setArena(attack.arena);this.soul={x:attack.arena.x+attack.arena.w/2,y:attack.arena.y+attack.arena.h/2};this.invulnerability=.4;
   buildAttack(this,attack);this.timeline.sort((a,b)=>a.at-b.at);this.emit('warning');
  }
  finishWave(){
   this.dodges++;this.storySeen=this.dodges;this.brace=false;this.advice.tells=false;this.poison=0;
-  this.bullets=[];this.timeline=[];this.motion=null;this.dark=0;this.setArena(MENU_BOX);this.boss.alpha=1;this.boss.pose='idle';
+  this.mode='red';this.bullets=[];this.timeline=[];this.motion=null;this.dark=0;this.setArena(MENU_BOX);this.boss.alpha=1;this.boss.pose='idle';
   const story=(this.genocide?S.STORY_G:S.STORY_P);let lines=story[Math.min(this.dodges-1,story.length-1)].slice();
   if(this.dodges>story.length)lines=[S.M(this.genocide?'angry':'sad','...')];
   if(!this.genocide&&this.aquaComing>=0&&!this.aquaHere&&this.dodges-this.aquaComing>=2){this.aquaHere=true;this.aquaArrived=this.clock;lines=[...S.ARRIVAL];this.emit('aqua');}
@@ -955,7 +976,7 @@ class BattleEngine{
   if(b.kind==='ghost')return Math.abs(s.x-b.x)<b.w/2+3&&Math.abs(s.y-b.y)<b.h/2+3||b.spear&&Math.abs(s.y-(b.y+2))<4&&(b.vx>0?s.x>b.x&&s.x<b.x+34:s.x<b.x&&s.x>b.x-34);
   if(b.kind==='ring'){if(b.age<b.warn)return false;const d=Math.hypot(s.x-b.x,s.y-b.y);if(Math.abs(d-b.r)>6)return false;return Math.abs(angleDiff(Math.atan2(s.y-b.y,s.x-b.x),b.gap))>b.gapW/2;}
   if(b.kind==='heart'){if(b.age<b.warn)return false;for(const p of heartPoints(b))if(Math.hypot(s.x-p.x,s.y-p.y)<9)return true;return false;}
-  if(b.kind==='pollen')return false;
+  if(b.kind==='pollen'||b.harmless)return false;
   return Math.hypot(s.x-b.x,s.y-b.y)<(b.r||4)+4;
  }
  update(dt,input={}){
@@ -976,13 +997,20 @@ class BattleEngine{
   this.attackTime+=dt;this.invulnerability=Math.max(0,this.invulnerability-dt);
   for(const e of this.timeline)if(!e.done&&this.attackTime>=e.at){e.done=true;e.action();}
   const s=this.soul,a=this.arena;const sx=Number(!!input.right)-Number(!!input.left),sy=Number(!!input.down)-Number(!!input.up),n=Math.hypot(sx,sy)||1,speed=190*(input.slow?.5:1);
-  s.x+=sx/n*speed*dt;s.y+=sy/n*speed*dt;if(input.touch){const tx=input.touch.x-s.x,ty=input.touch.y-s.y,m=Math.hypot(tx,ty),step=Math.min(m,250*dt);if(m){s.x+=tx/m*step;s.y+=ty/m*step;}}
-  s.x=clamp(s.x,a.x+12,a.x+a.w-12);s.y=clamp(s.y,a.y+12,a.y+a.h-12);
+  if(this.mode==='cyan'){
+   // CYAN, exactly as in Aqua's fight: a fixed ring round the centre; arrows push along it, otherwise it drifts; Z reverses the drift.
+   const cx=a.x+a.w/2,cy=a.y+a.h/2,r=Math.min(a.w,a.h)*.38;let movement=sx||sy;
+   if(input.touch){const want=Math.atan2(input.touch.y-cy,input.touch.x-cx),d=Math.atan2(Math.sin(want-this.orbitTheta),Math.cos(want-this.orbitTheta));movement=Math.abs(d)<.08?0:Math.sign(d);}
+   this.orbitTheta+=(movement||this.orbitSign*.4)*2.2*dt;s.x=cx+Math.cos(this.orbitTheta)*r;s.y=cy+Math.sin(this.orbitTheta)*r;
+  }else{
+   s.x+=sx/n*speed*dt;s.y+=sy/n*speed*dt;if(input.touch){const tx=input.touch.x-s.x,ty=input.touch.y-s.y,m=Math.hypot(tx,ty),step=Math.min(m,250*dt);if(m){s.x+=tx/m*step;s.y+=ty/m*step;}}
+   s.x=clamp(s.x,a.x+12,a.x+a.w-12);s.y=clamp(s.y,a.y+12,a.y+a.h-12);
+  }
   // Poison keeps you low but never finishes you.
   if(this.poison>0){this.poisonTick+=dt;const rate=this.advice.poison?.7:.42;if(this.poisonTick>=rate){this.poisonTick=0;this.poison--;if(this.hp>1){this.hp--;this.emit('poison');}}}
   this.pollenTick=Math.max(0,this.pollenTick-dt);
   // Aqua, once she arrives on the trap route, cuts away the projectile closest to Seth.
-  if(this.aquaHere&&!this.genocide){this.aquaGuard-=dt;if(this.aquaGuard<=0){let best=null,bd=78;for(const b of this.bullets)if(['petal','star','orbit','bud','lance'].includes(b.kind)&&!(b.delay&&b.age<b.delay)&&!(b.kind==='lance'&&b.age<b.warn)){const d=Math.hypot((b.kind==='lance'?b.tx:b.x)-s.x,(b.kind==='lance'?b.ty:b.y)-s.y);if(d<bd){bd=d;best=b;}}if(best){best.gone=true;this.effects.push({type:'aquaCut',x:best.kind==='lance'?best.tx:best.x,y:best.kind==='lance'?best.ty:best.y,life:.35});this.emit('aquaCut');this.aquaGuard=2.3;}else this.aquaGuard=.2;}}
+  if(this.aquaHere&&!this.genocide){this.aquaGuard-=dt;if(this.aquaGuard<=0){let best=null,bd=78;for(const b of this.bullets)if(['petal','star','orbit','bud','lance','circler','ash'].includes(b.kind)&&!b.harmless&&!(b.delay&&b.age<b.delay)&&!(b.kind==='lance'&&b.age<b.warn)){const d=Math.hypot((b.kind==='lance'?b.tx:b.x)-s.x,(b.kind==='lance'?b.ty:b.y)-s.y);if(d<bd){bd=d;best=b;}}if(best){best.gone=true;this.effects.push({type:'aquaCut',x:best.kind==='lance'?best.tx:best.x,y:best.kind==='lance'?best.ty:best.y,life:.35});this.emit('aquaCut');this.aquaGuard=2.3;}else this.aquaGuard=.2;}}
   const born=[];
   for(const b of this.bullets){
    b.age+=dt;if(b.delay&&b.age<b.delay)continue;
@@ -992,6 +1020,7 @@ class BattleEngine{
    else if(b.kind==='bud'){b.x+=b.vx*dt;b.y+=b.vy*dt;if(b.age>=b.fuse){b.gone=true;born.push({kind:'pollen',x:b.x,y:b.y,R:b.R,r:0,age:0,life:1.7});for(let k=0;k<b.petals;k++){const an=k*Math.PI*2/b.petals+.4;born.push({kind:'petal',x:b.x,y:b.y,angle:an,speed:80*this.config.speed,turn:0,r:4,age:0,life:5});}this.emit('pop');this.effects.push({type:'puff',x:b.x,y:b.y,r:b.R,life:.45});}}
    else if(b.kind==='pollen'){b.r=b.R*Math.min(1,b.age/.3);if(b.age>b.life)b.gone=true;else if(Math.hypot(s.x-b.x,s.y-b.y)<b.r*.82+3&&this.pollenTick<=0&&!this.settings.invincible){this.pollenTick=.3;this.poison=Math.min(this.advice.poison?4:this.genocide?8:5,this.poison+(this.genocide?2:1));this.emit('poisoned');this.effects.push({type:'vignette',color:'67,231,80',life:.45});}}
    else if(b.kind==='petal'){b.angle+=b.turn*dt;b.x+=Math.cos(b.angle)*b.speed*dt;b.y+=Math.sin(b.angle)*b.speed*dt;}
+   else if(b.kind==='circler'){if(!b.released){b.theta+=b.spin*dt;b.x=b.cx+Math.cos(b.theta)*b.radius;b.y=b.cy+Math.sin(b.theta)*b.radius;}else{b.y+=b.vy*dt;}}
    else if(b.kind==='orbit'){if(!b.released){b.theta+=b.spin*dt;b.x=b.cx+Math.cos(b.theta)*b.radius;b.y=b.cy+Math.sin(b.theta)*b.radius;if(b.age>=b.release){b.released=true;const d=Math.atan2(b.cy-b.y,b.cx-b.x),v=150*this.config.speed;b.vx=Math.cos(d)*v;b.vy=Math.sin(d)*v;}}else{b.x+=b.vx*dt;b.y+=b.vy*dt;}}
    else if(b.kind==='ring'){if(b.age>=b.warn){b.r=b.R*(1-clamp((b.age-b.warn)/b.close,0,1));if(b.r<=2)b.gone=true;}}
    else if(b.kind==='heart'){if(b.age>=b.warn){b.scale=1-clamp((b.age-b.warn)/b.close,0,1);if(b.scale<=.04)b.gone=true;}}
@@ -1092,7 +1121,7 @@ class StageAudio{
    phone:()=>{this.tone(1200,.08,'square',.05);setTimeout(()=>this.tone(1200,.08,'square',.05),160);},
    aqua:()=>S('slash',{gain:.6,rate:1.1}),door:()=>this.burst(.05,.2,600),read:()=>S('select',{gain:.35,offset:.07,duration:.3,rate:.9}),
    encounter:()=>{this.tone(880,.06);setTimeout(()=>this.tone(440,.08),110);this.burst(.1,.3,1600);},
-   turnaround:()=>this.tone(330,.25,'triangle',.05),sprout:()=>S('sprout',{gain:.7}),save:()=>S('ding',{gain:.6,rate:1.35}),rumble:()=>this.burst(.14,.4,180)
+   turnaround:()=>this.tone(330,.25,'triangle',.05),sprout:()=>S('sprout',{gain:.7}),warp:()=>this.tone(660,.05,'triangle',.06),save:()=>S('ding',{gain:.6,rate:1.35}),rumble:()=>this.burst(.14,.4,180)
   };
   map[name]?.();
  }
@@ -1276,6 +1305,8 @@ function hazard(b,warnOnly=false){
  if(b.kind==='petal'){ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.angle);ctx.fillStyle=RED;ctx.beginPath();ctx.ellipse(0,0,6,3.5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=RED_HI;ctx.fillRect(-3,-1,4,1);ctx.restore();return;}
  if(b.kind==='star'){art.frame('fx_star',b.x,b.y,1,{anchor:'center'});return;}
  if(b.kind==='orbit'){flower(b.x,b.y,7);return;}
+ if(b.kind==='circler'){ctx.save();if(b.harmless)ctx.globalAlpha=.55;flower(b.x,b.y,b.ring?5:7,b.ring&&b.harmless?'#d8b24a':GOLD);ctx.restore();return;}
+ if(b.kind==='ash'){ctx.fillStyle=b.color||'#9a9ca8';ctx.fillRect(Math.round(b.x-2),Math.round(b.y-2),4,4);ctx.fillStyle='#5c5e68';ctx.fillRect(Math.round(b.x-1),Math.round(b.y+2),2,1);return;}
  if(b.kind==='ghost'){drawGhost(b);return;}
  if(b.kind==='ring'){ctx.save();const warn=b.age<b.warn;ctx.strokeStyle='#ffe24a';ctx.globalAlpha=warn?.45:1;ctx.lineWidth=warn?1:4;if(warn)ctx.setLineDash([4,4]);ctx.beginPath();ctx.arc(b.x,b.y,b.r,b.gap+b.gapW/2,b.gap-b.gapW/2+Math.PI*2);ctx.stroke();ctx.restore();return;}
  if(b.kind==='heart'){const warn=b.age<b.warn;for(const p of heartPoints(b)){if(warn){ctx.save();ctx.globalAlpha=.5;ctx.fillStyle=RED_HI;ctx.fillRect(Math.round(p.x-2),Math.round(p.y-2),4,4);ctx.restore();}else art.frame('fx_star',p.x,p.y,1,{anchor:'center'});}return;}
@@ -1294,7 +1325,9 @@ function field(){
  for(const b of game.bullets)if(b.kind==='arc'&&b.age<b.warn)hazard(b);
  for(const b of game.bullets)if(!['pollen','lance','arc','ghost'].includes(b.kind))hazard(b);
  for(const b of game.bullets)if(b.kind==='ghost')hazard(b);
- if(game.invulnerability<=0||Math.floor(game.clock*15)%2===0)heart(game.soul.x,game.soul.y,16,game.poison>0?'green':'purple');
+ if(game.mode==='cyan'){const cx=a.x+a.w/2,cy=a.y+a.h/2,r=Math.min(a.w,a.h)*.38;ctx.save();ctx.strokeStyle='#3ee0ed';ctx.globalAlpha=.35;ctx.setLineDash([4,6]);ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();ctx.restore();}
+ // Seth's SOUL keeps its purple rim in cyan, as in every mode.
+ if(game.invulnerability<=0||Math.floor(game.clock*15)%2===0){if(game.mode==='cyan'){heart(game.soul.x,game.soul.y,20,'purple');heart(game.soul.x,game.soul.y,14,'cyan');}else heart(game.soul.x,game.soul.y,16,game.poison>0?'green':'purple');}
  if(game.dark){const g=ctx.createRadialGradient(game.soul.x,game.soul.y,game.dark*.6,game.soul.x,game.soul.y,game.dark);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.96)');ctx.fillStyle=g;ctx.fillRect(0,0,640,480);for(const b of game.bullets)hazard(b,true);}
  ctx.restore();
  // Lances, the sword and the guard's spears come from outside the box.
@@ -1341,7 +1374,7 @@ function renderBattle(){
   else mainText();
  }
  effectsFX();
- for(const e of game.effects){if(e.type==='damage')text(e.text,e.x,e.y-(1.1-e.life)*18,4,'#df6a77',true);if(['cheat','instruction','silence'].includes(e.type))text(e.text||'...',320,206,1.5,e.type==='cheat'?'#ffff00':'#e7a0aa',true);}
+ for(const e of game.effects){if(e.type==='damage')text(e.text,e.x,e.y-(1.1-e.life)*18,4,'#df6a77',true);if(['cheat','instruction','silence'].includes(e.type))text(e.text||'...',320,Math.min(206,game.arena.y-24),1.5,e.type==='cheat'?'#ffff00':'#e7a0aa',true);}
  if(game.settings.invincible)text('INVINCIBLE',24,46,1,'#ffff00');
  text('SETH',24,407,2);text('LV '+game.lv,132,407,2);text('HP',248,408,2);
  ctx.fillStyle='#8e2636';ctx.fillRect(284,403,120,16);ctx.fillStyle='#ffff00';ctx.fillRect(284,403,120*game.hp/game.maxHP,16);

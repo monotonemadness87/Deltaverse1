@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-29 — Marigold: RING AROUND THE ROSIE (cyan)
+
+Marigold now uses CYAN, played exactly as in Aqua's fight. The SOUL rides a ring around the centre of the box: the arrow keys push it along the ring, otherwise it drifts, and Z turns it back. Seth's SOUL keeps its purple rim. The new attack, RING AROUND THE ROSIE, is sung verse by verse:
+
+1. **"Ring around the rosie":** posies ride your ring toward you. An outer ring of posies circles out of reach.
+2. **"A pocket full of posies":** buttercups land on the ring ahead of you and burst into pollen.
+3. **"Ashes, ashes":** ash falls straight through the ring. On the hunt it is Snowdin's dust: paler, faster, denser.
+4. **"We all fall down":** every posy drops at once, including the outer ring that was harmless until then. On the hunt, thorns follow.
+
+**Where it sits:** it replaces the trap's generic CARRY IT ON (attack 11) and the hunt's second FLOWER SHOWER (attack 11). The order and the kill gate are unchanged.
+
+**Measured (test bot, Normal):**
+- **Trap:** about 0.5 hits, a gentle introduction.
+- **Hunt:** about 4 hits, level with THE KNIGHT'S ARC and THE OATH.
+
+Aqua's guard cuts posies and ash too, but never the harmless outer ring.
+
 ## 2026-10-29 — Marigold's walk: Flowey sprouts, a SAVE star, the hunt's ambush
 
 - **Flowey (trap):**

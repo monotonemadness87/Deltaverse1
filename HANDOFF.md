@@ -288,6 +288,7 @@ Marigold replaced Rift in Snowdin. The designer retired Rift ("doesn't fit the l
 - **The walk:** forest (Flowey sprouts in his canon frames and friendly face for the lure, on the trap) → the Forgotten Gallery (six murals of the designer's text) → the ledge with its SAVE star → the memorial (trap) or her ambush on the ledge (hunt: a thorn wall rises behind Seth and she walks out of the cave). Reading all six murals adds a line from her. "Skip the walk" in options.
 - **Seth:** pacifist LV 1 / 30 HP, 2 damage per hit on Normal (1 Gentle, 3 Hard). Genocide LV 5 / 36 HP, 4 per hit (3 / 5). Checkpoint with full HP and supplies every 4 attacks.
 - **Poison:** buttercup pollen drains HP over time, never below 1 HP.
+- **CYAN:** RING AROUND THE ROSIE (attack 11 on both routes) uses Aqua's cyan exactly: ring at 38% of the box, drift, arrows push, Z reverses. It is sung as the rhyme's four verses; "we all fall down" drops every posy, including the outer ring that was harmless until then.
 - **CALL AQUA:** every call angers Marigold.
   - On the trap: a little more speed, and +1 damage from the fourth call. Four calls of banter talk Aqua round; she arrives two attacks later and defends Seth, cutting away the projectile nearest him every couple of seconds. This is a step in her pacifist redemption arc, which runs across the pacifist fights.
   - On the hunt: the first call is a brush-off (she's grinding in Waterfall). Later calls are advice from Seth's notes:

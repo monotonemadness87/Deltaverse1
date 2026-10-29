@@ -123,6 +123,8 @@ function hazard(b,warnOnly=false){
  if(b.kind==='petal'){ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.angle);ctx.fillStyle=RED;ctx.beginPath();ctx.ellipse(0,0,6,3.5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=RED_HI;ctx.fillRect(-3,-1,4,1);ctx.restore();return;}
  if(b.kind==='star'){art.frame('fx_star',b.x,b.y,1,{anchor:'center'});return;}
  if(b.kind==='orbit'){flower(b.x,b.y,7);return;}
+ if(b.kind==='circler'){ctx.save();if(b.harmless)ctx.globalAlpha=.55;flower(b.x,b.y,b.ring?5:7,b.ring&&b.harmless?'#d8b24a':GOLD);ctx.restore();return;}
+ if(b.kind==='ash'){ctx.fillStyle=b.color||'#9a9ca8';ctx.fillRect(Math.round(b.x-2),Math.round(b.y-2),4,4);ctx.fillStyle='#5c5e68';ctx.fillRect(Math.round(b.x-1),Math.round(b.y+2),2,1);return;}
  if(b.kind==='ghost'){drawGhost(b);return;}
  if(b.kind==='ring'){ctx.save();const warn=b.age<b.warn;ctx.strokeStyle='#ffe24a';ctx.globalAlpha=warn?.45:1;ctx.lineWidth=warn?1:4;if(warn)ctx.setLineDash([4,4]);ctx.beginPath();ctx.arc(b.x,b.y,b.r,b.gap+b.gapW/2,b.gap-b.gapW/2+Math.PI*2);ctx.stroke();ctx.restore();return;}
  if(b.kind==='heart'){const warn=b.age<b.warn;for(const p of heartPoints(b)){if(warn){ctx.save();ctx.globalAlpha=.5;ctx.fillStyle=RED_HI;ctx.fillRect(Math.round(p.x-2),Math.round(p.y-2),4,4);ctx.restore();}else art.frame('fx_star',p.x,p.y,1,{anchor:'center'});}return;}
@@ -141,7 +143,9 @@ function field(){
  for(const b of game.bullets)if(b.kind==='arc'&&b.age<b.warn)hazard(b);
  for(const b of game.bullets)if(!['pollen','lance','arc','ghost'].includes(b.kind))hazard(b);
  for(const b of game.bullets)if(b.kind==='ghost')hazard(b);
- if(game.invulnerability<=0||Math.floor(game.clock*15)%2===0)heart(game.soul.x,game.soul.y,16,game.poison>0?'green':'purple');
+ if(game.mode==='cyan'){const cx=a.x+a.w/2,cy=a.y+a.h/2,r=Math.min(a.w,a.h)*.38;ctx.save();ctx.strokeStyle='#3ee0ed';ctx.globalAlpha=.35;ctx.setLineDash([4,6]);ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();ctx.restore();}
+ // Seth's SOUL keeps its purple rim in cyan, as in every mode.
+ if(game.invulnerability<=0||Math.floor(game.clock*15)%2===0){if(game.mode==='cyan'){heart(game.soul.x,game.soul.y,20,'purple');heart(game.soul.x,game.soul.y,14,'cyan');}else heart(game.soul.x,game.soul.y,16,game.poison>0?'green':'purple');}
  if(game.dark){const g=ctx.createRadialGradient(game.soul.x,game.soul.y,game.dark*.6,game.soul.x,game.soul.y,game.dark);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.96)');ctx.fillStyle=g;ctx.fillRect(0,0,640,480);for(const b of game.bullets)hazard(b,true);}
  ctx.restore();
  // Lances, the sword and the guard's spears come from outside the box.
@@ -188,7 +192,7 @@ function renderBattle(){
   else mainText();
  }
  effectsFX();
- for(const e of game.effects){if(e.type==='damage')text(e.text,e.x,e.y-(1.1-e.life)*18,4,'#df6a77',true);if(['cheat','instruction','silence'].includes(e.type))text(e.text||'...',320,206,1.5,e.type==='cheat'?'#ffff00':'#e7a0aa',true);}
+ for(const e of game.effects){if(e.type==='damage')text(e.text,e.x,e.y-(1.1-e.life)*18,4,'#df6a77',true);if(['cheat','instruction','silence'].includes(e.type))text(e.text||'...',320,Math.min(206,game.arena.y-24),1.5,e.type==='cheat'?'#ffff00':'#e7a0aa',true);}
  if(game.settings.invincible)text('INVINCIBLE',24,46,1,'#ffff00');
  text('SETH',24,407,2);text('LV '+game.lv,132,407,2);text('HP',248,408,2);
  ctx.fillStyle='#8e2636';ctx.fillRect(284,403,120,16);ctx.fillStyle='#ffff00';ctx.fillRect(284,403,120*game.hp/game.maxHP,16);
