@@ -57,12 +57,12 @@ The hub is currently an encounter launcher, **not a continuous campaign save**. 
 
 | Region | Pacifist / neutral | Genocide |
 | --- | --- | --- |
-| Ruins | Encore — Last Curtain | Encore's emptied-theatre variant |
-| Snowdin boundary | Rift — The Hollow Crown | Rift's cataclysm variant |
+| Ruins | Encore — Count Anansi: THE SHOW (spare after the letter; he can be killed after 5 attacks) | Encore — THE LAST SHOW |
+| Snowdin | Marigold — The Forgotten Memorial: THE TRAP (pacifist only; no neutral fight) | Marigold — THE HUNT |
 | Waterfall | Mettalot — Waterfall After Dark | Gerson — What For? |
 | Hotland | Ant Tenna + Spamson — The Next Big Thing, currently pacifist only in launcher | Spamson NEO — A Deal in the Dark, then Muffet — The Dark Nest |
 | CORE | Sans — No Promises | Sans + Alphys — Misery Likes Company |
-| New Home | Flowey — Inside Your Best Friend | Aqua — Last Playmate |
+| New Home | Flowey — two neutral versions: FALSE PACIFIST (Inside Your Best Friend) and FALSE GENOCIDE (She Gets Her Game Back) | Aqua — Last Playmate (KILL or the R35 SPARE) |
 
 Aqua finale practice is a shortcut into the same canonical fight. Battle Lab, LAST BELL and Ant vs Termite are Extras. LAST BELL's separate universe and the colony simulation do not establish Underground lore.
 
@@ -180,6 +180,15 @@ R28 appears on HUD and in pause; for historical reference, the omitted full stan
 
 The prior saved standalone R28 file was downloaded again and matched tested bytes. Its digest above is historical reference; the lean package contains the hub variant instead, which intentionally has different dialogue and bytes. The user's older received bytes were not available; do not claim caching was proven or that their report was mistaken.
 
+### The spare (R35)
+
+After her final attack ends, ACT becomes TALK. Before that, nothing changes: SPARE gets the usual dismissal and FIGHT still leads to the kill.
+- **Three talks:** Partners, The Nest (Muffet's nest; he could have let her die there), and Not Enemies. Each is answered, then she tries an attack and it falls apart. Those are three new weaker, shakier attacks: MAKE IT FUN (restarts twice, half its warnings fizzle), SEVEN PLANS (fragments of her old attacks, each abandoned) and THE LAST TURN (one wobbling knife that drops before it reaches him). They hit for 60% damage, never below 1 HP, with longer invincibility frames.
+- **SPARE turns yellow after the third talk.** Pressed earlier, it gets "Nice try." / "Is that a bit?..." / "Stop pressing that...".
+- **Sparing her:** her kept lines play, then she runs off-screen (with reduced motion she fades instead), and the card reads NEUTRAL / FLOWEY: FALSE GENOCIDE. Ending id: `spared`.
+- **FIGHT after any talk** gets one line, then the existing finisher and kill ending.
+- **Narration pages** inside her dialogue use face −1: no portrait, the text sits in the main box, and a plain click replaces her voice.
+
 ## Other encounter contracts
 
 ### Muffet — The Dark Nest
@@ -210,15 +219,133 @@ Gerson: approved 17-turn pacing; Flowey helps but is absent from the middle. Set
 
 Mettalot: Purple SOUL, showmanship/ratings, Napstablook, distinct quiz/rhythm/dance. Phase2 at750, finale around1500–1750, target2000. Spin controls, seeking tears and laser pointer must function.
 
-Flowey: pacifist/neutral finale inside his mind after absorbing Seth. Six fragments are pages from one Purple SOUL's life, not six human souls. Functional false/moving commands, fake Game Over and stolen mechanics. Seth can deny him the soul; the body does not stand up and leave, and the king eventually receives it.
+Flowey: both Flowey fights are neutral, not pacifist, and both are built: two variants on one hub card. The false-pacifist neutral (`flowey.html`) is the one where Seth spared everyone. Flowey is disappointed: two humans, and Seth chose to be a weak, sentimental sap. Together, Seth and Aqua might have been a real threat to the king. As things stand, he takes Seth's soul, and maybe then Aqua will stop being so disappointing.
 
-### Tenna/Spamson, Spamson NEO, Encore and Rift
+Three acts, following the designer's Undertale Yellow reference (`docs/reference-study/flowey-study.md`):
+1. His rigged battle in the box. Short attacks; face-barrage SAVEs that lead straight into chase LOADs through rooms Seth walked.
+2. The dark, where he takes the soul.
+3. Inside him, boxless. Phases alternate with the six pages, and Seth's Torn Notebook acts on his turns.
+
+Only pacifist-route bosses return as replayed attacks. The six fragments are pages from one Purple SOUL's life, not six human souls. Keep the functional false/moving commands, fake Game Over and stolen mechanics. Seth can deny him the soul; the body does not stand up and leave, and the king eventually receives it. Flowey uses his canon Undertale battle frames, here and in Gerson and Sans + Alphys; when talking, only his mouth moves. His supplied voice blip, evil blip, hurt cry and laugh are in the fight. His own line attacks are vines, not laser beams: a flickering warning, then the vine swooshes in from off one screen edge and travels across to the other, visibly and with the Omega yowl. Only the covered length hits. It never comes from his eyes or body; replayed bosses keep their own beam art. FIGHT must feel rewarding: in act one his health bar takes real damage until he rigs it at the end of each cycle (LOAD, extra zeros, your attack set to 0); in act three the hits stick. In act three he is his canon sprite, huge (5×), with original thorned vines behind him; the designer rejected an original creature design, so don't invent a new body for him. Every boss Flowey borrows uses its source fight's current art: Sans and the Gaster Blasters (`sans.html`), Marigold (`marigold.html`, her frames), Mettalot (`mettalot.html`), and Encore's attack atlas and body (`encore.html`). Spamton/Tenna, Gerson, Muffet and Alphys are cropped from today's games. The false-genocide theatre replays Encore's genocide timeline, not his pacifist one. Sync with `tools/sync_borrowed_art.py games/flowey.html`, then rebuild the false genocide. Never ship older art than the source fights. Sprites cut out on black (Sans, Encore, Alphys) are drawn with their insides filled black (`backed()` in the page script), so nothing shows through them.
+
+**False genocide (`flowey-genocide.html`).** Seth killed everyone, then spared Aqua at the end of Last Playmate. That spare shattered her point of view and she ran off somewhere in the Underground. Flowey has run this over and over, trying to get his perfect ending, and he WILL. He put Seth and Aqua in each other's paths and held every door. They were hopeless brats who needed his help, but they started getting stronger. If they had finished the job, he would have left them alone. Now it isn't a fight, it's course correction: even if Seth wins, he just goes back. The false-pacifist Flowey was bored; this one is furious. The designer wants this route dire, hopeless and overwhelming. Contract:
+- **Tone:** cruel and sardonic throughout, never begging. The theme is the designer's supplied track (Inverted Fate "Checkmate").
+- **Static:** every SAVE, LOAD, rig, rug, death retry, chase LOAD and act change tears the screen with static and a hiss. LOADs carry a counter in the thousands (`LOAD #4,813`…). He also SAVEs and LOADs inside attacks, rewinding Seth and every bullet. Tenna-footage-style static cuts: hard cuts through static to a red-tinted, VHS-captioned frame of the past at every attack, chase, page and LOAD. They also hit his slashes (a red X-marked band, then a static gash) and every box break (the old box shatters). The fight freezes during each cut, so cuts never hide a hit.
+- **Seth is LV 10 / 56 HP:** attacks cost about 1.4× the false-pacifist fight's HP per minute.
+- **Chases:** crowds of laughing Floweys line the walls and throw aimed pellets. Each one laughs once as it comes into view: one of two supplied laughs, at random pitch, overlapping. That makes the escapes about 25% harder than false pacifist; the designer asked for it.
+- **The rigs are aimed at a killer:** EXP → his HP, then a bar named AQUA ("...Huh. It didn't."), then ATK 0 / LOVE 0. The chase rooms are emptied, and act three replays only genocide bosses with their own mechanics and art. His own line attacks stay vines. The sixth page, the spare, makes Seth's strikes ×2.2.
+- **The ending must kill Flowey, in this order:**
+  1. Seth tears out of him.
+  2. Small again, Flowey taunts him ("Even if you win here? I'll just go back.").
+  3. Only FIGHT works.
+  4. The first slash really gets him.
+  5. He laughs in Seth's face: "Sans was right, you know? You might as well have let Sans win. Aqua's gone. And Asgore's ahead..."
+  6. YOU'RE ALREADY DEAD.
+  7. Seth, in anger, attacks over and over until he is dust (16 strikes; mashing Z swings sooner).
+  8. Silence, then the epilogue: "Somewhere, a file is still saved."
+- **Determination:** 5 points, internal (shown only on GAME OVER and in CHECK). Each death spends one; dying with none RESETs the fight to the intro. It refills once, on first reaching COURSE CORRECTION.
+- **ACTs:**
+  - REMEMBER: +1 determination, at most every 4 turns.
+  - RESIST: the next attack's hits cost 2 on Normal (30%).
+  - THINK OF AQUA: +1 STOLEN PIE, 3 at most.
+  - CHECK: shows determination.
+- **Seth's slash sound** plays on every strike of his final frenzy.
+- **Page phases** are Seth's Aqua-fight specials turned on him (PAGE STORM, MARGIN TRAP, SHELL PRESS, NEO BURST, WEB SCRIPT, OMEGA NOTEBOOK). The page is sealed in thorns for 9 s, then drifts; Z calls it from 12 s. These "omega" attacks are never fatal: they stop at 1 HP.
+- **Chase Floweys** use the designer's overworld sprite (`tools/flowey-genocide/art/overworld-flowey.png`) and sprout procedurally as they come into view.
+- **Glitch frames:** occasional laughing-face cuts; Muffet's frame is her CRUEL GLEE face.
+- **Seth survives** (still the designer's call to change). The king is still ahead.
+
+The script is the designer-approved S-tier revision. Lines marked kept are verbatim. The sources and build script live in `tools/flowey-genocide/`: run `geno_assets.py` to recrop the replayed bosses' art from their own games, then `geno_build.py games/flowey.html games/flowey-genocide.html`. `track.mp3` there is the route's supplied theme (Checkmate), trimmed to 0:02.5–2:24 so it loops cleanly.
+
+### Tenna/Spamson and Spamson NEO
 
 Lobby residents seek stardom/hero status by capturing the human. Spamson wears only the stolen cannon arm there, not the entire robot. Tenna/Spamson partnership matters; Purple with Yellow+Purple duo mechanics. Distinguish this from genocide winged Spamson NEO.
 
 Genocide Spamson injects stolen determination only after0HP. Muffet captures him before Seth finishes him. Persistence/no dust/strange taste explain her curiosity, not automatic scientific knowledge of determination.
 
-Encore: preserve letter, audience, curtain, final bow and route-specific mercy. Rift: armor is a lock around dangerous space, sleeping child and small light; breaking it isn't automatically mercy. Their genocide variants must materially differ.
+
+### Encore — Count Anansi
+
+Count Anansi replaced the old Encore in the Ruins. ENCORE is the battle's name; he is Count Anansi. The old Encore's art and fight are gone (still in git history). Sources and build: `tools/anansi/` (see its README). The build writes `games/encore.html`, so the hub, Flowey and the file name are unchanged.
+
+**Who he is (designer canon):**
+- A vampiric spider count, owner of the theatre in the spiders' wing of the Ruins. Designed after DELTARUNE's Shadow Mantle holder and Muffet.
+- Half fire monster, cousin of a fire monster (a quiet nod to Grillby). His bloodline taught the Dreemurrs fire magic. He was never a good king for spiders, being half fire.
+- His wife was the human Mage of Perseverance, Muffet's mother. She helped seal monsters in, saying the humans would otherwise have finished their genocide. Her letter to him prayed he would leave the Underground one day so they could kill each other. The story that she did it out of love is a fiction he made up so Muffet could sleep at night.
+- Muffet is his daughter. He ruled the spiders with an iron fist and made them perform. She led them away with "that crazy woman and her pet"; the walls collapsed behind them. She beat him in his old age, and he could not be prouder. He misses her. He is trapped in the Ruins with the spiders who stayed, by "that damned woman" (Toriel, the exiled queen, who beat him).
+- He sees life as a game you enjoy, even when cruel; under that, a war veteran who only feels monsterkind's emotions in full by fighting. Seth, a Purple determination mage (Perseverance, like her), is his wife's stand-in ("I suppose you'll have to do!"), and he wonders whether she is fighting him through Seth.
+- Voice: the Shadow Mantle holder's quirks. He savours a name ("Seth... oh... Seth..."), capitalises only the prize, asks accusing questions, wears mock hospitality, laughs and pivots with "~!", laughs FUHUHU, and leaves notes in empty rooms (the seat notes).
+
+**Contract:**
+- **Routes:**
+  - THE SHOW (pacifist): the route's only look at what genocide may look like. Fun and dynamic over difficulty: every foreshadowed mechanic is greatly nerfed. REFUSE three times (he wants you to hate him); after THE COUNT'S INVITATION he reads Muffet's letter, expecting cruelty, finds sincerity ("Perhaps I'm too old to be playing games"), and SPARE turns yellow. The spiders return to the seats and cheer through the finale. Aqua: "You didn't kill him... SO much EXP... not leaving the Ruins without you... Toriel's asleep, the doors."
+  - Killing him on THE SHOW is possible after 5 attacks (the neutral outcome). There is no separate neutral fight.
+  - THE LAST SHOW (genocide): fun but hard. The spiders flood the box, some burning, and the house starts to burn. He hits 0 HP and reignites twice (three lives), dimmer each time, while the fire rises (the floor, then the walls). His second life is purple strings plus orange; then the strings burn away to orange alone. His death lines are the designer's; the house burns, some spiders make it out. Aqua: "...What the hell", proud of the EXP, "Toriel wants to see us."
+- **The walk:** the spiders' wing (bake sale, a spider's web, the playbill) → the theatre aisle with three seat notes → halfway down the aisle he turns from the stage. "Skip the walk" in options. The route's theme plays muffled through the walls on the walk.
+- **ORANGE SOUL (both routes):** the tea is the soul change, once. At the start of his first attack his teapot pours over Seth's SOUL and it turns orange for the rest of the fight. From then on, keep moving: a still SOUL heats up (a ring fills around it; full in 1.6 s on THE SHOW, 1 s on THE LAST SHOW) and at full heat it burns 1 HP every 0.55 s / 0.4 s until it moves (never lethal on THE SHOW). Holding a direction counts as moving, even into a wall. Moving cools it fast.
+- **Burn stacks (fire attacks):** fire-based hazards (burning spiders, their flame trails, embers, candelabra flames, the genocide floor and wall fire) don't hit; they set the SOUL alight. Each hit adds burn stacks (+1 on THE SHOW, up to 3; +2 on THE LAST SHOW, up to 6; the floor fire adds 1). One stack burns off every 0.32 s and takes 1 HP (never the last HP on THE SHOW). Each dash shakes off 2 stacks. Flames on the SOUL show the stacks; the HP they will still take blinks orange at the end of the HP bar.
+- **Dash:** Z (or a quick tap on touch) dashes the way you are pressing at that moment (or your last direction if none), straight through bullets. A DASH box beside the HP bar is lit when it is ready and fills while it recharges (0.6 s / 0.9 s); a press during the recharge or during the attack's title is kept and fires as soon as it can. Seth's SOUL keeps its purple rim.
+- **His attacks:** spiders on threads, wine spills, swinging candelabras, Seth's own specials staged back at him (PAGE STORM, MARGIN TRAP), Muffet-like MANY HANDS from the wings, the REVOLVING STAGE (the box turns; controls turn with it), BLOOD BALLET, WEB CURTAIN, and the finale THE COUNT'S INVITATION. THE LAST SHOW adds THE HOUSE BURNS, ON A STRING, THE STRINGS BURN, THE PYRE.
+- **Seth:** THE SHOW LV 1 / 25 HP, 2 damage per hit on Normal (1 Gentle, 3 Hard). THE LAST SHOW LV 3 / 28 HP, 3 per hit (2 / 4). Checkpoint with full HP and supplies every 4 attacks; on THE LAST SHOW also at each reignition.
+- **His HP:** THE SHOW 900 (FIGHT 30–80). THE LAST SHOW 1100 / 650 / 420 across three lives (FIGHT 90–180); his first life can't fall before 7 attacks.
+- **Measured (test bot, Normal):** THE SHOW: spared in about 10 turns, no deaths (a random dodger takes 26–39 hits and still survives). THE LAST SHOW: killed in 14–17 turns; the strong bot (which dashes off its burns) no longer dies.
+- **Art and music:** his frames are cleaned from the designer's three sprite sheets (battle poses, overworld walk, hands, 24 portraits). Rooms and the battle backdrop are pixel art painted at 1x by `tools/anansi/tools/paint_rooms.py`, with SHOW and LAST SHOW variants. Music: the designer's "COPY-CAT PANIC" (THE SHOW) and "FRENETIC FOLLIES" (THE LAST SHOW). Effects are UNDERTALE's own sounds; text uses the designer's snd_txt1, pitched low for him.
+
+**In Flowey's fights:**
+- **False pacifist:** the Ruins replay, ENCORE! ENCORE!: his web curtain with one gap, then TEA FOR TWO (his teapot's pour and his many hands, wherever you stand). The memory page is THE STAGE ("The count's teacup. A letter he finally opened.").
+- **False genocide:** THE EMPTIED THEATRE: burning silk strands (THE HOUSE BURNS), the cross with wheels of burning spiders (ON A STRING), his cape from every wall (CURTAIN CALL). The FILE 1 cut shows his face. NO ENCORE in Flowey's last gauntlet is his web curtain.
+- Flowey borrows `anansi-art.js` live from `encore.html` via `tools/sync_borrowed_art.py`.
+
+### Marigold — The Forgotten Memorial
+
+Marigold replaced Rift in Snowdin. The designer retired Rift ("doesn't fit the lore of Undertale cleanly"); Rift is gone from the game and the repo (it is still in git history). Sources and build: `tools/marigold/` (see its README).
+
+**Who she is (designer canon):**
+- A ghost monster. In Undertale ghosts are a kind of monster, not the dead. Her lineage held bodiless form to be improper and wore vessels symbolic of who they were. In the war that meant suits of armor.
+- She was a knight of the King's Royal Guard of ghosts, led by a wise, long-lived turtle (Gerson).
+- Ghosts were valued because they couldn't die, until a rare kind of human mage (determination turned into magic) learned to kill them. Those mages also built the Barrier.
+- The humans eradicated ghost-kind first. A family of farmers (the Blooks) survived by fleeing early. Of the warriors, one known survivor, forgotten: her.
+- She knew Chara and idolised her: "a true monster at heart", the only good human, trapped in flesh and bone. She cannot understand leniency.
+- She possessed Chara's copper memorial (oxidised green, buttercups, a crown that grows thorns, one hollow socket, red and green eyes). Some of Asriel's dust is on it, and through it traces of Chara's SOUL. That is her identity bleed: sometimes she forgets she isn't Chara. She barely remembers her own life, and she would have it no other way.
+- She devotes herself to the Dreemurrs. She does the killing so Asgore doesn't have to, and calls Toriel a COWARD for leaving him.
+- She learned of the lab experiments, believes the Prince (Flowey) lives on and believes in the plan, and promised him a human SOUL so he could feel again. She thinks herself unworthy to absorb SOULs; he is. Flowey is vulnerable to her and avoids her: she once made him cry, kneeling to tell him it wasn't his fault.
+- Seth is a determination mage: the same kind of human that killed her people. Determination alone isn't enough to make magic (Frisk).
+
+**Contract:**
+- **Routes:**
+  - THE TRAP (pacifist): Flowey lures Seth down the old path and Marigold is overjoyed that his plan worked.
+  - THE HUNT (genocide): she sought Seth out herself, furious and vindicated. It is much harder.
+  - Neutral: no fight (Flowey talks her out of it).
+- **The walk:** forest (Flowey sprouts in his canon frames and friendly face for the lure, on the trap) → the Forgotten Gallery (six murals of the designer's text) → the ledge with its SAVE star → the memorial (trap) or her ambush on the ledge (hunt: a thorn wall rises behind Seth and she walks out of the cave). Reading all six murals adds a line from her. "Skip the walk" in options.
+- **Seth:** pacifist LV 1 / 30 HP, 2 damage per hit on Normal (1 Gentle, 3 Hard). Genocide LV 5 / 36 HP, 4 per hit (3 / 5). Checkpoint with full HP and supplies every 4 attacks.
+- **Poison:** buttercup pollen drains HP over time, never below 1 HP.
+- **CYAN:** RING AROUND THE ROSIE (attack 11 on both routes) uses Aqua's cyan exactly: ring at 38% of the box, drift, arrows push, Z reverses. It is sung as the rhyme's four verses; "we all fall down" drops every posy, including the outer ring that was harmless until then.
+- **CALL AQUA:** every call angers Marigold.
+  - On the trap: a little more speed, and +1 damage from the fourth call. Four calls of banter talk Aqua round; she arrives two attacks later and defends Seth, cutting away the projectile nearest him every couple of seconds. This is a step in her pacifist redemption arc, which runs across the pacifist fights.
+  - On the hunt: the first call is a brush-off (she's grinding in Waterfall). Later calls are advice from Seth's notes:
+    - the next attack's warnings run 40% longer;
+    - strikes do +35% (hit the cracked copper);
+    - poison is weaker;
+    - lance warnings run longer.
+  - The hunt's anger cost is steep: +5% speed and +6% density per call, and +1 damage from the third call.
+- **Spare (trap only):** TALK about the statue, the Prince, then (only once Aqua is there) who she was. Then SPARE is yellow. Her ending: "Because I think it's pretty." On the hunt, mercy is refused.
+- **Kill:**
+  - The trap can kill her after 6 attacks.
+  - The hunt can't kill her until THORNS OF AGONY (its 13th attack) has been survived.
+  - She leaves no dust: the statue is empty.
+- **Art and music:**
+  - Her frames are cleaned from the designer's example sheet.
+  - Human Seth is an original sprite after the Flower Seth sheet.
+  - Aqua's art is copied live from `aqua.html`.
+  - Music: the designer's themes. THE TRAP plays "The King's Dream" (a Deltarune fan track); THE HUNT plays "Thorns of Agony" (a fan remaster). The walk plays the designer's "Glowing Snow" (DELTARUNE) over synthesized wind: 1.15× faster and higher on the trap, as supplied on the hunt.
+  - Effects are UNDERTALE's own sounds that PURPLE already uses (hurt, select, slash, ding, heavy hit). All text uses the designer's snd_txt1, pitched per speaker.
+  - The rooms and the battle backdrop are pixel art painted at 1x by `tools/marigold/tools/paint_rooms.py`, with trap and hunt variants.
+
+**In Flowey's fights:**
+- **False pacifist:** she is the Snowdin replay, SHE KEPT THE FLOWERS: thorn rows, her lance, buttercups bursting into petals, the flower shower. The memory page is THE STATUE.
+- **False genocide:** she is THORNS OF AGONY: her hunt, with the ghost Royal Guard marching both ways. The memory page is THE EMPTY STATUE, and the FILE 2 cut shows her face.
+- **Colour:** replays stay grey, except her buttercups, which keep their yellow.
+- **Flowey and her:** she is his soft spot. On false pacifist his cruelty cracks ("She knelt down in the snow... Told me it wasn't my fault." / "Stop looking at me like that!"). On false genocide the static cuts him off mid-sentence about her ("SKIP", then "NEXT.").
 
 ## Dialogue voices
 
