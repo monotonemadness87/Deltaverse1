@@ -158,10 +158,13 @@ function drawSoul(){
  const s=game.soul;
  if(game.dash>0&&!reduceMotion)trail.push({x:s.x,y:s.y,life:.18});
  for(const p of trail){p.life-=1/60;if(p.life>0)heart(p.x,p.y,16,'orange',p.life*2.5);}while(trail.length&&trail[0].life<=0)trail.shift();
- if(game.invulnerability>0&&game.dash<=0&&Math.floor(game.clock*15)%2)return;
+ // While hurt the SOUL blinks; its flames keep burning.
+ const blink=game.invulnerability>0&&game.dash<=0&&Math.floor(game.clock*15)%2;
  // Seth's SOUL keeps its purple rim in every mode. Hot, it glows white; just recharged, it flashes.
- if(game.mode==='red'||!game.soulOrange)heart(s.x,s.y,16,'purple');else{heart(s.x,s.y,20,'purple');heart(s.x,s.y,14,'orange');if(game.heat>.3)heart(s.x,s.y,14,'white',Math.min(.7,(game.heat-.3)*1.2)*(reduceMotion?1:.7+.3*Math.sin(game.clock*25)));}
+ if(blink){}else if(game.mode==='red'||!game.soulOrange)heart(s.x,s.y,16,'purple');else{heart(s.x,s.y,20,'purple');heart(s.x,s.y,14,'orange');if(game.heat>.3)heart(s.x,s.y,14,'white',Math.min(.7,(game.heat-.3)*1.2)*(reduceMotion?1:.7+.3*Math.sin(game.clock*25)));}
  if(readyFlash>0){heart(s.x,s.y,22,'white',readyFlash*2.5);}
+ // Burn stacks: one flame on the SOUL per stack.
+ for(let i=0;i<game.burn;i++){const an=-Math.PI/2+(i-(game.burn-1)/2)*.55;flame(s.x+Math.cos(an)*11,s.y+Math.sin(an)*9+4,5,9+(i%2)*2,game.clock*1.3+i);}
 }
 function field(){
  const a=game.arena,cx=a.x+a.w/2,cy=a.y+a.h/2;
@@ -194,6 +197,7 @@ function mainText(){
 }
 function effectsFX(){for(const e of game.effects){
  if(e.type==='flash'&&!reduceMotion){ctx.save();ctx.globalAlpha=Math.min(1,e.life*1.4);ctx.fillStyle=e.color||'#fff';ctx.fillRect(0,0,640,480);ctx.restore();}
+ else if(e.type==='snuff'){const u=1-e.life/.4;ctx.save();ctx.globalAlpha=(1-u)*.7;ctx.fillStyle='#bbb';for(let k=0;k<8;k++){const an=k*Math.PI/4;ctx.fillRect(Math.round(e.x+Math.cos(an)*(6+u*22)),Math.round(e.y+Math.sin(an)*(6+u*22)-u*8),3,3);}ctx.restore();}
  else if(e.type==='vignette'){const g=ctx.createRadialGradient(320,240,170,320,240,420);g.addColorStop(0,`rgba(${e.color},0)`);g.addColorStop(1,`rgba(${e.color},${Math.min(.55,e.life*1.4)})`);ctx.fillStyle=g;ctx.fillRect(0,0,640,480);}
 }}
 let aquaArrived=null;
@@ -222,7 +226,9 @@ function renderBattle(){
  if(game.settings.invincible)text('INVINCIBLE',24,46,1,'#ffff00');
  text('SETH',24,407,2);text('LV '+game.lv,132,407,2);text('HP',248,408,2);
  ctx.fillStyle='#8e2636';ctx.fillRect(284,403,120,16);ctx.fillStyle='#ffff00';ctx.fillRect(284,403,120*game.hp/game.maxHP,16);
- const burning=game.heat>=1&&['defend','warning'].includes(game.state);
+ const burning=(game.heat>=1||game.burn>0)&&['defend','warning'].includes(game.state);
+ // The HP the burn stacks will still take shows in orange at the end of the bar.
+ if(game.burn>0&&['defend','warning'].includes(game.state)){const p=Math.min(game.burn,game.hp-(game.genocide?0:1)),x=284+120*(game.hp-p)/game.maxHP;if(p>0){ctx.fillStyle=reduceMotion||Math.floor(game.clock*8)%2?'#ff9d27':'#ff5a20';ctx.fillRect(Math.round(x),403,Math.round(120*p/game.maxHP),16);}}
  text(`${game.hp} / ${game.maxHP}`,425,407,2,burning?'#ff9d27':'#fff');
  dashPill();
  battleButtons(640,480).forEach((r,i)=>drawBattleButton(ctx,r,r.label,i,game.state==='menu'&&game.selected===i));

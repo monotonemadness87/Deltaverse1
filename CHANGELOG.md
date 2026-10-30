@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-30 — Count Anansi: burn stacks for fire attacks
+
+- **Fire sets you alight:** burning spiders, their flame trails, embers, candelabra flames and the genocide floor and wall fire no longer hit directly. Each adds burn stacks (+1 on the pacifist show, up to 3; +2 on genocide, up to 6; the floor fire adds 1). A stack burns off every 0.32 s and takes 1 HP with it (never the last HP on the pacifist show).
+- **Dash to shake it off:** each dash sheds 2 stacks. The first time you catch fire: "YOU'RE ON FIRE! DASH TO SHAKE IT OFF".
+- **Shown:** one flame on the SOUL per stack (still drawn while the SOUL blinks after a hit), and the HP the stacks will take blinks orange at the end of the HP bar.
+- Standing still still heats the SOUL and burns, as before.
+- **Measured (test bot, Normal):** pacifist unchanged (no deaths). Genocide: the strong bot takes about a third fewer hits and no longer dies, because it dashes its burns off.
+
 ## 2026-10-30 — Count Anansi: the orange SOUL, reworked
 
 - **The tea is the soul change, once:** at the start of his first attack his teapot pours over Seth's SOUL and turns it orange. It never comes back as a hazard.

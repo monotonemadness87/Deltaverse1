@@ -20,7 +20,7 @@ class BattleEngine{
   this.turn=0;this.dodges=0;this.selected=0;this.option=0;this.refused=0;this.applause=0;this.letter=false;this.ready=false;this.spareTries=0;this.ending='';this.brace=false;this.fire=0;this.seats=0;this.taunts=0;
   this.items=[{name:'SPIDER DONUT',heal:12,count:3},{name:'SPIDER CIDER',heal:24,count:2},{name:'BUTTERSCOTCH PIE',heal:99,count:1}];
   this.arena={...MENU_BOX};this.targetArena={...MENU_BOX};this.bullets=[];this.timeline=[];this.effects=[];this.soul={x:320,y:300};this.mode='red';this.angle=0;this.angleTarget=0;
-  this.strings=null;this.lane=1;this.laneHeld=false;this.heat=0;this.burnTick=0;this.soulOrange=false;this.teaIntro=null;this.dash=0;this.dashCD=0;this.dashQueued=0;this.dashDir={x:1,y:0};this.lastMove={x:1,y:0};
+  this.strings=null;this.lane=1;this.laneHeld=false;this.heat=0;this.burnTick=0;this.burn=0;this.stackTick=0;this.burnTold=false;this.soulOrange=false;this.teaIntro=null;this.dash=0;this.dashCD=0;this.dashQueued=0;this.dashDir={x:1,y:0};this.lastMove={x:1,y:0};
   this.boss={x:320,y:192,alpha:1,pose:'idle',hurt:0,dim:0};this.invulnerability=0;this.shake=0;this.attackTime=0;this.duration=0;this.pattern=null;this.attackName='';this.config=null;
   this.pages=[];this.text='';this.displayChars=0;this.speaker='narrator';this.face='neutral';this.next=null;this.encounter=0;
   this.world.reset();this.emit('reset');
@@ -39,7 +39,7 @@ class BattleEngine{
   this.setArena(MENU_BOX);this.arena={...MENU_BOX};this.saveCheckpoint();if(skip)this.toMenu(true);this.emit(skip?'turn':'encounter');
  }
  saveCheckpoint(){this.checkpoint={turn:this.turn,dodges:this.dodges,enemyHP:this.enemyHP,enemyMax:this.enemyMax,life:this.life,fire:this.fire,refused:this.refused,applause:this.applause,letter:this.letter,ready:this.ready,seats:this.seats,spareTries:this.spareTries,taunts:this.taunts};}
- retry(){if(this.state==='dead'&&this.deathAge<1.8)return;const cp=this.checkpoint;this.scene='battle';Object.assign(this,cp);this.checkpoint={...cp};this.hp=this.maxHP;this.heat=0;this.freshStock();this.bullets=[];this.effects=[];this.timeline=[];this.toMenu();this.message(S.N(this.genocide?'* The smoke clears.\n* Full HP. Supplies restored.':'* The curtain rises again.\n* Full HP. Supplies restored.'),'menu');this.emit('heal');}
+ retry(){if(this.state==='dead'&&this.deathAge<1.8)return;const cp=this.checkpoint;this.scene='battle';Object.assign(this,cp);this.checkpoint={...cp};this.hp=this.maxHP;this.heat=0;this.burn=0;this.freshStock();this.bullets=[];this.effects=[];this.timeline=[];this.toMenu();this.message(S.N(this.genocide?'* The smoke clears.\n* Full HP. Supplies restored.':'* The curtain rises again.\n* Full HP. Supplies restored.'),'menu');this.emit('heal');}
  freshStock(){const counts={'SPIDER DONUT':3,'SPIDER CIDER':2,'BUTTERSCOTCH PIE':1};for(const i of this.items)i.count=counts[i.name];}
  options(){
   if(this.state==='act')return S.ACTS[this.settings.route];
@@ -77,7 +77,7 @@ class BattleEngine{
   if(!this.enemyHP){if(g&&this.life<3){this.reignite();return;}this.endBattle('killed');return;}
   const bank=g?S.STRIKE_G:S.STRIKE_P;this.message([S.C(g?'cackle':'amused',bank[this.turn%bank.length])],'defend');
  }
- reignite(){this.life++;this.enemyMax=this.enemyHP=LIFE_HP[this.life-1];this.fire=Math.min(3,this.fire+1);this.boss.dim=this.life-1;this.shake=.5;this.hp=this.maxHP;this.heat=0;this.freshStock();this.emit('reignite');this.saveCheckpoint();this.message(S.REIGNITE[this.life-2],'defend');}
+ reignite(){this.life++;this.enemyMax=this.enemyHP=LIFE_HP[this.life-1];this.fire=Math.min(3,this.fire+1);this.boss.dim=this.life-1;this.shake=.5;this.hp=this.maxHP;this.heat=0;this.burn=0;this.freshStock();this.emit('reignite');this.saveCheckpoint();this.message(S.REIGNITE[this.life-2],'defend');}
  act(name){
   const g=this.genocide,bank=S.ACT_LINES[name];
   if(name==='CHECK'){this.message(S.N(S.CHECK[this.settings.route]),'defend');return;}
@@ -108,7 +108,9 @@ class BattleEngine{
  config_(){
   const d=DIFF[this.settings.difficulty]||DIFF.normal,g=this.genocide;
   return{speed:d.speed*(g?1.08+.05*(this.life-1):1),warn:d.warn,cooldown:g?.85:1.15,damage:Math.max(1,d[this.settings.route]-(this.brace?1:0)),density:g?.88-.05*(this.life-1):1.1,
-   heatUp:g?1:1.6,heatCool:g?2.5:3.5,burnEvery:g?.4:.55,dashCD:g?.9:.6};
+   heatUp:g?1:1.6,heatCool:g?2.5:3.5,burnEvery:g?.4:.55,dashCD:g?.9:.6,
+   // Fire hits set the SOUL alight: stacks that each cost 1 HP. A dash shakes some of them off.
+   burnAdd:g?2:1,burnCap:g?6:3,stackEvery:.32,dashSheds:2};
  }
  attackList(){
   const lists=ATTACKS[this.settings.route];
@@ -127,7 +129,7 @@ class BattleEngine{
   buildAttack(this,attack);this.timeline.sort((a,b)=>a.at-b.at);this.emit('warning');
  }
  finishWave(){
-  this.dodges++;this.brace=false;this.heat=0;
+  this.dodges++;this.brace=false;this.heat=0;this.burn=0;
   this.bullets=[];this.timeline=[];this.mode='red';this.strings=null;this.angle=this.angleTarget=0;this.setArena(MENU_BOX);this.boss.alpha=1;this.boss.pose='idle';
   let lines;
   if(!this.genocide){
@@ -154,7 +156,11 @@ class BattleEngine{
  // The dash goes the way you are pressing when the next step runs (not the way you last moved). Pressed while it
  // recharges, or before the box is ready, it is kept for a moment and fires as soon as it can.
  tryDash(){this.dashQueued=.3;}
- startDash(dx,dy){if(dx||dy)this.lastMove={x:dx,y:dy};this.dash=.24;this.dashCD=this.config.dashCD;this.dashQueued=0;this.dashDir={...this.lastMove};this.emit('dash');}
+ startDash(dx,dy){if(dx||dy)this.lastMove={x:dx,y:dy};this.dash=.24;this.dashCD=this.config.dashCD;this.dashQueued=0;this.dashDir={...this.lastMove};this.emit('dash');
+  if(this.burn>0){this.burn=Math.max(0,this.burn-this.config.dashSheds);this.effects.push({type:'snuff',x:this.soul.x,y:this.soul.y,life:.4});this.emit('snuff');}}
+ // Fire-based hazards don't hit; they set the SOUL alight.
+ isFire(b){return b.kind==='flame'||b.kind==='candle'||b.kind==='runner'&&b.burning||b.kind==='drip'&&b.ember;}
+ ignite(add=this.config.burnAdd){if(this.invulnerability>0||this.settings.invincible)return;this.burn=Math.min(this.config.burnCap,this.burn+add);this.invulnerability=this.config.cooldown*.6;this.effects.push({type:'vignette',color:'255,150,60',life:.3});this.emit('ignite');if(!this.burnTold){this.burnTold=true;this.cue('YOU\'RE ON FIRE! DASH TO SHAKE IT OFF');}}
  // ------------------------------------------------------------ physics
  hurt(amount=this.config.damage,lethal=true){
   if(this.invulnerability>0||this.settings.invincible)return;
@@ -213,8 +219,10 @@ class BattleEngine{
    this.heat=moving?Math.max(0,this.heat-dt*this.config.heatCool):Math.min(1,this.heat+dt/this.config.heatUp);
    if(this.heat>=1&&!this.settings.invincible){this.burnTick+=dt;if(this.burnTick>=this.config.burnEvery){this.burnTick=0;const floor=this.genocide?0:1;if(this.hp>floor){this.hp--;this.effects.push({type:'vignette',color:'255,120,40',life:.25});this.emit('burn');if(!this.hp){this.state='dead';this.deathAge=0;this.bullets=[];this.timeline=[];this.emit('dead');return;}}}}else this.burnTick=Math.min(this.burnTick,this.config.burnEvery*.6);
   }
+  // Burn stacks: one burns off every 0.32 s and takes 1 HP with it (never the last HP on the show).
+  if(this.burn>0){this.stackTick+=dt;if(this.stackTick>=this.config.stackEvery){this.stackTick=0;this.burn--;if(this.hp>(this.genocide?0:1)){this.hp--;this.emit('burn');if(!this.hp){this.state='dead';this.deathAge=0;this.bullets=[];this.timeline=[];this.emit('dead');return;}}}}else this.stackTick=0;
   // The genocide fire: the floor burns, and on the last life the walls too.
-  if(this.fire>0&&!this.dash){const band=FIRE_BAND[this.fire];if(s.y>a.y+a.h-band||this.fire>=3&&(s.x<a.x+FIRE_SIDE||s.x>a.x+a.w-FIRE_SIDE))this.hurt(Math.max(1,this.config.damage-2));if(this.state==='dead')return;}
+  if(this.fire>0&&!this.dash){const band=FIRE_BAND[this.fire];if(s.y>a.y+a.h-band||this.fire>=3&&(s.x<a.x+FIRE_SIDE||s.x>a.x+a.w-FIRE_SIDE))this.ignite(1);}
   const born=[];
   for(const b of this.bullets){
    b.age+=dt;if(b.delay&&b.age<b.delay)continue;
@@ -232,7 +240,7 @@ class BattleEngine{
    else{b.x+=(b.vx||0)*dt;b.y+=(b.vy||0)*dt;}
    if(b.gone)continue;
    if(this.dash>0)continue;
-   if(this.hitTest(b,s)){this.hurt();if(this.state==='dead')return;}
+   if(this.hitTest(b,s)){if(this.isFire(b))this.ignite();else{this.hurt();if(this.state==='dead')return;}}
   }
   this.bullets.push(...born);
   this.bullets=this.bullets.filter(b=>{if(b.gone)return false;if(['pool','hand','wall','beam','web','spider','candle','flame'].includes(b.kind))return true;return b.age<(b.life??6)&&b.x>-60&&b.x<700&&b.y>-60&&b.y<540;});
