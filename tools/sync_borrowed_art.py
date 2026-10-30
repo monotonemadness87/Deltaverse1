@@ -7,12 +7,11 @@ module from the source fight, renamed to the name Flowey requires:
   sans.html     art.js          -> sans-art.js      (class SansArt)
   sans.html     blaster-beam.js -> blaster-beam.js  (skull and beam lifecycle)
   marigold.html marigold-art.js -> marigold-art.js  (class MarigoldArt: her frames, for the Snowdin memories)
+  encore.html   anansi-art.js   -> anansi-art.js    (class AnansiArt: Count Anansi's frames and props, for the Ruins memories)
   mettalot.html art.js          -> ghost-art.js     (class GhostArt, palette-snapped)
-  encore.html   sprite-atlas.js -> sprite-atlas.js
-  encore.html   attack-art.js   -> encore-art.js    (batons, curtain slabs, stars, spotlights)
-  encore.html   Encore's body sheet -> the image Flowey draws Encore from
 
-A module missing from the Flowey file is inserted before the art module that needs it.
+A module missing from the Flowey file is inserted before the art module that needs it. Modules left over
+from art that no longer exists (the old Encore's atlas) are removed.
 Usage: sync_borrowed_art.py games/flowey.html   (then rebuild the false genocide from it)
 """
 import sys
@@ -46,21 +45,14 @@ def source(game, name, rename=None, swaps=()):
     return body
 
 
-def image_after(text, marker):
-    i = text.index(marker) + len(marker)
-    return text[i:text.index('"', i)]
-
-
 MODULES = [
     ('blaster-beam.js', source('sans', 'blaster-beam.js'), 'sans-art.js'),
     ('sans-art.js', source('sans', 'art.js', 'sans-art.js', [('class Art{', 'class SansArt{'), ('Object.assign(exports,{SANS_ANCHORS,SANS_HEADS,sansPose,Art});', 'Object.assign(exports,{SANS_ANCHORS,SANS_HEADS,sansPose,SansArt});')]), None),
-    ('marigold-art.js', source('marigold', 'marigold-art.js'), 'encore-art.js'),
+    ('marigold-art.js', source('marigold', 'marigold-art.js'), 'engine.js'),
+    ('anansi-art.js', source('encore', 'anansi-art.js'), 'marigold-art.js'),
     ('ghost-art.js', source('mettalot', 'art.js', 'ghost-art.js'), None),
-    ('sprite-atlas.js', source('encore', 'sprite-atlas.js'), 'encore-art.js'),
-    ('encore-art.js', source('encore', 'attack-art.js', 'encore-art.js'), None),
 ]
-encore = (ROOT / 'games' / 'encore.html').read_text(encoding='utf-8')
-ENCORE_BODY = image_after(encore[encore.index('\nconst {installNotebook}'):], 'boss.src="')
+RETIRED = ['sprite-atlas.js', 'encore-art.js']
 
 for path in sys.argv[1:]:
     p = Path(path)
@@ -72,7 +64,9 @@ for path in sys.argv[1:]:
         else:
             at = module(text, before)[0]
             text = text[:at] + body + '\n' + text[at:]
-    old = image_after(text, 'encoreSprite.src="')
-    text = text.replace('encoreSprite.src="' + old + '"', 'encoreSprite.src="' + ENCORE_BODY + '"', 1)
+    for name in RETIRED:
+        span = module(text, name)
+        if span:
+            text = text[:span[0]] + text[span[1]:].lstrip('\n')
     p.write_text(text, encoding='utf-8')
     print('synced', p)

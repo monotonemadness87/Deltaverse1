@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-10-30 — ENCORE is now Count Anansi
+
+The Ruins boss is rebuilt from scratch as Count Anansi, the vampiric spider count, after the designer's design, sprite sheets, lines and music. ENCORE stays the battle's name and file (`games/encore.html`); the old Encore is gone.
+
+- **The walk:** the spiders' wing of the Ruins (bake sale, a waving spider, the playbill), then the theatre aisle with his seat notes. He keeps his back to the house until Seth is halfway down the aisle. The route's theme plays muffled through the walls.
+- **ORANGE SOUL:** keep moving or his teapot pours scalding tea; Z is a brave dash through bullets. Seth's SOUL keeps its purple rim.
+- **THE SHOW (pacifist):** fun first, every foreshadowed mechanic nerfed. Attacks echo Seth's own specials, Muffet's many hands and a revolving stage. REFUSE to hate him three times; after the finale he reads Muffet's letter and SPARE turns yellow. The spiders return to the seats and cheer. He can be killed after 5 attacks instead.
+- **THE LAST SHOW (genocide):** fun but hard. The spiders flood the box, some burning; the house catches fire. He reignites twice, dimmer each time, while the fire climbs the box. Purple strings plus orange on his second life, until the strings burn away. The designer's death lines; the house burns and some spiders make it out.
+- **Aqua:** both endings have her scene, with the designer's beats.
+- **Music:** "COPY-CAT PANIC" (pacifist) and "FRENETIC FOLLIES" (genocide), supplied by the designer.
+- **Measured (test bot, Normal):** pacifist about 0.25 HP-fraction lost per minute, no deaths; genocide about 1.5 per minute, 0–1 deaths for the strong bot, comparable to Marigold's hunt.
+- **Hub:** the ENCORE card now shows the count (subtitle "Count Anansi"; the Ruins is "The spiders' theatre"). Neutral opens THE SHOW, where killing him is the neutral outcome.
+- **Flowey:** his Ruins memories are Anansi's now. False pacifist: web curtain, then TEA FOR TWO (tea pour and many hands), page THE STAGE with new lines. False genocide: burning silk, wheels of burning spiders, his cape from every wall; the FILE 1 cut shows his face. Measured difficulty is unchanged (random dodger 31→33 hits/min on the false-pacifist replay; false genocide identical).
+- **Shared modules:** Seth's shared modules (font, Notebook, SOUL visuals, battle UI) now live in `tools/shared/`; Marigold's build reads them from there (its output is byte-identical).
+
 ## 2026-10-29 — Marigold: RING AROUND THE ROSIE (cyan)
 
 Marigold now uses CYAN, played exactly as in Aqua's fight. The SOUL rides a ring around the centre of the box: the arrow keys push it along the ring, otherwise it drifts, and Z turns it back. Seth's SOUL keeps its purple rim. The new attack, RING AROUND THE ROSIE, is sung verse by verse:

@@ -57,7 +57,7 @@ The hub is currently an encounter launcher, **not a continuous campaign save**. 
 
 | Region | Pacifist / neutral | Genocide |
 | --- | --- | --- |
-| Ruins | Encore — Last Curtain | Encore's emptied-theatre variant |
+| Ruins | Encore — Count Anansi: THE SHOW (spare after the letter; he can be killed after 5 attacks) | Encore — THE LAST SHOW |
 | Snowdin | Marigold — The Forgotten Memorial: THE TRAP (pacifist only; no neutral fight) | Marigold — THE HUNT |
 | Waterfall | Mettalot — Waterfall After Dark | Gerson — What For? |
 | Hotland | Ant Tenna + Spamson — The Next Big Thing, currently pacifist only in launcher | Spamson NEO — A Deal in the Dark, then Muffet — The Dark Nest |
@@ -257,13 +257,42 @@ Only pacifist-route bosses return as replayed attacks. The six fragments are pag
 
 The script is the designer-approved S-tier revision. Lines marked kept are verbatim. The sources and build script live in `tools/flowey-genocide/`: run `geno_assets.py` to recrop the replayed bosses' art from their own games, then `geno_build.py games/flowey.html games/flowey-genocide.html`. `track.mp3` there is the route's supplied theme (Checkmate), trimmed to 0:02.5–2:24 so it loops cleanly.
 
-### Tenna/Spamson, Spamson NEO and Encore
+### Tenna/Spamson and Spamson NEO
 
 Lobby residents seek stardom/hero status by capturing the human. Spamson wears only the stolen cannon arm there, not the entire robot. Tenna/Spamson partnership matters; Purple with Yellow+Purple duo mechanics. Distinguish this from genocide winged Spamson NEO.
 
 Genocide Spamson injects stolen determination only after0HP. Muffet captures him before Seth finishes him. Persistence/no dust/strange taste explain her curiosity, not automatic scientific knowledge of determination.
 
-Encore: preserve letter, audience, curtain, final bow and route-specific mercy. Its genocide variant must materially differ.
+
+### Encore — Count Anansi
+
+Count Anansi replaced the old Encore in the Ruins. ENCORE is the battle's name; he is Count Anansi. The old Encore's art and fight are gone (still in git history). Sources and build: `tools/anansi/` (see its README). The build writes `games/encore.html`, so the hub, Flowey and the file name are unchanged.
+
+**Who he is (designer canon):**
+- A vampiric spider count, owner of the theatre in the spiders' wing of the Ruins. Designed after DELTARUNE's Shadow Mantle holder and Muffet.
+- Half fire monster, cousin of a fire monster (a quiet nod to Grillby). His bloodline taught the Dreemurrs fire magic. He was never a good king for spiders, being half fire.
+- His wife was the human Mage of Perseverance, Muffet's mother. She helped seal monsters in, saying the humans would otherwise have finished their genocide. Her letter to him prayed he would leave the Underground one day so they could kill each other. The story that she did it out of love is a fiction he made up so Muffet could sleep at night.
+- Muffet is his daughter. He ruled the spiders with an iron fist and made them perform. She led them away with "that crazy woman and her pet"; the walls collapsed behind them. She beat him in his old age, and he could not be prouder. He misses her. He is trapped in the Ruins with the spiders who stayed, by "that damned woman" (Toriel, the exiled queen, who beat him).
+- He sees life as a game you enjoy, even when cruel; under that, a war veteran who only feels monsterkind's emotions in full by fighting. Seth, a Purple determination mage (Perseverance, like her), is his wife's stand-in ("I suppose you'll have to do!"), and he wonders whether she is fighting him through Seth.
+- Voice: the Shadow Mantle holder's quirks. He savours a name ("Seth... oh... Seth..."), capitalises only the prize, asks accusing questions, wears mock hospitality, laughs and pivots with "~!", laughs FUHUHU, and leaves notes in empty rooms (the seat notes).
+
+**Contract:**
+- **Routes:**
+  - THE SHOW (pacifist): the route's only look at what genocide may look like. Fun and dynamic over difficulty: every foreshadowed mechanic is greatly nerfed. REFUSE three times (he wants you to hate him); after THE COUNT'S INVITATION he reads Muffet's letter, expecting cruelty, finds sincerity ("Perhaps I'm too old to be playing games"), and SPARE turns yellow. The spiders return to the seats and cheer through the finale. Aqua: "You didn't kill him... SO much EXP... not leaving the Ruins without you... Toriel's asleep, the doors."
+  - Killing him on THE SHOW is possible after 5 attacks (the neutral outcome). There is no separate neutral fight.
+  - THE LAST SHOW (genocide): fun but hard. The spiders flood the box, some burning, and the house starts to burn. He hits 0 HP and reignites twice (three lives), dimmer each time, while the fire rises (the floor, then the walls). His second life is purple strings plus orange; then the strings burn away to orange alone. His death lines are the designer's; the house burns, some spiders make it out. Aqua: "...What the hell", proud of the EXP, "Toriel wants to see us."
+- **The walk:** the spiders' wing (bake sale, a spider's web, the playbill) → the theatre aisle with three seat notes → halfway down the aisle he turns from the stage. "Skip the walk" in options. The route's theme plays muffled through the walls on the walk.
+- **ORANGE SOUL (both routes):** keep moving. Stand still and his teapot tips over you and pours scalding tea (burn: 1 HP every 0.32 s per stack; never lethal on THE SHOW). Z (or a quick tap) is a brave dash: a burst of speed straight through bullets (not the tea). Seth's SOUL keeps its purple rim.
+- **His attacks:** spiders on threads, wine spills, swinging candelabras, Seth's own specials staged back at him (PAGE STORM, MARGIN TRAP), Muffet-like MANY HANDS from the wings, the REVOLVING STAGE (the box turns; controls turn with it), BLOOD BALLET, WEB CURTAIN, and the finale THE COUNT'S INVITATION. THE LAST SHOW adds THE HOUSE BURNS, ON A STRING, THE STRINGS BURN, THE PYRE.
+- **Seth:** THE SHOW LV 1 / 30 HP, 2 damage per hit on Normal (1 Gentle, 3 Hard). THE LAST SHOW LV 3 / 28 HP, 3 per hit (2 / 4). Checkpoint with full HP and supplies every 4 attacks; on THE LAST SHOW also at each reignition.
+- **His HP:** THE SHOW 900 (FIGHT 30–80). THE LAST SHOW 1100 / 650 / 420 across three lives (FIGHT 90–180); his first life can't fall before 7 attacks.
+- **Measured (test bot, Normal):** THE SHOW about 0.25 HP-fraction lost per minute, spared in about 10 turns with no deaths; THE LAST SHOW about 1.5 per minute, killed in 15–24 turns with 0–1 deaths for the strong bot.
+- **Art and music:** his frames are cleaned from the designer's three sprite sheets (battle poses, overworld walk, hands, 24 portraits). Rooms and the battle backdrop are pixel art painted at 1x by `tools/anansi/tools/paint_rooms.py`, with SHOW and LAST SHOW variants. Music: the designer's "COPY-CAT PANIC" (THE SHOW) and "FRENETIC FOLLIES" (THE LAST SHOW). Effects are UNDERTALE's own sounds; text uses the designer's snd_txt1, pitched low for him.
+
+**In Flowey's fights:**
+- **False pacifist:** the Ruins replay, ENCORE! ENCORE!: his web curtain with one gap, then TEA FOR TWO (his teapot's pour and his many hands, wherever you stand). The memory page is THE STAGE ("The count's teacup. A letter he finally opened.").
+- **False genocide:** THE EMPTIED THEATRE: burning silk strands (THE HOUSE BURNS), the cross with wheels of burning spiders (ON A STRING), his cape from every wall (CURTAIN CALL). The FILE 1 cut shows his face. NO ENCORE in Flowey's last gauntlet is his web curtain.
+- Flowey borrows `anansi-art.js` live from `encore.html` via `tools/sync_borrowed_art.py`.
 
 ### Marigold — The Forgotten Memorial
 

@@ -3,8 +3,7 @@
 python3 -I tools/marigold/build.py
 
 The page is assembled from tools/marigold/src (Marigold's own modules), tools/marigold/art (cleaned
-sprite atlases), the shared Seth modules (font, Notebook, SOUL visuals, battle UI) copied byte-for-byte
-from games/encore.html, Aqua's current art module from games/aqua.html, and the overworld Flowey from
+sprite atlases), the shared Seth modules (font, Notebook, SOUL visuals, battle UI) in tools/shared, Aqua's current art module from games/aqua.html, and the overworld Flowey from
 tools/flowey-genocide/art.
 """
 import base64, json, os, re, sys
@@ -36,18 +35,18 @@ def data_uri(path, mime):
 
 
 def main():
-    encore = read(os.path.join(ROOT, 'games', 'encore.html'))
+    shared = os.path.join(ROOT, 'tools', 'shared')
     aqua = read(os.path.join(ROOT, 'games', 'aqua.html'))
-    font = re.search(r"src:url\('(data:font/ttf;base64,[A-Za-z0-9+/=]+)'\)", encore).group(1)
-    license_txt = re.search(r'<a href="(data:text/plain;base64,[A-Za-z0-9+/=]+)" download="Determination-license.txt"', encore).group(1)
-    soul = re.search(r'soul\.src="(data:image/png;base64,[A-Za-z0-9+/=]+)"', encore[encore.index(ANCHOR):]).group(1)
+    font = data_uri(os.path.join(shared, 'Determination.ttf'), 'font/ttf')
+    license_txt = data_uri(os.path.join(shared, 'Determination-license.txt'), 'text/plain')
+    soul = data_uri(os.path.join(shared, 'soul.png'), 'image/png')
 
     shell = read(os.path.join(HERE, 'shell.html'))
     shell = shell.replace('__FONT_TTF__', font).replace('__LICENSE_TXT__', license_txt)
 
     parts = [shell, '\n']
     for name in SHARED:
-        parts.append(module(encore, name))
+        parts.append(read(os.path.join(shared, name)))
     parts.append(module(aqua, 'art.js').replace('modules["art.js"]=', 'modules["aqua-art.js"]=', 1))
     parts.append(module(read(os.path.join(ROOT, 'games', 'flowey.html')), 'flowey-art.js'))
     art = os.path.join(HERE, 'art')
