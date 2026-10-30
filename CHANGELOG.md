@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-30 — Count Anansi: the orange SOUL, reworked
+
+- **The tea is the soul change, once:** at the start of his first attack his teapot pours over Seth's SOUL and turns it orange. It never comes back as a hazard.
+- **Standing still burns:** a still SOUL heats up (a ring fills around it, with steam). At full heat it burns 1 HP at a time until it moves (never lethal on the pacifist show). Holding a direction counts as moving, even into a wall.
+- **The dash is reliable:** Z goes the way you are pressing at that moment (before, it used the last direction the SOUL had moved, so pressing a direction and Z together dashed the old way). A press during the recharge or the attack's title is kept and fires as soon as it can. A DASH box beside the HP bar shows when it is ready; the SOUL flashes when it recharges. Touch taps are more forgiving.
+- **Pacifist Seth has 25 HP** (was 30).
+- **Measured (test bot, Normal):** pacifist: no deaths, about 10 turns. Genocide: 0–1 deaths for the strong bot (about 30% less damage taken now the tea no longer chases you).
+
 ## 2026-10-30 — ENCORE is now Count Anansi
 
 The Ruins boss is rebuilt from scratch as Count Anansi, the vampiric spider count, after the designer's design, sprite sheets, lines and music. ENCORE stays the battle's name and file (`games/encore.html`); the old Encore is gone.

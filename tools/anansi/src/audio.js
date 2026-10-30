@@ -55,7 +55,7 @@ class StageAudio{
    hurt:()=>S('damage',{gain:.9})||this.tone(49,.2),
    heal:()=>S('ding',{gain:.7,rate:1.2})||this.tone(780,.16,'triangle'),
    dead:()=>S('heavy',{gain:.8,rate:.8}),kill:()=>S('heavy',{gain:.9,rate:.6}),spare:()=>S('ding',{gain:.8,rate:.9}),letter:()=>S('ding',{gain:.5,rate:.7}),
-   dash:()=>this.burst(.09,.12,1800),tea:()=>this.tone(880,.08,'triangle',.05),pour:()=>this.burst(.1,.5,700),scald:()=>{this.burst(.14,.3,3200);S('damage',{gain:.5,rate:1.3});},burn:()=>this.burst(.05,.08,4200),
+   dash:()=>this.burst(.12,.14,1800),dashReady:()=>this.tone(1320,.04,'triangle',.05),tea:()=>this.tone(880,.08,'triangle',.05),pour:()=>this.burst(.1,.7,700),orange:()=>S('ding',{gain:.7,rate:1.5}),burn:()=>{this.burst(.1,.12,4200);S('damage',{gain:.35,rate:1.4});},
    reignite:()=>{this.burst(.2,.6,300);this.tone(110,.5,'sawtooth',.08);},rumble:()=>this.burst(.14,.45,180),
    cue:()=>this.tone(880,.03,'triangle',.05),encounter:()=>{this.tone(880,.06);setTimeout(()=>this.tone(440,.08),110);this.burst(.1,.3,1600);},
    door:()=>this.burst(.05,.2,600),read:()=>S('select',{gain:.35,offset:.07,duration:.3,rate:.9}),turnaround:()=>this.tone(330,.25,'triangle',.05)

@@ -123,7 +123,6 @@ function hazard(b){
   case 'beam':{if(b.age<b.warn){ctx.save();ctx.strokeStyle='#ff8a2a';ctx.globalAlpha=.55;ctx.setLineDash([4,4]);ctx.strokeRect(Math.round(b.x-b.w/2)+.5,a.y,b.w,a.h);ctx.restore();return;}const k=Math.max(0,1-(b.age-b.warn-b.live)/.15);ctx.save();ctx.globalAlpha=k;ctx.fillStyle='#ff5a20';ctx.fillRect(Math.round(b.x-b.w/2),a.y,b.w,a.h);ctx.fillStyle='#fff2c0';ctx.fillRect(Math.round(b.x-b.w/4),a.y,Math.round(b.w/2),a.h);ctx.restore();return;}
   case 'web':{ctx.fillStyle='#e8e0f0';const g0=b.gy-b.gh/2,g1=b.gy+b.gh/2,x=Math.round(b.x);ctx.fillRect(x-1,a.y,2,g0-a.y);ctx.fillRect(x-1,g1,2,a.y+a.h-g1);ctx.globalAlpha=.55;for(let y=a.y+8;y<a.y+a.h;y+=14){if(y>g0-4&&y<g1+4)continue;ctx.fillRect(x-6,y,12,1);ctx.fillRect(x-4,y-3,1,6);ctx.fillRect(x+3,y-3,1,6);}ctx.globalAlpha=1;return;}
   case 'blade':art.blade(b.x,b.y,b.age*(b.released?10:4));return;
-  case 'tea':drawTea(b);return;
   case 'page':{ctx.save();ctx.translate(Math.round(b.x),Math.round(b.y));ctx.rotate(b.age*(b.spin||3));ctx.fillStyle='#2a1420';ctx.fillRect(-6,-7,12,14);ctx.fillStyle='#f0e6cc';ctx.fillRect(-5,-6,10,12);ctx.fillStyle=INK;ctx.fillRect(-3,-3,6,1);ctx.fillRect(-3,0,6,1);ctx.fillRect(-3,3,4,1);ctx.restore();return;}
  }
  ctx.fillStyle='#fff';ctx.fillRect(Math.round(b.x-3),Math.round(b.y-3),6,6);
@@ -137,25 +136,32 @@ function drawHand(b){
  const cuff=b.x-b.side*b.w/2,edge=b.side<0?a.x-4:a.x+a.w+4;ctx.fillStyle='#1a0810';ctx.fillRect(Math.round(Math.min(edge,cuff)),Math.round(b.y-14),Math.round(Math.abs(cuff-edge)),28);ctx.fillStyle='#c4301a';ctx.fillRect(Math.round(Math.min(edge,cuff)),Math.round(b.y-14),Math.round(Math.abs(cuff-edge)),2);
  art.frame(claw?'hand_claw':'hand_open',b.x,b.y,2,{anchor:'center',rot:b.side<0?Math.PI/2:-Math.PI/2,flip:b.side>0});
 }
-// The count's teapot tips over anyone who stands still too long; the pour scalds.
-function drawTea(b){
- const a=game.arena,top=a.y-2;
- if(b.phase==='pour'){const k=Math.min(1,b.t/.12),bottom=top+(a.h+4)*k;ctx.fillStyle='#b8682a';ctx.fillRect(Math.round(b.x-8),top,16,Math.round(bottom-top));ctx.fillStyle='#e8a050';ctx.fillRect(Math.round(b.x-3),top,6,Math.round(bottom-top));if(!reduceMotion){ctx.fillStyle='rgba(255,255,255,.35)';for(let i=0;i<4;i++){const u=(b.t*2+i/4)%1;ctx.fillRect(Math.round(b.x-10+i*6+Math.sin(u*9)*3),Math.round(a.y+a.h-6-u*40),3,3);}}}
- else{ctx.save();ctx.strokeStyle='#e8a050';ctx.globalAlpha=.6;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(Math.round(b.x)+.5,a.y);ctx.lineTo(Math.round(b.x)+.5,a.y+a.h);ctx.stroke();ctx.restore();}
- art.teapot(b.x-26,top-18,b.phase,b.t);
+// The first attack: his teapot tips over Seth's SOUL and the pour turns it orange.
+function teaIntro(){
+ const ti=game.teaIntro;if(!ti||game.state!=='warning')return;const t=game.timer,s=game.soul,a=game.arena,top=a.y-6;
+ const phase=t<.65?'tilt':'pour',alpha=Math.min(1,t/.15)*(t>1.9?Math.max(0,1-(t-1.9)/.4):1);
+ ctx.save();ctx.globalAlpha=alpha;
+ if(t>.65&&t<1.6){const k=Math.min(1,(t-.65)/.25),bottom=top+(s.y-top)*k;ctx.fillStyle='#b8682a';ctx.fillRect(Math.round(s.x-5),top,10,Math.round(bottom-top));ctx.fillStyle='#e8a050';ctx.fillRect(Math.round(s.x-2),top,4,Math.round(bottom-top));
+  if(k>=1&&!reduceMotion){ctx.fillStyle='#e8a050';for(let i=0;i<6;i++){const u=(t*3+i/6)%1,an=-Math.PI/2+(i-2.5)*.5;ctx.fillRect(Math.round(s.x+Math.cos(an)*u*18),Math.round(s.y+Math.sin(an)*u*14+u*u*16),2,2);}}}
+ art.teapot(s.x-26,top-20,phase,t);ctx.restore();
+ if(t>1.35&&t<1.6&&!reduceMotion){ctx.save();ctx.globalAlpha=1-(t-1.35)/.25;ctx.strokeStyle='#ffd080';ctx.lineWidth=2;ctx.beginPath();ctx.arc(s.x,s.y,10+(t-1.35)*120,0,Math.PI*2);ctx.stroke();ctx.restore();}
 }
-// Steam rises off a SOUL that stands still: the tea is coming.
-function steam(){const lim=game.config?.stillLimit||1,u=game.still/lim;if(u<.35||reduceMotion)return;ctx.fillStyle=`rgba(255,240,220,${Math.min(.8,u)})`;for(let i=0;i<3;i++){const k=(game.clock*1.6+i/3)%1;ctx.fillRect(Math.round(game.soul.x-6+i*5+Math.sin(k*8+i)*2),Math.round(game.soul.y-12-k*16),2,3);}}
-const trail=[];
+// Heat: steam as a still SOUL warms up, a ring that fills toward burning, and flames once it burns.
+function heatFX(){
+ const h=game.heat,s=game.soul;if(h<=.05)return;
+ if(!reduceMotion){ctx.fillStyle=`rgba(255,240,220,${Math.min(.8,h)})`;for(let i=0;i<3;i++){const k=(game.clock*1.6+i/3)%1;ctx.fillRect(Math.round(s.x-6+i*5+Math.sin(k*8+i)*2),Math.round(s.y-12-k*16),2,3);}}
+ ctx.save();ctx.lineWidth=2;ctx.strokeStyle=h>=1?'#ff3a20':h>.6?'#ff7a2a':'#ffb060';ctx.globalAlpha=h>=1&&!reduceMotion?.6+.4*Math.sin(game.clock*30):.8;ctx.beginPath();ctx.arc(s.x,s.y,15,-Math.PI/2,-Math.PI/2+Math.PI*2*h);ctx.stroke();ctx.restore();
+ if(h>=1)for(let i=0;i<3;i++)flame(s.x-6+i*6,s.y-6,4,8,game.clock*1.3+i);
+}
+const trail=[];let readyFlash=0;
 function drawSoul(){
  const s=game.soul;
  if(game.dash>0&&!reduceMotion)trail.push({x:s.x,y:s.y,life:.18});
  for(const p of trail){p.life-=1/60;if(p.life>0)heart(p.x,p.y,16,'orange',p.life*2.5);}while(trail.length&&trail[0].life<=0)trail.shift();
  if(game.invulnerability>0&&game.dash<=0&&Math.floor(game.clock*15)%2)return;
- // Seth's SOUL keeps its purple rim in every mode.
- if(game.mode==='red')heart(s.x,s.y,16,'purple');else{heart(s.x,s.y,20,'purple');heart(s.x,s.y,14,'orange');}
- if(game.burn>0)for(let i=0;i<Math.min(3,game.burn);i++)flame(s.x-6+i*6,s.y-6,4,8,game.clock*1.3+i);
- if(game.dashCD>0&&game.dash<=0){ctx.save();ctx.strokeStyle='#ff9d27';ctx.globalAlpha=.6;ctx.lineWidth=2;ctx.beginPath();ctx.arc(s.x,s.y,14,-Math.PI/2,-Math.PI/2+Math.PI*2*(1-game.dashCD/(game.config?.dashCD||1)));ctx.stroke();ctx.restore();}
+ // Seth's SOUL keeps its purple rim in every mode. Hot, it glows white; just recharged, it flashes.
+ if(game.mode==='red'||!game.soulOrange)heart(s.x,s.y,16,'purple');else{heart(s.x,s.y,20,'purple');heart(s.x,s.y,14,'orange');if(game.heat>.3)heart(s.x,s.y,14,'white',Math.min(.7,(game.heat-.3)*1.2)*(reduceMotion?1:.7+.3*Math.sin(game.clock*25)));}
+ if(readyFlash>0){heart(s.x,s.y,22,'white',readyFlash*2.5);}
 }
 function field(){
  const a=game.arena,cx=a.x+a.w/2,cy=a.y+a.h/2;
@@ -168,14 +174,15 @@ function field(){
  // The genocide floor fire: the bottom band burns, and on the last life the side walls too.
  if(game.fire>0){const band=FIRE_BAND[game.fire];ctx.fillStyle='rgba(120,20,10,.5)';ctx.fillRect(a.x,a.y+a.h-band,a.w,band);for(let x=a.x+6;x<a.x+a.w;x+=12)flame(x,a.y+a.h,12,band+4+Math.abs(Math.sin(x*.21+game.clock*3))*6,game.clock+x);if(game.fire>=3)for(let y=a.y+10;y<a.y+a.h;y+=14){flame(a.x+4+FIRE_SIDE/2,y+8,FIRE_SIDE,10,game.clock+y);flame(a.x+a.w-4-FIRE_SIDE/2,y+8,FIRE_SIDE,10,game.clock+y*1.3);}}
  if(game.strings){ctx.fillStyle='#b249dc';for(const y of game.strings){ctx.globalAlpha=.75;ctx.fillRect(a.x,Math.round(y)-1,a.w,2);}ctx.globalAlpha=1;}
- for(const b of game.bullets)if(!['pool','wall','candle','tea'].includes(b.kind))hazard(b);
+ for(const b of game.bullets)if(!['pool','wall','candle'].includes(b.kind))hazard(b);
  for(const e of game.effects)if(e.type==='stringsBurn'){const u=1-e.life/.9;for(const y of e.ys){const half=a.w/2*Math.min(1,u*1.6);ctx.fillStyle='#b249dc';ctx.globalAlpha=1-u;ctx.fillRect(a.x,Math.round(y)-1,a.w/2-half,2);ctx.fillRect(cx+half,Math.round(y)-1,a.w/2-half,2);ctx.globalAlpha=1;for(let k=0;k<6;k++){flame(cx-half+k*4,y+2,5,8,game.clock+k);flame(cx+half-k*4,y+2,5,8,game.clock+k+3);}}}
- steam();drawSoul();
+ heatFX();drawSoul();
  ctx.restore();
  // Candelabras hang on chains from above the box; the teapot tips in over its top edge.
- for(const b of game.bullets)if(b.kind==='candle'||b.kind==='tea')hazard(b);
+ for(const b of game.bullets)if(b.kind==='candle')hazard(b);
+ teaIntro();
  ctx.restore();
- if(game.state==='warning'){const size=text.measure(game.attackName)>a.w-18?1.5:2;text(game.attackName,cx,cy-8,size,'#fff',true);}
+ if(game.state==='warning'){const size=text.measure(game.attackName)>a.w-18?1.5:2;text(game.attackName,cx,game.teaIntro?a.y+14:cy-8,size,'#fff',true);}
 }
 function prose(str,n=Infinity,x=48,width=528,max=44){typedLines(wrap(str,max,width),str,n).slice(0,5).forEach((line,i)=>text(line,x,267+i*24));}
 function mainText(){
@@ -215,10 +222,17 @@ function renderBattle(){
  if(game.settings.invincible)text('INVINCIBLE',24,46,1,'#ffff00');
  text('SETH',24,407,2);text('LV '+game.lv,132,407,2);text('HP',248,408,2);
  ctx.fillStyle='#8e2636';ctx.fillRect(284,403,120,16);ctx.fillStyle='#ffff00';ctx.fillRect(284,403,120*game.hp/game.maxHP,16);
- if(game.burn>0){const p=Math.min(game.burn,game.hp),x=284+120*(game.hp-p)/game.maxHP;ctx.fillStyle='#ff9d27';ctx.fillRect(Math.round(x),403,Math.max(0,Math.round(120*p/game.maxHP)),16);}
- text(`${game.hp} / ${game.maxHP}`,425,407,2,game.burn>0?'#ff9d27':'#fff');
+ const burning=game.heat>=1&&['defend','warning'].includes(game.state);
+ text(`${game.hp} / ${game.maxHP}`,425,407,2,burning?'#ff9d27':'#fff');
+ dashPill();
  battleButtons(640,480).forEach((r,i)=>drawBattleButton(ctx,r,r.label,i,game.state==='menu'&&game.selected===i));
  if(game.state==='defend'){ctx.fillStyle='#302420';ctx.fillRect(24,397,592,1);ctx.fillStyle='#ff9d27';ctx.fillRect(24,397,592*Math.max(0,1-game.attackTime/game.duration),1);}
+}
+// The dash, always in view while it can be used: lit = ready (Z, or tap), dim with a filling bar = recharging.
+function dashPill(){
+ if(!['defend','warning'].includes(game.state)||game.mode==='red')return;const x=528,y=401,w=88,h=20,cd=game.config?.dashCD||1,u=game.dashCD>0?1-game.dashCD/cd:1,ready=u>=1&&game.dash<=0;
+ ctx.fillStyle='#000';ctx.fillRect(x,y,w,h);ctx.fillStyle=ready?'#ff9d27':'#3a2a1a';ctx.fillRect(x,y,Math.round(w*u),h);ctx.strokeStyle=ready?'#ffff00':'#7a5a3a';ctx.lineWidth=2;ctx.strokeRect(x+1,y+1,w-2,h-2);
+ text(ready?(matchMedia('(pointer:coarse)').matches?'TAP DASH':'Z DASH'):'DASH',x+w/2,y+3,1.5,ready?'#000':'#a08060',true);
 }
 function render(){
  soulVisual.advance(game.clock,'purple',1);ctx.save();ctx.fillStyle='#000';ctx.fillRect(0,0,640,480);
@@ -230,7 +244,7 @@ function render(){
 }
 function musicMode(){if(['spared','killed'].includes(game.state)||game.ending)return 'end';if(game.scene==='world')return game.genocide?'walk-genocide':'walk-pacifist';if(game.state==='encounter')return 'off';return game.genocide?'genocide':'pacifist';}
 function syncUI(){
- $('back').textContent=konami.progress>=8?'B':'X';$('confirm').textContent=konami.progress>=8?'A':(game.state==='defend'&&game.mode!=='red'?'⇥':'Z');
+ $('back').textContent=konami.progress>=8?'B':'X';$('confirm').textContent=konami.progress>=8?'A':(['defend','warning'].includes(game.state)&&game.mode!=='red'?'⇥':'Z');
  audio.status(musicMode(),game.paused,game.state==='dead',game.scene==='world'?game.world.room:'battle');
  $('phase').textContent=game.paused?'PAUSED':game.state==='dead'?'STAY DETERMINED':game.state==='spared'?'THE CURTAIN FALLS':game.state==='killed'?(game.genocide?'THE HOUSE BURNS':'THE FLAME GOES OUT'):game.scene==='world'?S.ROOMS[game.world.room]:(game.genocide?'ENCORE — LIFE '+game.life:'ENCORE')+' / TURN '+Math.max(1,game.turn)+(game.settings.invincible?' / INVINCIBLE':'');
  $('normalRoute').setAttribute('aria-pressed',String(!game.genocide));$('genocideRoute').setAttribute('aria-pressed',String(game.genocide));
@@ -248,6 +262,7 @@ game.onEvent=event=>{
  if(event==='reset'){flameOut=-1;aquaArrived=null;trail.length=0;}
  if(event==='reignite')game.effects.push({type:'flash',color:'#ff9030',life:.45});
  if(event==='letter')game.effects.push({type:'flash',color:'#fff4d0',life:.3});
+ if(event==='dashReady')readyFlash=.2;
  if(event==='text'&&game.ending==='killed'&&/flame goes out/.test(game.text)&&flameOut<0)flameOut=game.clock;
  syncUI();audio.effect(event);if(['text','turn','dead','end'].includes(event))$('live').textContent=game.state==='dead'?'Game over.':`${game.text}`;
 };
@@ -262,9 +277,9 @@ function inactive(){clearInput();if(['defend','fight','warning'].includes(game.s
 window.addEventListener('blur',inactive);document.addEventListener('visibilitychange',()=>{if(document.hidden)inactive();});
 function point(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*640/r.width,y:(e.clientY-r.top)*480/r.height};}
 // Touch: dragging moves the SOUL; a quick tap while defending is the brave dash.
-canvas.addEventListener('pointerdown',e=>{if(game.paused||drag)return;if(game.state==='defend'){e.preventDefault();canvas.setPointerCapture(e.pointerId);const p=point(e);drag={id:e.pointerId,x:p.x,y:p.y,sx:game.soul.x,sy:game.soul.y,world:false,at:performance.now(),moved:0};touch={x:game.soul.x,y:game.soul.y};}else if(game.state==='world'){e.preventDefault();canvas.setPointerCapture(e.pointerId);const p=point(e);drag={id:e.pointerId,world:true};touch=p;}canvas.focus({preventScroll:true});});
+canvas.addEventListener('pointerdown',e=>{if(game.paused||drag)return;if(['defend','warning'].includes(game.state)){e.preventDefault();canvas.setPointerCapture(e.pointerId);const p=point(e);drag={id:e.pointerId,x:p.x,y:p.y,sx:game.soul.x,sy:game.soul.y,world:false,at:performance.now(),moved:0};touch={x:game.soul.x,y:game.soul.y};}else if(game.state==='world'){e.preventDefault();canvas.setPointerCapture(e.pointerId);const p=point(e);drag={id:e.pointerId,world:true};touch=p;}canvas.focus({preventScroll:true});});
 canvas.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;const p=point(e);if(!drag.world)drag.moved=Math.max(drag.moved,Math.hypot(p.x-drag.x,p.y-drag.y));touch=drag.world?p:{x:drag.sx+p.x-drag.x,y:drag.sy+p.y-drag.y};});
-const releaseDrag=e=>{if(drag?.id===e.pointerId){if(drag.world&&game.state==='world')game.confirm();else if(!drag.world&&game.state==='defend'&&drag.moved<8&&performance.now()-drag.at<220)game.confirm();touch=null;drag=null;}};canvas.addEventListener('pointerup',releaseDrag);canvas.addEventListener('pointercancel',releaseDrag);
+const releaseDrag=e=>{if(drag?.id===e.pointerId){if(drag.world&&game.state==='world')game.confirm();else if(!drag.world&&['defend','warning'].includes(game.state)&&drag.moved<12&&performance.now()-drag.at<300)game.confirm();touch=null;drag=null;}};canvas.addEventListener('pointerup',releaseDrag);canvas.addEventListener('pointercancel',releaseDrag);
 document.querySelectorAll('.touch-controls button').forEach(b=>b.addEventListener('contextmenu',e=>e.preventDefault()));
 document.querySelectorAll('[data-key]').forEach(button=>{const dir=button.dataset.key;button.addEventListener('pointerdown',e=>{e.preventDefault();button.setPointerCapture(e.pointerId);touchKeys[dir]=true;button.classList.add('held');konami.input(dir);game.navigate(dir==='left'?-1:dir==='right'?1:0,dir==='up'?-1:dir==='down'?1:0);syncUI();});const release=()=>{touchKeys[dir]=false;button.classList.remove('held');};button.addEventListener('pointerup',release);button.addEventListener('pointercancel',release);});
 $('confirm').onclick=()=>{if(!konami.input('a'))game.confirm();syncUI();};$('back').onclick=()=>{if(!konami.input('b'))game.back();syncUI();};$('pause').onclick=()=>{clearInput();game.togglePause();};
@@ -273,7 +288,7 @@ $('sound').onclick=async()=>{audio.userMuted=audio.enabled;await audio.enable(!a
 $('help').onclick=()=>{clearInput();resumeAfterOptions=!game.paused&&game.scene==='battle';if(resumeAfterOptions)game.togglePause();$('options').showModal();};$('closeOptions').onclick=()=>$('options').close();$('options').addEventListener('close',()=>{if(resumeAfterOptions&&game.paused)game.togglePause();canvas.focus({preventScroll:true});});
 $('difficulty').onchange=e=>{game.settings.difficulty=e.target.value;};$('motion').onchange=e=>{reduceMotion=e.target.checked;};
 $('skipWalk').onchange=e=>{game.settings.skipWalk=e.target.checked;if(e.target.checked&&game.scene==='world')game.startBattle(true);};
-function frame(now){accumulator=Math.min(accumulator+(now-last)/1000,.1);last=now;const input={};for(const k of ['up','down','left','right','slow'])input[k]=keys[k]||touchKeys[k];input.touch=touch;while(accumulator>=1/120){game.update(1/120,input);accumulator-=1/120;}if(typing()&&game.clock-textSound>.07){audio.blip(game.speaker);textSound=game.clock;}syncUI();render();requestAnimationFrame(frame);}
+function frame(now){readyFlash=Math.max(0,readyFlash-(now-last)/1000);accumulator=Math.min(accumulator+(now-last)/1000,.1);last=now;const input={};for(const k of ['up','down','left','right','slow'])input[k]=keys[k]||touchKeys[k];input.touch=touch;while(accumulator>=1/120){game.update(1/120,input);accumulator-=1/120;}if(typing()&&game.clock-textSound>.07){audio.blip(game.speaker);textSound=game.clock;}syncUI();render();requestAnimationFrame(frame);}
 syncUI();render();requestAnimationFrame(frame);
 window.battleDebug={game,render,syncUI,audio};
 

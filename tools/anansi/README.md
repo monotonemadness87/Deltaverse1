@@ -8,7 +8,7 @@ python3 -I tools/anansi/build.py
 
 - `src/story.js`: every line. The designer's lines are kept verbatim (obvious typos fixed only).
 - `src/world.js`: the walk: the spiders' wing of the Ruins, then the theatre aisle and its seat notes.
-- `src/engine.js`: the battle state machine: the ORANGE SOUL (keep moving, the teapot, the dash), purple strings, the revolving stage, the genocide fire and reignitions, REFUSE and the letter, the endings. It keeps the Notebook's FIGHT contract (`target` → `fight` → `attackCursor`).
+- `src/engine.js`: the battle state machine: the ORANGE SOUL (the one tea pour that turns it orange, heat from standing still, the dash), purple strings, the revolving stage, the genocide fire and reignitions, REFUSE and the letter, the endings. It keeps the Notebook's FIGHT contract (`target` → `fight` → `attackCursor`).
 - `src/attacks.js`: THE SHOW's ten attacks (pacifist) and THE LAST SHOW's three lives of attacks (genocide).
 - `src/anansi-art.js`: draws his frames and portraits, Seth's walk, the painted rooms and backdrop, and his props (spiders, playbills, candelabras, fang blades, teapot).
 - `src/audio.js`: the designer's themes, muffled through the walls on the walk; UNDERTALE's own effects; the designer's snd_txt1 for text.

@@ -41,7 +41,8 @@ const ATTACKS={
 function buildAttack(g,attack){
  const a=attack.arena,cx=a.x+a.w/2,cy=a.y+a.h/2,R=()=>g.random(),sp=()=>g.config.speed,soul=()=>g.soul;
  const every=(s,e,i,f)=>g.every(s,e,i,f),at=(t,f)=>g.at(t,f);
- const intro=()=>{if(g.dodges===0||attack.mode==='strings'&&g.life===2&&!g.stringsTold){g.stringsTold=attack.mode==='strings';at(0,()=>g.cue(attack.mode==='strings'?'STRINGS + ORANGE: KEEP MOVING · ↑↓ SWITCH · Z DASH':'ORANGE: KEEP MOVING · Z TO DASH'));}};
+ // The orange cue comes with the tea pour (engine); the strings get their own the first time.
+ const intro=()=>{if(attack.mode==='strings'&&!g.stringsTold&&g.soulOrange){g.stringsTold=true;at(0,()=>g.cue('STRINGS: ↑↓ SWITCH · KEEP MOVING · Z DASH'));}};
  // His theatre.
  const spider=(x,depth,hang=1.4,amp=10)=>{g.spawn({kind:'spider',x0:x,x,y:a.y-10,top:a.y-10,ty:a.y+depth,speed:150*sp(),hang,swing:2.4,amp,r:7,state:'down'});g.pose('gesture',.6);};
  const threads=(n=1,hang=1.4)=>i=>{for(let k=0;k<n;k++)spider(a.x+24+((i*71+k*113)%Math.max(1,a.w-48)),30+((i*37+k*59)%Math.max(1,a.h-60)),hang,8+(i%3)*5);};
