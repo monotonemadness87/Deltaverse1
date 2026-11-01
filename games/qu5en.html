@@ -306,10 +306,14 @@ const INTRO=[
  Q('talk','I Was Built By The Previous Royal Scientist To Finish His Work'),
  Q('smile','His Work Was: Finding The Red SOUL. The SOUL Of Pure Determination'),
  Q('talk','You Are A Human. With A SOUL. Statistically You Are Probably It'),
+ Q('talk','Normally I Would Just Look At Your SOUL. Check The Colour. Done'),
+ Q('smug','However. Fun Fact: I Am Colour Blind. Every SOUL Looks Like: Grey'),
+ Q('smile','HE WAS NOT COLOUR BLIND. HE COULD SEE EVERY COLOUR. EVEN THE SECRET ONES.'),
+ Q('talk','I Asked Him To Install Those. He Said: Later. Hence: Tests'),
  Q('smug','So We Will Run Some Tests. Fun Tests. Mostly Fun (Some Lethal)'),
  N('* QU5EN blocks the way.\n* And your phone.')
 ];
-const CHECK='* QU5EN - ATK ?? DEF 1 (CHASSIS)\n* The CORE\'s own intelligence. Quantum 5 Engine.\n* Built to finish someone\'s research. Can\'t remember whose.';
+const CHECK='* QU5EN - ATK ?? DEF 1 (CHASSIS)\n* The CORE\'s own intelligence. Quantum 5 Engine.\n* Built to finish someone\'s research. Can\'t remember whose.\n* Colour blind. Calls it a feature.';
 const FLAVOR=[
  '* QU5EN is downloading something.\n* It is 60% done. It has been 60% done for a while.',
  '* Somewhere, Alphys is calling.\n* QU5EN declines.',
@@ -317,7 +321,8 @@ const FLAVOR=[
  '* QU5EN updates her firmware.\n* Nothing changes.',
  '* Chat is typing...',
  '* QU5EN is humming the theme song of a game that doesn\'t exist.',
- '* The globe behind her turns. It has always been turning.'
+ '* The globe behind her turns. It has always been turning.',
+ '* QU5EN squints at your SOUL.\n* She is pretending she can see what colour it is.'
 ];
 const FLAVOR_READY='* QU5EN is staring at the scan result.\n* She isn\'t testing anymore.';
 
@@ -368,6 +373,7 @@ const SCAN_INTRO=[Q('talk','My Data Is Complete. Almost'),Q('smug','Time For The
 const SCAN_RESULT=[
  Q('talk','SCAN COMPLETE.'),
  Q('talk','RESULT: VARIANT PERSEVERANCE.'),
+ Q('talk','Which Means Your SOUL Is: Purple. Says Here. I Will Have To Take Its Word For It'),
  Q('talk','Closest Known Trait To Determination As A Pure Trait'),
  Q('smug','Yet... Lacking'),
  Q('talk','...So You Are Not It'),
@@ -399,7 +405,8 @@ const FINAL_DRAW=[Q('talk','TIME. DRAW.'),Q('smug','A Draw Is Just A Win Where E
 // fight ('after' / 'after2': only once that story beat has played). The first answer listed is correct; the game
 // shuffles them. 'act': Act 2 only. 'all': every answer is right (she can't decide either).
 const QUIZ=[
- {q:'What Color Is Your SOUL?',a:['PURPLE','RED','GREEN']},
+ {q:'What Colour Do SOULs Look To Me?',a:['GREY','RED','PURPLE']},
+ {q:'Why Am I Testing You Instead Of Just Looking?',a:['I AM COLOUR BLIND','I AM SHY','ALPHYS SAID SO']},
  {q:'What Do Monsters Turn Into When They Die?',a:['DUST','EGGS','STARS']},
  {q:'How Many Human SOULs Does The King Need?',a:['SEVEN','SIX','ONE']},
  {q:'Who Built Me?',a:['THE PREVIOUS ROYAL SCIENTIST','ALPHYS','THE KING']},
@@ -420,14 +427,30 @@ const QUIZ=[
  {q:'What Comes After Summer?',a:['COLD','SPRING'],after:3},
  {q:'How Many Pockets Do I Have?',a:['ZERO','ONE','EGG'],after:4},
  // Act 2.
- {q:'What Is Your SOUL\'s Trait?',a:['PERSEVERANCE','DETERMINATION','KINDNESS'],act:2},
+ {q:'How Many Kinds Of Human SOUL Are There?',a:['SEVEN','THREE','ONE'],act:2},
  {q:'Is The Answer To This Question NO?',a:['NO','YES'],act:2,all:true},
  {q:'How Tall Was He?',a:['ALL OF THE ABOVE','SEVEN FEET','NINE FEET'],act:2,after2:0},
  {q:'How Many Times Has Alphys Called?',a:['14','2','0'],act:2,after2:1},
  {q:'What Trait Does He Have Now?',a:['COOL','HUMAN','HANDS'],act:2,after2:3},
  {q:'What Will The Red SOUL Wear?',a:['STRIPES','A HAT','PURPLE'],act:2,after2:4},
- {q:'Which SOUL Is Purple?',a:['PERSEVERANCE','PATIENCE','JUSTICE'],act:2}
+ {q:'What Colour Could He See That Nobody Else Could?',a:['A SECRET ONE','GREY','BEIGE'],act:2}
 ];
+
+// The minigames (after Mettalot's): what she says going in, and how it went (great / fine / badly).
+const MINI_INTRO={
+ sync:[Q('smug','New Test: REACTOR SYNC. The CORE Runs On Rhythm'),Q('smile','HE INVENTED RHYTHM. BEFORE HIM, MUSIC WAS ONE VERY LONG NOTE.'),Q('talk','Notes Come In On Four Tracks. Press The Arrow As Each One Hits Your Shield. On The Beat')],
+ shell:[Q('talk','Next: A Classic. FIND THE EGG'),Q('smug','I Hide The Egg In A Monitor. Then I Shuffle. Then You Cry'),Q('talk','The Egg Is White. I Am Told. I Have To Trust The Label')],
+ memory:[Q('smug','MEMORY UPLOAD. My Panels Light Up. You Touch Them In The Same Order'),Q('talk','They Are Colour-Coded. Apparently. Alphys Labelled Them'),Q('smug','I Do Not Trust Alphys. So They Also Have Shapes. And Beeps')],
+ harvest:[Q('smile','DATA HARVEST! Catch The Data Before It Hits The Floor'),Q('talk','Do Not Catch The Boots. The Boots Are Not Data. Usually')]
+};
+const MINI_RESULT={
+ sync:[[Q('smile','SYNC: PERFECT. The CORE Is Purring. I Am Purring (Regal Purring)')],[Q('talk','The Reactor Is Mostly In Sync. It Is Now Playing: Jazz')],[Q('smug','You Hit The Notes Like A Firmware Update Hits A Toaster. Late')]],
+ shell:[[Q('talk','...You Found It'),Q('smug','I Did Not. I Was Also Watching. We Will Never Speak Of This')],[Q('talk','Hm.')],[Q('smug','The Egg Was In The Other One. Chat Saw It. Chat Is Laughing At You'),Q('talk','(Chat Is Also Colour Blind) (Chat Is Me)')]],
+ memory:[[Q('smile','UPLOAD COMPLETE. Your Memory: Excellent. Mine: [FILE NOT FOUND]')],[Q('talk','Partial Upload. Some Of You Is In Me Now. Do Not Think About It')],[Q('smug','Upload Failed. To Be Fair: The Panels All Look The Same To Me Too')]],
+ harvest:[[Q('smile','Data Harvested. Delicious. Crunchy. Thank You')],[Q('talk','Some Of The Data Hit The Floor. The Floor Is Now Slightly Smarter')],[Q('smug','Most Of The Data Hit The Floor. The Floor Is Now Running For Royal Scientist')]]
+};
+const SHELL_RIGHT=['Correct. The Egg Was There. Obviously. I Knew That','Found It! (I Did Not)'];
+const SHELL_WRONG=['Wrong Monitor. That One Is Full Of: Nothing','No Egg. Only Boots'];
 
 // ACTs, and what she says to each.
 const ACTS=['CHECK','ASK ABOUT HIM','HYPE CHAT','CALL ALPHYS'];
@@ -437,6 +460,7 @@ const ABOUT_HIM=[
  [N('* You ask about the previous royal scientist.'),Q('smile','HE WAS SEVEN FEET TALL. EIGHT ON WEEKENDS.'),Q('talk','COMPUTING:'),Q('smug','NINE. FINAL ANSWER. Here Is A Hint')],
  [N('* You ask about the previous royal scientist.'),Q('smile','HE NEVER LOST A GAME OF CHESS. HE NEVER PLAYED ONE, BUT STILL.'),Q('smug','Hint Granted. In His Honour')],
  [N('* You ask about the previous royal scientist.'),Q('smile','HE WAS LEFT-HANDED. AND RIGHT-HANDED. AND HE HAD A THIRD HAND FOR EMERGENCIES.'),Q('smug','...Hint')],
+ [N('* You ask about the previous royal scientist.'),Q('smile','HE HAD A FAVOURITE COLOUR. IT WAS ONE NOBODY ELSE COULD SEE.'),Q('talk','I Cannot See Any Of Them. So We Are: Even'),Q('smug','Hint. For Your Trouble')],
  [N('* You ask about the previous royal scientist.'),Q('talk','HE WAS... HE...'),Q('talk','...'),Q('smug','He Was Cool. Here Is A Hint. Stop Asking')]
 ];
 // HYPE CHAT: engagement is data; it fills the bar, and makes the next round wilder.
@@ -459,14 +483,15 @@ const SPARE_EARLY=[[Q('smug','Mercy? Data Insufficient. Also No')],[Q('talk','Th
 const FLEE=[N('* The exits are locked.\n* QU5EN turned the lock into a quiz.')];
 const EGG_USE=[N('* You hold up the EGG.'),Q('talk','WHERE DID YOU GET THAT.'),Q('talk','...I GAVE IT TO YOU. I DO NOT REMEMBER WHY.'),Q('smile','KEEP IT SAFE.'),N('* QU5EN records something she can\'t name.\n* (DATA +12)')];
 
-Object.assign(exports,{Q,N,SETH,INTRO,CHECK,FLAVOR,FLAVOR_READY,STORY,ACT2_INTRO,STORY2,BOUT_INTRO,BOUT_KO,BOUT_DRAW,BONUS,FINAL_INTRO,NOT_ENOUGH_DATA,SCAN_INTRO,SCAN_RESULT,SPARED,CORRECT,WRONG,NO_ANSWER,FINAL_KO,FINAL_DRAW,QUIZ,ACTS,ABOUT_HIM,HYPE,CALL,STRIKE_GOOD,STRIKE_WEAK,SPARE_EARLY,FLEE,EGG_USE});
+Object.assign(exports,{MINI_INTRO,MINI_RESULT,SHELL_RIGHT,SHELL_WRONG,Q,N,SETH,INTRO,CHECK,FLAVOR,FLAVOR_READY,STORY,ACT2_INTRO,STORY2,BOUT_INTRO,BOUT_KO,BOUT_DRAW,BONUS,FINAL_INTRO,NOT_ENOUGH_DATA,SCAN_INTRO,SCAN_RESULT,SPARED,CORRECT,WRONG,NO_ANSWER,FINAL_KO,FINAL_DRAW,QUIZ,ACTS,ABOUT_HIM,HYPE,CALL,STRIKE_GOOD,STRIKE_WEAK,SPARE_EARLY,FLEE,EGG_USE});
 };
 modules["attacks.js"]=(exports,require)=>{
 // QU5EN's test suite. Every experiment is a SOUL mode, a quiz and a minigame at once: where you stand, ride, aim
 // or dash is your answer, and the wrong answers are where the round hurts. Her hazards are her own:
 // her vector fighter, her boot stomps, her laser cursors, her exploding heads, a comment section.
-// Act 1 runs six single-mode experiments; Act 2 (the Double-Blind Trials) runs six that each combine two of them,
-// and shuffles some answers as you go. Between experiments she challenges Seth to bouts in her arcade cabinet.
+// Act 1 runs six single-mode quiz experiments; Act 2 (the Double-Blind Trials) runs six that each combine two of them,
+// and shuffles some answers as you go. Four more are pure minigames, after Mettalot's (her rhythm game, shell game and
+// dance-copying): REACTOR SYNC and FIND THE EGG in Act 1, MEMORY UPLOAD and DATA HARVEST in Act 2. Between experiments she challenges Seth to bouts in her arcade cabinet.
 const box=(w,h,y=null)=>({x:320-w/2,y:y??(388-h),w,h});
 const R=(id,name,mode,arena,duration,quiz,souls,extra={})=>({id,name,mode,arena,duration,quiz,souls,...extra});
 // souls: what the round asks of Seth, one chip per SOUL mode (colour, controls, short label). Shown on the round's title card
@@ -502,10 +527,18 @@ const ROUNDS={
   R('shuffle','THE SHUFFLE','red',box(420,180),15,{at:11,max:4},[['purple','STAND IN YOUR ANSWER AT TIME','IN YOUR ANSWER'],['white','THE COLUMNS SHUFFLE, THEN STOP','SHUFFLES']],{swap:true}),
   R('shooter','STRING SHOOTER','strings',box(420,190),15,{at:12.5,max:4,instant:true},[['purple','UP / DOWN SWITCH STRINGS','UP/DOWN STRINGS'],['yellow','Z SHOOTS · SHOOT YOUR ANSWER','Z SHOOTS']],{shoot:true,heart:['purple','yellow']})
  ],
+ // The minigames: no question, just the game, still played in a SOUL mode under her hazards. Scored for DATA.
+ mini:[
+  R('sync','REACTOR SYNC','green',box(190,190),17,null,[['green','PRESS THE NOTE\'S ARROW AS IT MEETS THE SHIELD','ON THE BEAT']],{mini:true}),
+  R('shell','FIND THE EGG','red',box(420,180),15,null,[['purple','WATCH THE EGG · STAND UNDER IT AT TIME','STAND UNDER IT'],['white','HER MONITORS SWAP ON THE BEAT','SWAPS']],{mini:true}),
+  R('memory','MEMORY UPLOAD','red',box(300,220),26,null,[['purple','WATCH HER PANELS · THEN TOUCH THEM IN ORDER','REPEAT'],['white','HER LASERS TRACK YOU','LASERS']],{mini:true}),
+  R('harvest','DATA HARVEST','blue',box(400,190),16,null,[['blue','UP JUMPS · CATCH THE FALLING DATA','CATCH DATA'],['white','HER BOOTS STOMP · HEADS FALL TOO','BOOTS']],{mini:true})
+ ],
  bout:n=>bouts[Math.min(n,BOUTS.length-1)-1],
  final:bouts[BOUTS.length-1],
  scan:R('scan','THE FINAL SCAN','strings',box(420,190),20,null,[['purple','UP / DOWN SWITCH STRINGS · LEFT / RIGHT MOVE','UP/DOWN STRINGS']])
 };
+const SIDE4=['up','right','down','left'],DIR={up:[0,-1],right:[1,0],down:[0,1],left:[-1,0]};
 const SPAM=['lol','POG','first','W','based','ratio','lmao','???','GG','L','real','kino','clip it','F','omg'];
 
 function buildRound(g,r){
@@ -582,6 +615,67 @@ function buildRound(g,r){
    // Strings + yellow: shoot your answer from Seth's strings while her heads ride them.
    targets(.5,a.y+22);every(.6,14.6,1.1,()=>{const k=Math.floor(R()*3),left=R()<.5;g.spawn({kind:'mini',x:left?a.x-10:a.x+a.w+10,y:g.strings[k],vx:(left?1:-1)*140*sp(),r:6,life:5,spin:5});});
    burstWrongTargets();break;
+  // ---------------------------------------------------------------- the minigames
+  case 'sync':{
+   // Mettalot's rhythm game in her reactor: notes ride four tracks into the shield and land on beats (later, on
+   // half-beats too). Press the note's arrow as it arrives: PERFECT or GOOD scores. A note the shield already faces
+   // is blocked for nothing; any other note chips 1 HP.
+   const D=a.w/2+10,lead=2*g.cfg.warn,m=g.mini={type:'sync',label:'SYNC',score:0,total:0,done:0,combo:0,best:0,judge:null,last:-1,lastSide:null};
+   const untilHalf=n=>(Math.ceil((g.beatPos+n)*2)/2-g.beatPos)*B;
+   const note=()=>{let side;do side=SIDE4[Math.floor(R()*4)];while(side===m.lastSide&&R()<.75);m.lastSide=side;let arrive=g.attackTime+untilHalf(lead);if(arrive<m.last+B*.45)arrive=m.last+B/2;m.last=arrive;m.total+=2;g.spawn({kind:'note',side,arrive,lead:arrive-g.attackTime,D,x:cx,y:cy,life:30});};
+   const end=r.duration-lead*B-1;
+   for(let t=.5;t<end*.5;t+=B)at(t,note);
+   // Second half: a beat, a beat, then a pair on the half-beat; repeat.
+   for(let t=end*.5,k=0;t<end;t+=B,k++){at(t,note);if(k%3===2)at(t+B/2,note);}
+   m.tick=dt=>{
+    const t=g.attackTime,pos=(side,d)=>({x:cx+DIR[side][0]*d,y:cy+DIR[side][1]*d});
+    for(const side of SIDE4)if(g.pressed[side]){const n=g.bullets.filter(b=>b.kind==='note'&&!b.gone&&b.side===side).sort((x,y)=>Math.abs(x.arrive-t)-Math.abs(y.arrive-t))[0];
+     if(n&&Math.abs(n.arrive-t)<.16){const perfect=Math.abs(n.arrive-t)<.075;n.gone=true;m.done++;m.score+=perfect?2:1;m.combo++;m.best=Math.max(m.best,m.combo);m.judge={text:perfect?'PERFECT!':'GOOD',ok:true,life:.5};const p=pos(side,26);g.effects.push({type:'block',x:p.x,y:p.y,life:.3});g.emit(perfect?'perfect':'good');}}
+    for(const n of g.bullets){if(n.kind!=='note'||n.gone)continue;const p=pos(n.side,26+Math.max(0,(n.arrive-t)/n.lead)*n.D);n.x=p.x;n.y=p.y;
+     if(t>n.arrive+.16){n.gone=true;m.done++;m.combo=0;if(g.shield===n.side){m.judge={text:'BLOCKED',ok:false,life:.5};g.emit('block');}else{m.judge={text:'MISS',ok:false,life:.5};g.hurt(1);if(g.state!=='defend')return;}}}
+    if(m.judge&&(m.judge.life-=dt)<=0)m.judge=null;
+   };
+   break;}
+  case 'shell':{
+   // Mettalot's shell game, with her monitors: the EGG drops into one, they close and trade places on the beat
+   // (slowly, then faster), then stop. At TIME, stand under the one with the EGG; her boots stomp the others.
+   // Her fighter strolls along the floor the whole time.
+   const egg=Math.floor(R()*3),m=g.mini={type:'shell',reveal:true,anim:null};
+   g.quiz={q:'Where Is The Egg?',answers:[0,1,2].map(k=>({text:k===egg?'EGG':'NOTHING',correct:k===egg})),crossed:-1,shown:false,resolved:false,chosen:-1,slots:[0,1,2],at:Math.round(11/B)*B,shell:true};
+   at(2.2,()=>{m.reveal=false;g.emit('cue');});
+   const swap=()=>{const i=Math.floor(R()*3),j=(i+1+Math.floor(R()*2))%3;g.swapPair(i,j);m.anim={i,j,t0:g.attackTime,dur:B*.8};};
+   let t=2.8;for(let k=0;k<8;k++){at(t,swap);t+=k<3?2*B:B;}at(t,()=>g.cue('NO MORE SHUFFLING'));
+   fighters(1,14,4.4);every(1.5,10,2.6,()=>head(a.x+40+R()*(a.w-80),a.y+a.h*.55+R()*a.h*.25,5,95));
+   r.resolve=(g)=>{m.reveal=true;const q=g.quiz,cw=a.w/3;for(let k=0;k<3;k++)if(!q.answers[q.slots[k]].correct)boot(a.x+cw*k+cw/2,cw-8,false);g.emit('stomp');};
+   break;}
+  case 'memory':{
+   // Mettalot's dance, as a data upload: her four panels (one on each side, each with its own shape and note) light
+   // up in a sequence on the beat; then touch them in that order. A wrong panel zaps. Her heads burst while you
+   // watch; her lasers track you while you repeat.
+   const lens=g.settings.difficulty==='gentle'?[3,4,4]:[3,4,5],m=g.mini={type:'memory',label:'UPLOAD',score:0,total:lens.reduce((x,y)=>x+y,0),lens,pi:-1,seq:[],stage:'rest',until:.9,lit:-1,litLife:0,step:0,panel:-1,hz:1.4};
+   const panelAt=p=>{if(Math.abs(p.x-cx)<56){if(p.y<a.y+30)return 0;if(p.y>a.y+a.h-30)return 2;}if(Math.abs(p.y-cy)<56){if(p.x>a.x+a.w-30)return 1;if(p.x<a.x+30)return 3;}return -1;};
+   m.panelAt=panelAt;
+   const done=(ok,text)=>{m.stage='rest';m.until=g.attackTime+B*1.5;g.effects.push({type:'verdict',text,ok,life:1});g.emit(ok?'correct':'wrong');if(!ok){g.invulnerability=0;g.hurt();}};
+   m.tick=dt=>{
+    const t=g.attackTime;m.litLife=Math.max(0,m.litLife-dt);const p=panelAt(g.soul),entered=p>=0&&p!==m.panel;m.panel=p;
+    if(m.stage==='rest'&&t>=m.until){m.pi++;if(m.pi>=lens.length){m.stage='done';g.duration=Math.min(g.duration,t+1.2);return;}
+     m.seq=[];for(let k=0;k<lens[m.pi];k++){let q;do q=Math.floor(R()*4);while(q===m.seq[k-1]);m.seq.push(q);}m.stage='watch';m.step=0;m.next=t+untilBeat(1);}
+    if(m.stage==='watch'&&t>=m.next){if(m.step<m.seq.length){m.lit=m.seq[m.step];m.litLife=B*.75;g.emit('pad'+m.lit);m.step++;m.next=t+B*(g.cfg.warn>1.2?1.5:1);}
+     else{m.stage='input';m.step=0;m.deadline=t+B*(m.seq.length*2+3)*g.cfg.warn;g.cue('YOUR TURN: TOUCH THEM IN ORDER');}}
+    if(m.stage==='input'){if(entered){m.lit=p;m.litLife=.3;g.emit('pad'+p);if(p===m.seq[m.step]){m.step++;if(m.step===m.seq.length){m.score+=m.seq.length;done(true,'UPLOADED!');}}else{done(false,'WRONG PANEL!');if(g.state!=='defend')return;}}
+     else if(t>m.deadline){done(false,'TIME!');if(g.state!=='defend')return;}}
+    m.hz-=dt;if(m.hz<=0){if(m.stage==='input'){m.hz=1.8/g.cfg.speed;laser(g.soul.x,g.soul.y);}else if(m.stage==='watch'){m.hz=2.4/g.cfg.speed;head(cx+(R()-.5)*a.w*.5,cy+(R()-.5)*a.h*.4,6,90);}else m.hz=.3;}
+   };
+   break;}
+  case 'harvest':{
+   // A catch game in gravity: data bits rain down; catch them before they hit the floor. Her boots stomp and her
+   // heads fall with the data.
+   const m=g.mini={type:'harvest',label:'DATA CAUGHT',score:0,total:0};
+   at(0,()=>{g.platforms.push({x:a.x+16,y:a.y+a.h*.66,w:100,ans:-1},{x:a.x+a.w/2-50,y:a.y+a.h*.42,w:100,ans:-1},{x:a.x+a.w-116,y:a.y+a.h*.66,w:100,ans:-1});});
+   every(.5,13.5,.6,()=>{m.total++;g.spawn({kind:'bit',x:a.x+20+R()*(a.w-40),y:a.y+8,vy:(62+R()*26)*sp(),life:9,bits:Math.floor(R()*4)});});
+   every(1.5,14.5,2.8,()=>boot(a.x+30+R()*(a.w-60),44));every(1,15,2,()=>g.spawn({kind:'mini',x:a.x+14+R()*(a.w-28),y:a.y+6,vx:0,vy:78*sp(),r:5,life:4,spin:3}));
+   m.tick=()=>{for(const b of g.bullets){if(b.kind!=='bit'||b.gone)continue;if(Math.hypot(b.x-g.soul.x,b.y-g.soul.y)<16){b.gone=true;m.score++;g.emit('pop');g.effects.push({type:'block',x:b.x,y:b.y,life:.2});}else if(b.y>a.y+a.h-8){b.gone=true;g.effects.push({type:'fizzle',x:b.x,y:a.y+a.h-8,life:.3});}}};
+   break;}
   case 'scan':
    // The final scan sweeps the strings while her heads ride them. The last question has no wrong answer.
    g.quiz={q:'Are You The Red SOUL?',answers:[{text:'YES',correct:true},{text:'NO',correct:true},{text:'EGG',correct:true}],crossed:-1,shown:false,resolved:false,chosen:-1,at:15,slots:[0,1,2]};
@@ -596,17 +690,19 @@ modules["engine.js"]=(exports,require)=>{
 const S=require("story.js");
 const {ROUNDS,buildRound}=require("attacks.js");
 // QU5EN — fixed-step simulation, separate from Canvas presentation.
-// Every experiment is a SOUL mode, a quiz and a minigame at once. The fight runs in two acts: six single-mode
-// experiments, then six double-mode ones (PHASE 2: THE DOUBLE-BLIND TRIALS), with punch-out bouts in her arcade
-// cabinet between them, and a final bout. Answers fill her DATA bar; at 100% after the final bout she runs the
+// Every experiment is a SOUL mode and a minigame at once; most are quizzes too, and four are pure minigames (after
+// Mettalot's: a rhythm game, a shell game, a copy-the-sequence and a catch game). The fight runs in two acts: eight
+// single-mode experiments, then eight double-mode ones (PHASE 2: THE DOUBLE-BLIND TRIALS), with punch-out bouts in
+// her arcade cabinet between them, and a final bout. Answers fill her DATA bar; at 100% after the final bout she runs the
 // final scan, and the scan ends the fight. Beating her up in a bout heals Seth and wins a bonus.
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const MENU_BOX={x:24,y:249,w:592,h:140};
 const DIFF={gentle:{speed:.85,warn:1.25,damage:1},normal:{speed:1,warn:1.1,damage:2},hard:{speed:1.1,warn:1,damage:3}};
 const ITEMS=()=>[{name:'GLAMBURGER',heal:27,count:2},{name:'STARFAIT',heal:14,count:3},{name:'LEGENDARY HERO',heal:40,count:1},{name:'EGG',heal:0,count:0}];
-const DATA={correct:8,wrong:2,survive:1,hype:6,egg:10,strike:3,bonus:6,finalKO:10,finalDraw:4};
-// The order of the fight: t = an Act 1 experiment, r = an Act 2 (double-mode) one, bout = a punch-out between them.
-const SCHEDULE=['t0','t1','bout','t2','t3','bout','t4','t5','r0','r1','bout','r2','r3','bout','r4','r5','final'],ACT2=SCHEDULE.indexOf('r0');
+const DATA={correct:8,wrong:2,survive:1,hype:6,egg:10,strike:3,bonus:6,finalKO:10,finalDraw:4,mini:10};
+// The order of the fight: t = an Act 1 quiz experiment, r = an Act 2 (double-mode) one, m = a minigame,
+// bout = a punch-out between them.
+const SCHEDULE=['t0','t1','m0','bout','t2','t3','m1','bout','t4','t5','r0','r1','m2','bout','r2','r3','m3','bout','r4','r5','final'],ACT2=SCHEDULE.indexOf('r0');
 // What a bout K.O. wins, in turn.
 const BONUSES=['HINT','ARMOR','SNACK','DATA'];
 const SIDES=['up','right','down','left'];
@@ -686,7 +782,7 @@ class BattleEngine{
   this.text=this.ready?S.FLAVOR_READY:S.FLAVOR[(this.turn*3)%S.FLAVOR.length];this.displayChars=this.text.length;if(!silent)this.emit('turn');
  }
  nextRound(){
-  if(this.step<SCHEDULE.length){const k=SCHEDULE[this.step];if(k==='bout')return ROUNDS.bout(this.bouts+1);if(k==='final')return ROUNDS.final;return (k[0]==='t'?ROUNDS.cycle:ROUNDS.remix)[+k[1]];}
+  if(this.step<SCHEDULE.length){const k=SCHEDULE[this.step];if(k==='bout')return ROUNDS.bout(this.bouts+1);if(k==='final')return ROUNDS.final;return ({t:ROUNDS.cycle,r:ROUNDS.remix,m:ROUNDS.mini})[k[0]][+k[1]];}
   if(!this.scanDone&&this.data>=100)return ROUNDS.scan;
   // Not enough DATA after the final bout: more double-blind trials until there is.
   return ROUNDS.remix[this.extra%ROUNDS.remix.length];
@@ -707,7 +803,7 @@ class BattleEngine{
   this.state='warning';this.timer=0;this.attackTime=0;this.bullets=[];this.timeline=[];this.shots=[];this.platforms=[];this.effects=this.effects.filter(e=>e.type==='damage'||e.type==='data');
   this.setArena(r.arena);this.arena={...r.arena};const a=this.arena;this.soul={x:a.x+a.w/2,y:a.y+a.h/2};this.invulnerability=.4;this.queued=0;this.heat=0;this.dash=0;this.dashCD=0;this.fireCD=0;this.vy=0;this.grounded=false;
   this.duration=Math.round(r.duration/BEAT)*BEAT;
-  this.quiz=r.quiz?this.pickQuiz(r.quiz.max):null;if(this.quiz){this.quiz.at=snap(r.quiz.at,BEAT);this.quiz.instant=!!r.quiz.instant;}
+  this.mini=null;this.prevInput={};this.pressed={};this.quiz=r.quiz?this.pickQuiz(r.quiz.max):null;if(this.quiz){this.quiz.at=snap(r.quiz.at,BEAT);this.quiz.instant=!!r.quiz.instant;}
   if(this.mode==='cyan'){this.orbitTheta=-Math.PI/2;this.orbitSign=1;}
   if(this.mode==='green'){this.shield='up';this.soul={x:a.x+a.w/2,y:a.y+a.h/2};}
   if(this.mode==='yellow')this.soul={x:a.x+a.w/2,y:a.y+a.h-30};
@@ -723,15 +819,24 @@ class BattleEngine{
   let lines=[],checkpoint=this.waves%4===0;
   if(r.id==='scan'){this.scanDone=true;this.ready=true;this.boss.sad=true;lines=[...S.SCAN_RESULT];this.emit('scan');}
   else if(r.bout)lines=this.boutResult(r);
+  else if(r.mini){this.cycle++;if(!this.scanDone)this.addData(DATA.survive);lines=this.miniResult(r);}
   else{this.cycle++;if(!this.scanDone)this.addData(DATA.survive);const bank=this.phase===2?S.STORY2:S.STORY,i=this.phase===2?this.story2++:this.storyIdx++;if(bank[i]&&!this.scanDone)lines=[...bank[i]];}
   if(!this.scanDone){
    if(this.step===ACT2&&!this.act2Told){this.act2Told=true;lines.push(...S.ACT2_INTRO);checkpoint=true;}
    if(this.step>=SCHEDULE.length&&this.data<100&&!this.moreTold&&this.finalDone){this.moreTold=true;lines.push(...S.NOT_ENOUGH_DATA);}
    const nx=this.nextRound();
+   if(nx.mini)lines.push(...S.MINI_INTRO[nx.id]);
    if(nx.id==='final')lines.push(...S.FINAL_INTRO);else if(nx.bout)lines.push(...S.BOUT_INTRO[(nx.bout.n-1)%S.BOUT_INTRO.length]);else if(nx.id==='scan')lines.push(...S.SCAN_INTRO);
   }
   if(checkpoint&&!this.ready){this.hp=this.maxHP;this.items.forEach(i=>{if(i.name!=='EGG')i.count=Math.max(i.count,ITEMS().find(j=>j.name===i.name).count);});lines.push(S.N('* QU5EN runs a quick system restore.\n* On you, by accident.\n* Full HP. Supplies restored.'));this.saveCheckpoint();this.emit('heal');}
   this.message(lines.length?lines:[S.N(this.text)],'menu');
+ }
+ // A minigame's result: how well it went (the shell game: whether Seth found the egg), DATA for the score, her verdict.
+ miniResult(r){
+  const m=this.mini||{},q=this.quiz,shell=r.id==='shell',ratio=shell?(q&&q.chosen>=0&&q.answers[q.chosen].correct?1:0):(m.total?m.score/m.total:0);
+  const lines=[...S.MINI_RESULT[r.id][ratio>=.75?0:ratio>=.4?1:2]];
+  if(!shell){const d=Math.round(DATA.mini*Math.min(1,ratio/.85));if(d)this.addData(d);lines.push(S.N(`* ${m.label}: ${Math.round(ratio*100)}%.${d?' (DATA +'+d+')':''}`));}
+  return lines;
  }
  // A bout's result: punching her heals Seth; a K.O. heals more and wins a bonus; a K.O. without being hit heals more still.
  boutResult(r){
@@ -758,7 +863,7 @@ class BattleEngine{
  answer(i){
   const q=this.quiz;if(!q||q.resolved)return;q.resolved=true;q.chosen=i;const ok=i>=0&&q.answers[i].correct,round=this.round;
   if(round.id==='scan'){this.effects.push({type:'verdict',text:'SCANNING...',ok:true,life:1.6});this.emit('cue');return;}
-  this.addData(ok?DATA.correct:DATA.wrong);const bank=i<0?S.NO_ANSWER:ok?S.CORRECT:S.WRONG;
+  this.addData(ok?DATA.correct:DATA.wrong);const bank=i<0?S.NO_ANSWER:q.shell?(ok?S.SHELL_RIGHT:S.SHELL_WRONG):ok?S.CORRECT:S.WRONG;
   this.effects.push({type:'verdict',text:ok?'CORRECT!':i<0?'TIME!':'WRONG!',ok,life:1.4},{type:'quip',text:bank[(this.turn+this.waves)%bank.length],life:2.6});
   this.emit(ok?'correct':'wrong');round.resolve?.(this,ok,i);
  }
@@ -766,6 +871,8 @@ class BattleEngine{
  setArena(a){this.targetArena={...a};}
  at(t,fn){this.timeline.push({at:snap(t),action:fn,done:false});}
  every(start,end,interval,fn){const step=Math.max(HALF,snap(interval/this.cfg.speed));for(let i=0,t=snap(start);t<end;i++,t+=step){const k=i;this.at(t,()=>fn(k));}}
+ // The shell game: two of her monitors trade places.
+ swapPair(i,j){const q=this.quiz;if(!q||q.resolved)return;[q.slots[i],q.slots[j]]=[q.slots[j],q.slots[i]];this.emit('cue');}
  spawn(b){const o={age:0,vx:0,vy:0,...b};this.bullets.push(o);return o;}
  cue(text){this.effects.push({type:'instruction',text,life:1.8});}
  hurt(amount=this.cfg.damage){
@@ -796,7 +903,7 @@ class BattleEngine{
   if(b.kind==='fighter')return inRect(b.x,b.y,b.w,b.h)||b.punching&&inRect(b.x+b.dir*34,b.y-22,46,14);
   if(b.kind==='head'&&b.age<b.form)return false;
   if(b.kind==='sector'){if(b.age<b.warn||b.age>b.warn+b.live)return false;const t=((this.orbitTheta+Math.PI/2)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);return t>=b.t0&&t<b.t1;}
-  if(b.kind==='packet')return false;
+  if(b.kind==='packet'||b.kind==='note'||b.kind==='bit')return false;
   return Math.hypot(s.x-b.x,s.y-b.y)<(b.r||5)+4;
  }
  // ------------------------------------------------------------ physics
@@ -813,7 +920,12 @@ class BattleEngine{
   this.attackTime+=dt;this.invulnerability=Math.max(0,this.invulnerability-dt);
   for(const e of this.timeline)if(!e.done&&this.attackTime>=e.at){e.done=true;e.action();if(this.state!=='defend')return;}
   const q=this.quiz;if(q&&!q.resolved&&this.attackTime>=q.at){this.answer(q.instant?-1:this.chosen());if(this.state!=='defend')return;}
+  // Fresh presses this frame (the rhythm game scores presses, not holds); a touch counts when it lands or changes side.
+  {const pr=this.prevInput||{};this.pressed={};for(const k of SIDES)this.pressed[k]=!!input[k]&&!pr[k];let ts=null;
+   if(input.touch&&this.mode==='green'){const a=this.arena,dx=input.touch.x-(a.x+a.w/2),dy=input.touch.y-(a.y+a.h/2);if(Math.hypot(dx,dy)>20){ts=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');if(ts!==pr.touchSide)this.pressed[ts]=true;}}
+   this.prevInput={up:!!input.up,down:!!input.down,left:!!input.left,right:!!input.right,touchSide:ts};}
   this.move(dt,input);if(this.state!=='defend')return;
+  this.mini?.tick?.(dt);if(this.state!=='defend')return;
   const s=this.soul;
   for(const b of this.bullets){
    b.age+=dt;if(b.delay&&b.age<b.delay)continue;
@@ -876,7 +988,8 @@ class BattleEngine{
    // Aqua's cyan: ride the ring; arrows push along it, otherwise it drifts; Z turns it back.
    const push=sx||sy?(sx||-sy):0,r=Math.min(a.w,a.h)*.38;this.orbitTheta+=(push||this.orbitSign*.4)*2.2*dt;s.x=a.x+a.w/2+Math.cos(this.orbitTheta)*r;s.y=a.y+a.h/2+Math.sin(this.orbitTheta)*r;return;
   }
-  if(this.mode==='green'){if(input.up)this.shield='up';else if(input.down)this.shield='down';else if(input.left)this.shield='left';else if(input.right)this.shield='right';
+  // Green: the shield faces the arrow pressed last (or one still held once that is let go).
+  if(this.mode==='green'){const fresh=SIDES.find(k=>this.pressed?.[k]);if(fresh)this.shield=fresh;else if(!input[this.shield]){const held=SIDES.find(k=>input[k]);if(held)this.shield=held;}
    if(touch){const dx=touch.x-(a.x+a.w/2),dy=touch.y-(a.y+a.h/2);if(Math.hypot(dx,dy)>20)this.shield=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');}return;}
   if(this.mode==='strings'){
    if(this.dash>0)s.x+=this.dashDir.x*speed*2.6*dt;else{s.x+=sx*speed*dt;if(touch){const tx=touch.x-s.x;s.x+=clamp(tx,-250*dt,250*dt);}}
@@ -988,7 +1101,10 @@ class StageAudio{
    correct:()=>{this.tone(660,.08,'square',.08);this.tone(990,.14,'square',.08,.08);},wrong:()=>{this.tone(220,.12,'sawtooth',.09);this.tone(147,.22,'sawtooth',.09,.12);},
    stomp:()=>{this.burst(.18,.25,180);S('heavy',{gain:.35,rate:1.4});},burst:()=>this.burst(.08,.12,2600),pop:()=>this.tone(1200,.04,'square',.06),shoot:()=>this.tone(1600,.03,'square',.04),
    block:()=>this.tone(880,.04,'triangle',.06),jump:()=>this.tone(440,.06,'square',.04),dash:()=>this.burst(.12,.14,1800),burn:()=>this.burst(.08,.1,4200),swing:()=>this.burst(.1,.1,1200),
-   cue:()=>this.tone(880,.03,'triangle',.05),warning:()=>{this.tone(1046,.05,'square',.05);this.tone(1318,.05,'square',.05,.06);},scan:()=>{this.tone(392,.4,'triangle',.08);this.tone(311,.6,'triangle',.08,.4);}
+   cue:()=>this.tone(880,.03,'triangle',.05),warning:()=>{this.tone(1046,.05,'square',.05);this.tone(1318,.05,'square',.05,.06);},scan:()=>{this.tone(392,.4,'triangle',.08);this.tone(311,.6,'triangle',.08,.4);},
+   // The minigames: a note per memory panel (C, E, G, high C), and rhythm judgements.
+   pad0:()=>this.tone(523,.16,'square',.07),pad1:()=>this.tone(659,.16,'square',.07),pad2:()=>this.tone(784,.16,'square',.07),pad3:()=>this.tone(1046,.16,'square',.07),
+   perfect:()=>{this.tone(1318,.05,'square',.05);this.burst(.05,.05,5200);},good:()=>this.tone(988,.05,'square',.05)
   };
   map[name]?.();
  }
@@ -1121,7 +1237,7 @@ function chips(right,y){
 function questionRow(){
  const q=game.quiz,a=game.arena;if(!['warning','defend'].includes(game.state)||game.mode==='arcade')return;
  if(game.state==='defend'){const cue=game.effects.find(e=>e.type==='instruction');if(cue)text(cue.text,616-text.measure(cue.text,1),a.y-24,1,'#ffff00');else chips(616,a.y-24);}
- if(!q)return;
+ if(!q){if(game.mini&&game.state==='defend')text(miniStatus(),320,a.y-46,1.5,LIME,true);return;}
  const quip=game.effects.find(e=>e.type==='quip');
  if(quip)text(quip.text,320,a.y-46,1.5,LIME,true);else text(q.q,320,a.y-46,1.5,LIME,true);
  if(!q.resolved){const left=Math.max(0,Math.ceil(q.at-game.attackTime));art.frame('ui_time',a.x+38,a.y-6,1);text(String(left),a.x+82,a.y-26,2,left<=2&&blink(8)?'#ff5a5a':'#fff');}
@@ -1143,12 +1259,15 @@ function hazard(b){
   case 'bubble':{const ans=b.ans>=0,q=game.quiz;ctx.fillStyle=ans?'#0b2a12':'#1a1a1a';ctx.fillRect(Math.round(b.x-b.w/2),Math.round(b.y-b.h/2),b.w,b.h);ctx.strokeStyle=ans?LIME:'#aaa';ctx.lineWidth=1;ctx.strokeRect(Math.round(b.x-b.w/2)+.5,Math.round(b.y-b.h/2)+.5,b.w-1,b.h-1);
    if(ans&&q)answerLabel(b.ans,b.x,b.y-5,1);else text(b.label,b.x,b.y-5,1,'#ddd',true);return;}
   case 'target':{art.frame(['face_talk','face_smile','face_smug','face_talk'][b.ans%4],b.x,b.y,1,{anchor:'center'});if(game.quiz)answerLabel(b.ans,b.x,b.y+20,1);return;}
+  case 'note':{noteArrow(b.x,b.y,b.side,Math.abs(b.arrive-game.attackTime)<.16?'#fff':LIME);return;}
+  case 'bit':{const x=Math.round(b.x),y=Math.round(b.y);ctx.fillStyle='#0b2a12';ctx.fillRect(x-6,y-7,12,14);ctx.strokeStyle='#7dff6a';ctx.lineWidth=1;ctx.strokeRect(x-5.5,y-6.5,11,13);text(b.bits%2?'1':'0',x,y-5,1,'#7dff6a',true);return;}
   case 'packet':{ctx.fillStyle='#000';ctx.fillRect(Math.round(b.x-7),Math.round(b.y-5),14,10);ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.strokeRect(Math.round(b.x-7)+.5,Math.round(b.y-5)+.5,13,9);ctx.beginPath();ctx.moveTo(b.x-7,b.y-5);ctx.lineTo(b.x,b.y+1);ctx.lineTo(b.x+7,b.y-5);ctx.stroke();return;}
  }
 }
 // What the answers look like, mode by mode.
 function answers(){
  const q=game.quiz,a=game.arena;if(!q)return;const n=q.answers.length,cx=a.x+a.w/2,cy=a.y+a.h/2;
+ if(q.shell){drawShell();return;}
  if(game.mode==='red'){const cw=a.w/n;for(let k=0;k<n;k++){if(k){ctx.save();ctx.strokeStyle=GRID;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(a.x+cw*k,a.y+4);ctx.lineTo(a.x+cw*k,a.y+a.h-4);ctx.stroke();ctx.restore();}answerLabel(q.slots[k],a.x+cw*k+cw/2,a.y+12,1);
    if(!q.resolved&&game.attackTime>q.at-1&&blink(10)){ctx.strokeStyle='#ff5a5a';ctx.lineWidth=2;ctx.strokeRect(Math.round(a.x+cw*k+cw/2-12),a.y+a.h-34,24,24);text('!',a.x+cw*k+cw/2,a.y+a.h-31,2,'#ff5a5a',true);}}}
  else if(game.mode==='blue'){for(const p of game.platforms){if(p.gone)continue;ctx.fillStyle='#000';ctx.fillRect(Math.round(p.x),Math.round(p.y),Math.round(p.w),6);ctx.strokeStyle=p.ans>=0?LIME:'#888';ctx.lineWidth=2;ctx.strokeRect(Math.round(p.x)+1,Math.round(p.y)+1,Math.round(p.w)-2,4);if(p.ans>=0)answerLabel(p.ans,p.x+p.w/2,p.y-22,1);}
@@ -1158,6 +1277,47 @@ function answers(){
   for(let k=0;k<n;k++){const an=(k+.5)*s-Math.PI/2,lx=Math.max(a.x+44,Math.min(a.x+a.w-44,cx+Math.cos(an)*(r+22))),ly=Math.max(a.y+8,Math.min(a.y+a.h-20,cy+Math.sin(an)*(r+16)-4));answerLabel(k,lx,ly,1);}}
  else if(game.mode==='green'){for(let k=0;k<n;k++){const side=SIDES[k],p={up:[cx,a.y+10],right:[a.x+a.w-34,cy-4],down:[cx,a.y+a.h-22],left:[a.x+34,cy-4]}[side];answerLabel(q.slots[k],p[0],p[1],1);}}
  else if(game.mode==='strings'&&!game.round.shoot&&!game.round.dash){for(let k=0;k<n;k++)answerLabel(q.slots[k],a.x+10,game.strings[k]-14,1,false);}
+}
+// A note in the rhythm game: an arrowhead riding its track toward the shield.
+function noteArrow(x,y,side,col){const an={up:Math.PI/2,right:Math.PI,down:-Math.PI/2,left:0}[side];ctx.save();ctx.translate(Math.round(x),Math.round(y));ctx.rotate(an);ctx.fillStyle='#000';ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(9,0);ctx.lineTo(-3,-9);ctx.lineTo(-3,-4);ctx.lineTo(-10,-4);ctx.lineTo(-10,4);ctx.lineTo(-3,4);ctx.lineTo(-3,9);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();}
+// FIND THE EGG: her three monitors, sliding over and under each other when they swap.
+function drawShell(){
+ const q=game.quiz,a=game.arena,m=game.mini||{},cw=a.w/3,colX=k=>a.x+cw*k+cw/2,y0=a.y+12,t=game.attackTime,w=64,h=40;
+ ctx.save();ctx.strokeStyle=GRID;ctx.setLineDash([4,4]);for(let k=1;k<3;k++){ctx.beginPath();ctx.moveTo(a.x+cw*k,a.y+60);ctx.lineTo(a.x+cw*k,a.y+a.h-4);ctx.stroke();}ctx.restore();
+ const order=[0,1,2].sort((x,y)=>(m.anim&&q.slots.indexOf(x)===m.anim.i?1:0)-(m.anim&&q.slots.indexOf(y)===m.anim.i?1:0));
+ for(const ans of order){
+  const col=q.slots.indexOf(ans),an=m.anim;let x=colX(col),y=y0;
+  if(an&&t-an.t0<an.dur&&(col===an.i||col===an.j)){const e=(t-an.t0)/an.dur,u=e<.5?2*e*e:1-2*(1-e)**2,from=col===an.i?an.j:an.i;x=colX(from)+(colX(col)-colX(from))*u;y=y0+(col===an.i?1:-1)*Math.sin(Math.PI*u)*10;}
+  x=Math.round(x);y=Math.round(y);const egg=q.answers[ans].correct,open=m.reveal||q.resolved;
+  ctx.fillStyle='#000';ctx.fillRect(x-w/2,y,w,h);ctx.strokeStyle=q.resolved?(egg?'#7dff6a':'#ff5a5a'):LIME;ctx.lineWidth=2;ctx.strokeRect(x-w/2+1,y+1,w-2,h-2);ctx.fillStyle=LIME;ctx.fillRect(x-6,y+h,12,4);
+  if(open&&egg){const drop=q.resolved?0:Math.min(0,(t-1.1)*90);ctx.save();ctx.beginPath();ctx.rect(x-w/2+2,y-60,w-4,h+58);ctx.clip();ctx.fillStyle='#f4f0e0';ctx.beginPath();ctx.ellipse(x,y+h/2+2+drop,9,12,0,0,Math.PI*2);ctx.fill();ctx.restore();}
+  else if(open)text('EMPTY',x,y+h/2-4,1,'#777',true);
+  else art.frame(['face_smug','face_smile','face_talk'][ans],x,y+h/2,1,{anchor:'center',tint:LIME});
+ }
+ if(!q.resolved&&game.attackTime>q.at-1&&blink(10))for(let k=0;k<3;k++){ctx.strokeStyle='#ff5a5a';ctx.lineWidth=2;ctx.strokeRect(Math.round(colX(k)-12),a.y+a.h-34,24,24);text('!',colX(k),a.y+a.h-31,2,'#ff5a5a',true);}
+}
+// The minigames' own pieces: the reactor's tracks and judgement, the memory panels.
+const PANEL_SHAPES=['tri','circle','square','cross'];
+function panelShape(k,x,y,col){ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();if(k===0){ctx.moveTo(x,y-7);ctx.lineTo(x+8,y+6);ctx.lineTo(x-8,y+6);ctx.closePath();}else if(k===1)ctx.arc(x,y,7,0,Math.PI*2);else if(k===2)ctx.rect(x-6.5,y-6.5,13,13);else{ctx.moveTo(x-7,y);ctx.lineTo(x+7,y);ctx.moveTo(x,y-7);ctx.lineTo(x,y+7);}ctx.stroke();}
+function miniField(){
+ const m=game.mini,a=game.arena,cx=a.x+a.w/2,cy=a.y+a.h/2;if(!m)return;
+ if(m.type==='sync'){ctx.save();ctx.strokeStyle=GRID;ctx.setLineDash([3,5]);for(const [dx,dy] of [[0,-1],[1,0],[0,1],[-1,0]]){ctx.beginPath();ctx.moveTo(cx+dx*34,cy+dy*34);ctx.lineTo(cx+dx*a.w,cy+dy*a.h);ctx.stroke();}ctx.restore();
+  const k=reduceMotion?0:(1-beat().ph)**3;ctx.strokeStyle=k>.3?'#fff':LIME;ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,cy+3,26+k*3,0,Math.PI*2);ctx.stroke();
+  if(m.judge)text(m.judge.text,a.x+10,a.y+10,1,m.judge.ok?(m.judge.text==='PERFECT!'?'#ffff00':'#7dff6a'):'#ff5a5a');
+  if(m.combo>=3)text('COMBO '+m.combo,cx,a.y+a.h-22,1,'#fff',true);}
+ if(m.type==='harvest')for(const p of game.platforms){if(p.gone)continue;ctx.fillStyle='#000';ctx.fillRect(Math.round(p.x),Math.round(p.y),Math.round(p.w),6);ctx.strokeStyle='#888';ctx.lineWidth=2;ctx.strokeRect(Math.round(p.x)+1,Math.round(p.y)+1,Math.round(p.w)-2,4);}
+ if(m.type==='memory'){
+  const P=[[cx,a.y+13,112,18],[a.x+a.w-13,cy,18,112],[cx,a.y+a.h-13,112,18],[a.x+13,cy,18,112]];
+  P.forEach(([x,y,w,h],k)=>{const lit=m.lit===k&&m.litLife>0;ctx.fillStyle=lit?'#fff':'#0b2a12';ctx.fillRect(Math.round(x-w/2),Math.round(y-h/2),w,h);ctx.strokeStyle=LIME;ctx.lineWidth=1;ctx.strokeRect(Math.round(x-w/2)+.5,Math.round(y-h/2)+.5,w-1,h-1);panelShape(k,x,y,lit?'#000':LIME);});
+  // How far through the sequence you are.
+  if(m.stage==='input'||m.stage==='watch'){const n=m.seq.length;for(let k=0;k<n;k++){ctx.fillStyle=m.stage==='input'&&k<m.step?'#7dff6a':'#333';ctx.fillRect(Math.round(cx-n*7+k*14+2),a.y+34,10,4);}}}
+}
+function miniStatus(){
+ const m=game.mini;if(!m)return '';
+ if(m.type==='sync')return `REACTOR SYNC  ${m.done?Math.round(50*m.score/m.done):100}%`;
+ if(m.type==='memory')return m.stage==='watch'?'WATCH THE PANELS...':m.stage==='input'?`YOUR TURN: ${m.step} / ${m.seq.length}`:`UPLOAD ${m.score} / ${m.total}`;
+ if(m.type==='harvest')return `DATA CAUGHT: ${m.score} / ${m.total}`;
+ return '';
 }
 // The egg and the shield (green), Seth's SOUL in every mode, his purple rim always.
 function drawSoul(){
@@ -1179,7 +1339,7 @@ function field(){
  if(game.mode==='strings'){ctx.fillStyle='#b249dc';for(const y of game.strings){ctx.globalAlpha=.75;ctx.fillRect(a.x,Math.round(y)-1,a.w,2);}ctx.globalAlpha=1;
   // The scan sweeps across and back.
   const u=((game.beatPos/8)%2+2)%2,x=a.x+a.w*(u<1?u:2-u);ctx.save();ctx.globalAlpha=.5;ctx.fillStyle='#ff3030';ctx.fillRect(Math.round(x)-1,a.y,3,a.h);ctx.globalAlpha=.12;ctx.fillRect(Math.round(x)-24,a.y,48,a.h);ctx.restore();}
- answers();
+ answers();miniField();
  // Spam first, answers on top, so an answer is never hidden.
  for(const b of game.bullets)if(b.kind!=='beam'&&!(b.kind==='bubble'&&b.ans>=0))hazard(b);
  for(const b of game.bullets)if(b.kind==='bubble'&&b.ans>=0)hazard(b);
@@ -1260,6 +1420,7 @@ function effectsFX(){for(const e of game.effects){
  else if(e.type==='hpup'){text(e.text,440,388-(0.8-e.life)*16,1.5,'#7dff6a');}
  else if(e.type==='swap'&&['defend','warning'].includes(game.state)){const a=game.arena;ctx.save();ctx.globalAlpha=Math.min(1,e.life*3);text('SHUFFLE!',a.x+a.w-40,a.y-26,1,'#ffff00',true);ctx.restore();}
  else if(e.type==='block'){ctx.save();ctx.globalAlpha=e.life*4;ctx.strokeStyle='#fff';ctx.beginPath();ctx.arc(e.x,e.y,6+(1-e.life*4)*8,0,Math.PI*2);ctx.stroke();ctx.restore();}
+ else if(e.type==='fizzle'){ctx.save();ctx.globalAlpha=e.life*3;text('x',e.x,e.y-6,1,'#ff5a5a',true);ctx.restore();}
  else if(e.type==='zap'&&!reduceMotion){ctx.save();ctx.globalAlpha=e.life*2;ctx.fillStyle='#7dff6a';ctx.fillRect(0,0,640,480);ctx.restore();}
 }}
 // The opening: the globe turns on, her head draws itself line by line, and the cabinet announces her.

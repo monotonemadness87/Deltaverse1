@@ -39,7 +39,10 @@ class StageAudio{
    correct:()=>{this.tone(660,.08,'square',.08);this.tone(990,.14,'square',.08,.08);},wrong:()=>{this.tone(220,.12,'sawtooth',.09);this.tone(147,.22,'sawtooth',.09,.12);},
    stomp:()=>{this.burst(.18,.25,180);S('heavy',{gain:.35,rate:1.4});},burst:()=>this.burst(.08,.12,2600),pop:()=>this.tone(1200,.04,'square',.06),shoot:()=>this.tone(1600,.03,'square',.04),
    block:()=>this.tone(880,.04,'triangle',.06),jump:()=>this.tone(440,.06,'square',.04),dash:()=>this.burst(.12,.14,1800),burn:()=>this.burst(.08,.1,4200),swing:()=>this.burst(.1,.1,1200),
-   cue:()=>this.tone(880,.03,'triangle',.05),warning:()=>{this.tone(1046,.05,'square',.05);this.tone(1318,.05,'square',.05,.06);},scan:()=>{this.tone(392,.4,'triangle',.08);this.tone(311,.6,'triangle',.08,.4);}
+   cue:()=>this.tone(880,.03,'triangle',.05),warning:()=>{this.tone(1046,.05,'square',.05);this.tone(1318,.05,'square',.05,.06);},scan:()=>{this.tone(392,.4,'triangle',.08);this.tone(311,.6,'triangle',.08,.4);},
+   // The minigames: a note per memory panel (C, E, G, high C), and rhythm judgements.
+   pad0:()=>this.tone(523,.16,'square',.07),pad1:()=>this.tone(659,.16,'square',.07),pad2:()=>this.tone(784,.16,'square',.07),pad3:()=>this.tone(1046,.16,'square',.07),
+   perfect:()=>{this.tone(1318,.05,'square',.05);this.burst(.05,.05,5200);},good:()=>this.tone(988,.05,'square',.05)
   };
   map[name]?.();
  }

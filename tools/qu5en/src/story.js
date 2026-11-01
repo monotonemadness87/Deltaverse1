@@ -13,10 +13,14 @@ const INTRO=[
  Q('talk','I Was Built By The Previous Royal Scientist To Finish His Work'),
  Q('smile','His Work Was: Finding The Red SOUL. The SOUL Of Pure Determination'),
  Q('talk','You Are A Human. With A SOUL. Statistically You Are Probably It'),
+ Q('talk','Normally I Would Just Look At Your SOUL. Check The Colour. Done'),
+ Q('smug','However. Fun Fact: I Am Colour Blind. Every SOUL Looks Like: Grey'),
+ Q('smile','HE WAS NOT COLOUR BLIND. HE COULD SEE EVERY COLOUR. EVEN THE SECRET ONES.'),
+ Q('talk','I Asked Him To Install Those. He Said: Later. Hence: Tests'),
  Q('smug','So We Will Run Some Tests. Fun Tests. Mostly Fun (Some Lethal)'),
  N('* QU5EN blocks the way.\n* And your phone.')
 ];
-const CHECK='* QU5EN - ATK ?? DEF 1 (CHASSIS)\n* The CORE\'s own intelligence. Quantum 5 Engine.\n* Built to finish someone\'s research. Can\'t remember whose.';
+const CHECK='* QU5EN - ATK ?? DEF 1 (CHASSIS)\n* The CORE\'s own intelligence. Quantum 5 Engine.\n* Built to finish someone\'s research. Can\'t remember whose.\n* Colour blind. Calls it a feature.';
 const FLAVOR=[
  '* QU5EN is downloading something.\n* It is 60% done. It has been 60% done for a while.',
  '* Somewhere, Alphys is calling.\n* QU5EN declines.',
@@ -24,7 +28,8 @@ const FLAVOR=[
  '* QU5EN updates her firmware.\n* Nothing changes.',
  '* Chat is typing...',
  '* QU5EN is humming the theme song of a game that doesn\'t exist.',
- '* The globe behind her turns. It has always been turning.'
+ '* The globe behind her turns. It has always been turning.',
+ '* QU5EN squints at your SOUL.\n* She is pretending she can see what colour it is.'
 ];
 const FLAVOR_READY='* QU5EN is staring at the scan result.\n* She isn\'t testing anymore.';
 
@@ -75,6 +80,7 @@ const SCAN_INTRO=[Q('talk','My Data Is Complete. Almost'),Q('smug','Time For The
 const SCAN_RESULT=[
  Q('talk','SCAN COMPLETE.'),
  Q('talk','RESULT: VARIANT PERSEVERANCE.'),
+ Q('talk','Which Means Your SOUL Is: Purple. Says Here. I Will Have To Take Its Word For It'),
  Q('talk','Closest Known Trait To Determination As A Pure Trait'),
  Q('smug','Yet... Lacking'),
  Q('talk','...So You Are Not It'),
@@ -106,7 +112,8 @@ const FINAL_DRAW=[Q('talk','TIME. DRAW.'),Q('smug','A Draw Is Just A Win Where E
 // fight ('after' / 'after2': only once that story beat has played). The first answer listed is correct; the game
 // shuffles them. 'act': Act 2 only. 'all': every answer is right (she can't decide either).
 const QUIZ=[
- {q:'What Color Is Your SOUL?',a:['PURPLE','RED','GREEN']},
+ {q:'What Colour Do SOULs Look To Me?',a:['GREY','RED','PURPLE']},
+ {q:'Why Am I Testing You Instead Of Just Looking?',a:['I AM COLOUR BLIND','I AM SHY','ALPHYS SAID SO']},
  {q:'What Do Monsters Turn Into When They Die?',a:['DUST','EGGS','STARS']},
  {q:'How Many Human SOULs Does The King Need?',a:['SEVEN','SIX','ONE']},
  {q:'Who Built Me?',a:['THE PREVIOUS ROYAL SCIENTIST','ALPHYS','THE KING']},
@@ -127,14 +134,30 @@ const QUIZ=[
  {q:'What Comes After Summer?',a:['COLD','SPRING'],after:3},
  {q:'How Many Pockets Do I Have?',a:['ZERO','ONE','EGG'],after:4},
  // Act 2.
- {q:'What Is Your SOUL\'s Trait?',a:['PERSEVERANCE','DETERMINATION','KINDNESS'],act:2},
+ {q:'How Many Kinds Of Human SOUL Are There?',a:['SEVEN','THREE','ONE'],act:2},
  {q:'Is The Answer To This Question NO?',a:['NO','YES'],act:2,all:true},
  {q:'How Tall Was He?',a:['ALL OF THE ABOVE','SEVEN FEET','NINE FEET'],act:2,after2:0},
  {q:'How Many Times Has Alphys Called?',a:['14','2','0'],act:2,after2:1},
  {q:'What Trait Does He Have Now?',a:['COOL','HUMAN','HANDS'],act:2,after2:3},
  {q:'What Will The Red SOUL Wear?',a:['STRIPES','A HAT','PURPLE'],act:2,after2:4},
- {q:'Which SOUL Is Purple?',a:['PERSEVERANCE','PATIENCE','JUSTICE'],act:2}
+ {q:'What Colour Could He See That Nobody Else Could?',a:['A SECRET ONE','GREY','BEIGE'],act:2}
 ];
+
+// The minigames (after Mettalot's): what she says going in, and how it went (great / fine / badly).
+const MINI_INTRO={
+ sync:[Q('smug','New Test: REACTOR SYNC. The CORE Runs On Rhythm'),Q('smile','HE INVENTED RHYTHM. BEFORE HIM, MUSIC WAS ONE VERY LONG NOTE.'),Q('talk','Notes Come In On Four Tracks. Press The Arrow As Each One Hits Your Shield. On The Beat')],
+ shell:[Q('talk','Next: A Classic. FIND THE EGG'),Q('smug','I Hide The Egg In A Monitor. Then I Shuffle. Then You Cry'),Q('talk','The Egg Is White. I Am Told. I Have To Trust The Label')],
+ memory:[Q('smug','MEMORY UPLOAD. My Panels Light Up. You Touch Them In The Same Order'),Q('talk','They Are Colour-Coded. Apparently. Alphys Labelled Them'),Q('smug','I Do Not Trust Alphys. So They Also Have Shapes. And Beeps')],
+ harvest:[Q('smile','DATA HARVEST! Catch The Data Before It Hits The Floor'),Q('talk','Do Not Catch The Boots. The Boots Are Not Data. Usually')]
+};
+const MINI_RESULT={
+ sync:[[Q('smile','SYNC: PERFECT. The CORE Is Purring. I Am Purring (Regal Purring)')],[Q('talk','The Reactor Is Mostly In Sync. It Is Now Playing: Jazz')],[Q('smug','You Hit The Notes Like A Firmware Update Hits A Toaster. Late')]],
+ shell:[[Q('talk','...You Found It'),Q('smug','I Did Not. I Was Also Watching. We Will Never Speak Of This')],[Q('talk','Hm.')],[Q('smug','The Egg Was In The Other One. Chat Saw It. Chat Is Laughing At You'),Q('talk','(Chat Is Also Colour Blind) (Chat Is Me)')]],
+ memory:[[Q('smile','UPLOAD COMPLETE. Your Memory: Excellent. Mine: [FILE NOT FOUND]')],[Q('talk','Partial Upload. Some Of You Is In Me Now. Do Not Think About It')],[Q('smug','Upload Failed. To Be Fair: The Panels All Look The Same To Me Too')]],
+ harvest:[[Q('smile','Data Harvested. Delicious. Crunchy. Thank You')],[Q('talk','Some Of The Data Hit The Floor. The Floor Is Now Slightly Smarter')],[Q('smug','Most Of The Data Hit The Floor. The Floor Is Now Running For Royal Scientist')]]
+};
+const SHELL_RIGHT=['Correct. The Egg Was There. Obviously. I Knew That','Found It! (I Did Not)'];
+const SHELL_WRONG=['Wrong Monitor. That One Is Full Of: Nothing','No Egg. Only Boots'];
 
 // ACTs, and what she says to each.
 const ACTS=['CHECK','ASK ABOUT HIM','HYPE CHAT','CALL ALPHYS'];
@@ -144,6 +167,7 @@ const ABOUT_HIM=[
  [N('* You ask about the previous royal scientist.'),Q('smile','HE WAS SEVEN FEET TALL. EIGHT ON WEEKENDS.'),Q('talk','COMPUTING:'),Q('smug','NINE. FINAL ANSWER. Here Is A Hint')],
  [N('* You ask about the previous royal scientist.'),Q('smile','HE NEVER LOST A GAME OF CHESS. HE NEVER PLAYED ONE, BUT STILL.'),Q('smug','Hint Granted. In His Honour')],
  [N('* You ask about the previous royal scientist.'),Q('smile','HE WAS LEFT-HANDED. AND RIGHT-HANDED. AND HE HAD A THIRD HAND FOR EMERGENCIES.'),Q('smug','...Hint')],
+ [N('* You ask about the previous royal scientist.'),Q('smile','HE HAD A FAVOURITE COLOUR. IT WAS ONE NOBODY ELSE COULD SEE.'),Q('talk','I Cannot See Any Of Them. So We Are: Even'),Q('smug','Hint. For Your Trouble')],
  [N('* You ask about the previous royal scientist.'),Q('talk','HE WAS... HE...'),Q('talk','...'),Q('smug','He Was Cool. Here Is A Hint. Stop Asking')]
 ];
 // HYPE CHAT: engagement is data; it fills the bar, and makes the next round wilder.
@@ -166,4 +190,4 @@ const SPARE_EARLY=[[Q('smug','Mercy? Data Insufficient. Also No')],[Q('talk','Th
 const FLEE=[N('* The exits are locked.\n* QU5EN turned the lock into a quiz.')];
 const EGG_USE=[N('* You hold up the EGG.'),Q('talk','WHERE DID YOU GET THAT.'),Q('talk','...I GAVE IT TO YOU. I DO NOT REMEMBER WHY.'),Q('smile','KEEP IT SAFE.'),N('* QU5EN records something she can\'t name.\n* (DATA +12)')];
 
-Object.assign(exports,{Q,N,SETH,INTRO,CHECK,FLAVOR,FLAVOR_READY,STORY,ACT2_INTRO,STORY2,BOUT_INTRO,BOUT_KO,BOUT_DRAW,BONUS,FINAL_INTRO,NOT_ENOUGH_DATA,SCAN_INTRO,SCAN_RESULT,SPARED,CORRECT,WRONG,NO_ANSWER,FINAL_KO,FINAL_DRAW,QUIZ,ACTS,ABOUT_HIM,HYPE,CALL,STRIKE_GOOD,STRIKE_WEAK,SPARE_EARLY,FLEE,EGG_USE});
+Object.assign(exports,{MINI_INTRO,MINI_RESULT,SHELL_RIGHT,SHELL_WRONG,Q,N,SETH,INTRO,CHECK,FLAVOR,FLAVOR_READY,STORY,ACT2_INTRO,STORY2,BOUT_INTRO,BOUT_KO,BOUT_DRAW,BONUS,FINAL_INTRO,NOT_ENOUGH_DATA,SCAN_INTRO,SCAN_RESULT,SPARED,CORRECT,WRONG,NO_ANSWER,FINAL_KO,FINAL_DRAW,QUIZ,ACTS,ABOUT_HIM,HYPE,CALL,STRIKE_GOOD,STRIKE_WEAK,SPARE_EARLY,FLEE,EGG_USE});

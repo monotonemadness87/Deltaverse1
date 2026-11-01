@@ -100,7 +100,7 @@ function chips(right,y){
 function questionRow(){
  const q=game.quiz,a=game.arena;if(!['warning','defend'].includes(game.state)||game.mode==='arcade')return;
  if(game.state==='defend'){const cue=game.effects.find(e=>e.type==='instruction');if(cue)text(cue.text,616-text.measure(cue.text,1),a.y-24,1,'#ffff00');else chips(616,a.y-24);}
- if(!q)return;
+ if(!q){if(game.mini&&game.state==='defend')text(miniStatus(),320,a.y-46,1.5,LIME,true);return;}
  const quip=game.effects.find(e=>e.type==='quip');
  if(quip)text(quip.text,320,a.y-46,1.5,LIME,true);else text(q.q,320,a.y-46,1.5,LIME,true);
  if(!q.resolved){const left=Math.max(0,Math.ceil(q.at-game.attackTime));art.frame('ui_time',a.x+38,a.y-6,1);text(String(left),a.x+82,a.y-26,2,left<=2&&blink(8)?'#ff5a5a':'#fff');}
@@ -122,12 +122,15 @@ function hazard(b){
   case 'bubble':{const ans=b.ans>=0,q=game.quiz;ctx.fillStyle=ans?'#0b2a12':'#1a1a1a';ctx.fillRect(Math.round(b.x-b.w/2),Math.round(b.y-b.h/2),b.w,b.h);ctx.strokeStyle=ans?LIME:'#aaa';ctx.lineWidth=1;ctx.strokeRect(Math.round(b.x-b.w/2)+.5,Math.round(b.y-b.h/2)+.5,b.w-1,b.h-1);
    if(ans&&q)answerLabel(b.ans,b.x,b.y-5,1);else text(b.label,b.x,b.y-5,1,'#ddd',true);return;}
   case 'target':{art.frame(['face_talk','face_smile','face_smug','face_talk'][b.ans%4],b.x,b.y,1,{anchor:'center'});if(game.quiz)answerLabel(b.ans,b.x,b.y+20,1);return;}
+  case 'note':{noteArrow(b.x,b.y,b.side,Math.abs(b.arrive-game.attackTime)<.16?'#fff':LIME);return;}
+  case 'bit':{const x=Math.round(b.x),y=Math.round(b.y);ctx.fillStyle='#0b2a12';ctx.fillRect(x-6,y-7,12,14);ctx.strokeStyle='#7dff6a';ctx.lineWidth=1;ctx.strokeRect(x-5.5,y-6.5,11,13);text(b.bits%2?'1':'0',x,y-5,1,'#7dff6a',true);return;}
   case 'packet':{ctx.fillStyle='#000';ctx.fillRect(Math.round(b.x-7),Math.round(b.y-5),14,10);ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.strokeRect(Math.round(b.x-7)+.5,Math.round(b.y-5)+.5,13,9);ctx.beginPath();ctx.moveTo(b.x-7,b.y-5);ctx.lineTo(b.x,b.y+1);ctx.lineTo(b.x+7,b.y-5);ctx.stroke();return;}
  }
 }
 // What the answers look like, mode by mode.
 function answers(){
  const q=game.quiz,a=game.arena;if(!q)return;const n=q.answers.length,cx=a.x+a.w/2,cy=a.y+a.h/2;
+ if(q.shell){drawShell();return;}
  if(game.mode==='red'){const cw=a.w/n;for(let k=0;k<n;k++){if(k){ctx.save();ctx.strokeStyle=GRID;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(a.x+cw*k,a.y+4);ctx.lineTo(a.x+cw*k,a.y+a.h-4);ctx.stroke();ctx.restore();}answerLabel(q.slots[k],a.x+cw*k+cw/2,a.y+12,1);
    if(!q.resolved&&game.attackTime>q.at-1&&blink(10)){ctx.strokeStyle='#ff5a5a';ctx.lineWidth=2;ctx.strokeRect(Math.round(a.x+cw*k+cw/2-12),a.y+a.h-34,24,24);text('!',a.x+cw*k+cw/2,a.y+a.h-31,2,'#ff5a5a',true);}}}
  else if(game.mode==='blue'){for(const p of game.platforms){if(p.gone)continue;ctx.fillStyle='#000';ctx.fillRect(Math.round(p.x),Math.round(p.y),Math.round(p.w),6);ctx.strokeStyle=p.ans>=0?LIME:'#888';ctx.lineWidth=2;ctx.strokeRect(Math.round(p.x)+1,Math.round(p.y)+1,Math.round(p.w)-2,4);if(p.ans>=0)answerLabel(p.ans,p.x+p.w/2,p.y-22,1);}
@@ -137,6 +140,47 @@ function answers(){
   for(let k=0;k<n;k++){const an=(k+.5)*s-Math.PI/2,lx=Math.max(a.x+44,Math.min(a.x+a.w-44,cx+Math.cos(an)*(r+22))),ly=Math.max(a.y+8,Math.min(a.y+a.h-20,cy+Math.sin(an)*(r+16)-4));answerLabel(k,lx,ly,1);}}
  else if(game.mode==='green'){for(let k=0;k<n;k++){const side=SIDES[k],p={up:[cx,a.y+10],right:[a.x+a.w-34,cy-4],down:[cx,a.y+a.h-22],left:[a.x+34,cy-4]}[side];answerLabel(q.slots[k],p[0],p[1],1);}}
  else if(game.mode==='strings'&&!game.round.shoot&&!game.round.dash){for(let k=0;k<n;k++)answerLabel(q.slots[k],a.x+10,game.strings[k]-14,1,false);}
+}
+// A note in the rhythm game: an arrowhead riding its track toward the shield.
+function noteArrow(x,y,side,col){const an={up:Math.PI/2,right:Math.PI,down:-Math.PI/2,left:0}[side];ctx.save();ctx.translate(Math.round(x),Math.round(y));ctx.rotate(an);ctx.fillStyle='#000';ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(9,0);ctx.lineTo(-3,-9);ctx.lineTo(-3,-4);ctx.lineTo(-10,-4);ctx.lineTo(-10,4);ctx.lineTo(-3,4);ctx.lineTo(-3,9);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();}
+// FIND THE EGG: her three monitors, sliding over and under each other when they swap.
+function drawShell(){
+ const q=game.quiz,a=game.arena,m=game.mini||{},cw=a.w/3,colX=k=>a.x+cw*k+cw/2,y0=a.y+12,t=game.attackTime,w=64,h=40;
+ ctx.save();ctx.strokeStyle=GRID;ctx.setLineDash([4,4]);for(let k=1;k<3;k++){ctx.beginPath();ctx.moveTo(a.x+cw*k,a.y+60);ctx.lineTo(a.x+cw*k,a.y+a.h-4);ctx.stroke();}ctx.restore();
+ const order=[0,1,2].sort((x,y)=>(m.anim&&q.slots.indexOf(x)===m.anim.i?1:0)-(m.anim&&q.slots.indexOf(y)===m.anim.i?1:0));
+ for(const ans of order){
+  const col=q.slots.indexOf(ans),an=m.anim;let x=colX(col),y=y0;
+  if(an&&t-an.t0<an.dur&&(col===an.i||col===an.j)){const e=(t-an.t0)/an.dur,u=e<.5?2*e*e:1-2*(1-e)**2,from=col===an.i?an.j:an.i;x=colX(from)+(colX(col)-colX(from))*u;y=y0+(col===an.i?1:-1)*Math.sin(Math.PI*u)*10;}
+  x=Math.round(x);y=Math.round(y);const egg=q.answers[ans].correct,open=m.reveal||q.resolved;
+  ctx.fillStyle='#000';ctx.fillRect(x-w/2,y,w,h);ctx.strokeStyle=q.resolved?(egg?'#7dff6a':'#ff5a5a'):LIME;ctx.lineWidth=2;ctx.strokeRect(x-w/2+1,y+1,w-2,h-2);ctx.fillStyle=LIME;ctx.fillRect(x-6,y+h,12,4);
+  if(open&&egg){const drop=q.resolved?0:Math.min(0,(t-1.1)*90);ctx.save();ctx.beginPath();ctx.rect(x-w/2+2,y-60,w-4,h+58);ctx.clip();ctx.fillStyle='#f4f0e0';ctx.beginPath();ctx.ellipse(x,y+h/2+2+drop,9,12,0,0,Math.PI*2);ctx.fill();ctx.restore();}
+  else if(open)text('EMPTY',x,y+h/2-4,1,'#777',true);
+  else art.frame(['face_smug','face_smile','face_talk'][ans],x,y+h/2,1,{anchor:'center',tint:LIME});
+ }
+ if(!q.resolved&&game.attackTime>q.at-1&&blink(10))for(let k=0;k<3;k++){ctx.strokeStyle='#ff5a5a';ctx.lineWidth=2;ctx.strokeRect(Math.round(colX(k)-12),a.y+a.h-34,24,24);text('!',colX(k),a.y+a.h-31,2,'#ff5a5a',true);}
+}
+// The minigames' own pieces: the reactor's tracks and judgement, the memory panels.
+const PANEL_SHAPES=['tri','circle','square','cross'];
+function panelShape(k,x,y,col){ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();if(k===0){ctx.moveTo(x,y-7);ctx.lineTo(x+8,y+6);ctx.lineTo(x-8,y+6);ctx.closePath();}else if(k===1)ctx.arc(x,y,7,0,Math.PI*2);else if(k===2)ctx.rect(x-6.5,y-6.5,13,13);else{ctx.moveTo(x-7,y);ctx.lineTo(x+7,y);ctx.moveTo(x,y-7);ctx.lineTo(x,y+7);}ctx.stroke();}
+function miniField(){
+ const m=game.mini,a=game.arena,cx=a.x+a.w/2,cy=a.y+a.h/2;if(!m)return;
+ if(m.type==='sync'){ctx.save();ctx.strokeStyle=GRID;ctx.setLineDash([3,5]);for(const [dx,dy] of [[0,-1],[1,0],[0,1],[-1,0]]){ctx.beginPath();ctx.moveTo(cx+dx*34,cy+dy*34);ctx.lineTo(cx+dx*a.w,cy+dy*a.h);ctx.stroke();}ctx.restore();
+  const k=reduceMotion?0:(1-beat().ph)**3;ctx.strokeStyle=k>.3?'#fff':LIME;ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,cy+3,26+k*3,0,Math.PI*2);ctx.stroke();
+  if(m.judge)text(m.judge.text,a.x+10,a.y+10,1,m.judge.ok?(m.judge.text==='PERFECT!'?'#ffff00':'#7dff6a'):'#ff5a5a');
+  if(m.combo>=3)text('COMBO '+m.combo,cx,a.y+a.h-22,1,'#fff',true);}
+ if(m.type==='harvest')for(const p of game.platforms){if(p.gone)continue;ctx.fillStyle='#000';ctx.fillRect(Math.round(p.x),Math.round(p.y),Math.round(p.w),6);ctx.strokeStyle='#888';ctx.lineWidth=2;ctx.strokeRect(Math.round(p.x)+1,Math.round(p.y)+1,Math.round(p.w)-2,4);}
+ if(m.type==='memory'){
+  const P=[[cx,a.y+13,112,18],[a.x+a.w-13,cy,18,112],[cx,a.y+a.h-13,112,18],[a.x+13,cy,18,112]];
+  P.forEach(([x,y,w,h],k)=>{const lit=m.lit===k&&m.litLife>0;ctx.fillStyle=lit?'#fff':'#0b2a12';ctx.fillRect(Math.round(x-w/2),Math.round(y-h/2),w,h);ctx.strokeStyle=LIME;ctx.lineWidth=1;ctx.strokeRect(Math.round(x-w/2)+.5,Math.round(y-h/2)+.5,w-1,h-1);panelShape(k,x,y,lit?'#000':LIME);});
+  // How far through the sequence you are.
+  if(m.stage==='input'||m.stage==='watch'){const n=m.seq.length;for(let k=0;k<n;k++){ctx.fillStyle=m.stage==='input'&&k<m.step?'#7dff6a':'#333';ctx.fillRect(Math.round(cx-n*7+k*14+2),a.y+34,10,4);}}}
+}
+function miniStatus(){
+ const m=game.mini;if(!m)return '';
+ if(m.type==='sync')return `REACTOR SYNC  ${m.done?Math.round(50*m.score/m.done):100}%`;
+ if(m.type==='memory')return m.stage==='watch'?'WATCH THE PANELS...':m.stage==='input'?`YOUR TURN: ${m.step} / ${m.seq.length}`:`UPLOAD ${m.score} / ${m.total}`;
+ if(m.type==='harvest')return `DATA CAUGHT: ${m.score} / ${m.total}`;
+ return '';
 }
 // The egg and the shield (green), Seth's SOUL in every mode, his purple rim always.
 function drawSoul(){
@@ -158,7 +202,7 @@ function field(){
  if(game.mode==='strings'){ctx.fillStyle='#b249dc';for(const y of game.strings){ctx.globalAlpha=.75;ctx.fillRect(a.x,Math.round(y)-1,a.w,2);}ctx.globalAlpha=1;
   // The scan sweeps across and back.
   const u=((game.beatPos/8)%2+2)%2,x=a.x+a.w*(u<1?u:2-u);ctx.save();ctx.globalAlpha=.5;ctx.fillStyle='#ff3030';ctx.fillRect(Math.round(x)-1,a.y,3,a.h);ctx.globalAlpha=.12;ctx.fillRect(Math.round(x)-24,a.y,48,a.h);ctx.restore();}
- answers();
+ answers();miniField();
  // Spam first, answers on top, so an answer is never hidden.
  for(const b of game.bullets)if(b.kind!=='beam'&&!(b.kind==='bubble'&&b.ans>=0))hazard(b);
  for(const b of game.bullets)if(b.kind==='bubble'&&b.ans>=0)hazard(b);
@@ -239,6 +283,7 @@ function effectsFX(){for(const e of game.effects){
  else if(e.type==='hpup'){text(e.text,440,388-(0.8-e.life)*16,1.5,'#7dff6a');}
  else if(e.type==='swap'&&['defend','warning'].includes(game.state)){const a=game.arena;ctx.save();ctx.globalAlpha=Math.min(1,e.life*3);text('SHUFFLE!',a.x+a.w-40,a.y-26,1,'#ffff00',true);ctx.restore();}
  else if(e.type==='block'){ctx.save();ctx.globalAlpha=e.life*4;ctx.strokeStyle='#fff';ctx.beginPath();ctx.arc(e.x,e.y,6+(1-e.life*4)*8,0,Math.PI*2);ctx.stroke();ctx.restore();}
+ else if(e.type==='fizzle'){ctx.save();ctx.globalAlpha=e.life*3;text('x',e.x,e.y-6,1,'#ff5a5a',true);ctx.restore();}
  else if(e.type==='zap'&&!reduceMotion){ctx.save();ctx.globalAlpha=e.life*2;ctx.fillStyle='#7dff6a';ctx.fillRect(0,0,640,480);ctx.restore();}
 }}
 // The opening: the globe turns on, her head draws itself line by line, and the cabinet announces her.

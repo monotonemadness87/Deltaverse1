@@ -1,17 +1,19 @@
 const S=require("story.js");
 const {ROUNDS,buildRound}=require("attacks.js");
 // QU5EN — fixed-step simulation, separate from Canvas presentation.
-// Every experiment is a SOUL mode, a quiz and a minigame at once. The fight runs in two acts: six single-mode
-// experiments, then six double-mode ones (PHASE 2: THE DOUBLE-BLIND TRIALS), with punch-out bouts in her arcade
-// cabinet between them, and a final bout. Answers fill her DATA bar; at 100% after the final bout she runs the
+// Every experiment is a SOUL mode and a minigame at once; most are quizzes too, and four are pure minigames (after
+// Mettalot's: a rhythm game, a shell game, a copy-the-sequence and a catch game). The fight runs in two acts: eight
+// single-mode experiments, then eight double-mode ones (PHASE 2: THE DOUBLE-BLIND TRIALS), with punch-out bouts in
+// her arcade cabinet between them, and a final bout. Answers fill her DATA bar; at 100% after the final bout she runs the
 // final scan, and the scan ends the fight. Beating her up in a bout heals Seth and wins a bonus.
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const MENU_BOX={x:24,y:249,w:592,h:140};
 const DIFF={gentle:{speed:.85,warn:1.25,damage:1},normal:{speed:1,warn:1.1,damage:2},hard:{speed:1.1,warn:1,damage:3}};
 const ITEMS=()=>[{name:'GLAMBURGER',heal:27,count:2},{name:'STARFAIT',heal:14,count:3},{name:'LEGENDARY HERO',heal:40,count:1},{name:'EGG',heal:0,count:0}];
-const DATA={correct:8,wrong:2,survive:1,hype:6,egg:10,strike:3,bonus:6,finalKO:10,finalDraw:4};
-// The order of the fight: t = an Act 1 experiment, r = an Act 2 (double-mode) one, bout = a punch-out between them.
-const SCHEDULE=['t0','t1','bout','t2','t3','bout','t4','t5','r0','r1','bout','r2','r3','bout','r4','r5','final'],ACT2=SCHEDULE.indexOf('r0');
+const DATA={correct:8,wrong:2,survive:1,hype:6,egg:10,strike:3,bonus:6,finalKO:10,finalDraw:4,mini:10};
+// The order of the fight: t = an Act 1 quiz experiment, r = an Act 2 (double-mode) one, m = a minigame,
+// bout = a punch-out between them.
+const SCHEDULE=['t0','t1','m0','bout','t2','t3','m1','bout','t4','t5','r0','r1','m2','bout','r2','r3','m3','bout','r4','r5','final'],ACT2=SCHEDULE.indexOf('r0');
 // What a bout K.O. wins, in turn.
 const BONUSES=['HINT','ARMOR','SNACK','DATA'];
 const SIDES=['up','right','down','left'];
@@ -91,7 +93,7 @@ class BattleEngine{
   this.text=this.ready?S.FLAVOR_READY:S.FLAVOR[(this.turn*3)%S.FLAVOR.length];this.displayChars=this.text.length;if(!silent)this.emit('turn');
  }
  nextRound(){
-  if(this.step<SCHEDULE.length){const k=SCHEDULE[this.step];if(k==='bout')return ROUNDS.bout(this.bouts+1);if(k==='final')return ROUNDS.final;return (k[0]==='t'?ROUNDS.cycle:ROUNDS.remix)[+k[1]];}
+  if(this.step<SCHEDULE.length){const k=SCHEDULE[this.step];if(k==='bout')return ROUNDS.bout(this.bouts+1);if(k==='final')return ROUNDS.final;return ({t:ROUNDS.cycle,r:ROUNDS.remix,m:ROUNDS.mini})[k[0]][+k[1]];}
   if(!this.scanDone&&this.data>=100)return ROUNDS.scan;
   // Not enough DATA after the final bout: more double-blind trials until there is.
   return ROUNDS.remix[this.extra%ROUNDS.remix.length];
@@ -112,7 +114,7 @@ class BattleEngine{
   this.state='warning';this.timer=0;this.attackTime=0;this.bullets=[];this.timeline=[];this.shots=[];this.platforms=[];this.effects=this.effects.filter(e=>e.type==='damage'||e.type==='data');
   this.setArena(r.arena);this.arena={...r.arena};const a=this.arena;this.soul={x:a.x+a.w/2,y:a.y+a.h/2};this.invulnerability=.4;this.queued=0;this.heat=0;this.dash=0;this.dashCD=0;this.fireCD=0;this.vy=0;this.grounded=false;
   this.duration=Math.round(r.duration/BEAT)*BEAT;
-  this.quiz=r.quiz?this.pickQuiz(r.quiz.max):null;if(this.quiz){this.quiz.at=snap(r.quiz.at,BEAT);this.quiz.instant=!!r.quiz.instant;}
+  this.mini=null;this.prevInput={};this.pressed={};this.quiz=r.quiz?this.pickQuiz(r.quiz.max):null;if(this.quiz){this.quiz.at=snap(r.quiz.at,BEAT);this.quiz.instant=!!r.quiz.instant;}
   if(this.mode==='cyan'){this.orbitTheta=-Math.PI/2;this.orbitSign=1;}
   if(this.mode==='green'){this.shield='up';this.soul={x:a.x+a.w/2,y:a.y+a.h/2};}
   if(this.mode==='yellow')this.soul={x:a.x+a.w/2,y:a.y+a.h-30};
@@ -128,15 +130,24 @@ class BattleEngine{
   let lines=[],checkpoint=this.waves%4===0;
   if(r.id==='scan'){this.scanDone=true;this.ready=true;this.boss.sad=true;lines=[...S.SCAN_RESULT];this.emit('scan');}
   else if(r.bout)lines=this.boutResult(r);
+  else if(r.mini){this.cycle++;if(!this.scanDone)this.addData(DATA.survive);lines=this.miniResult(r);}
   else{this.cycle++;if(!this.scanDone)this.addData(DATA.survive);const bank=this.phase===2?S.STORY2:S.STORY,i=this.phase===2?this.story2++:this.storyIdx++;if(bank[i]&&!this.scanDone)lines=[...bank[i]];}
   if(!this.scanDone){
    if(this.step===ACT2&&!this.act2Told){this.act2Told=true;lines.push(...S.ACT2_INTRO);checkpoint=true;}
    if(this.step>=SCHEDULE.length&&this.data<100&&!this.moreTold&&this.finalDone){this.moreTold=true;lines.push(...S.NOT_ENOUGH_DATA);}
    const nx=this.nextRound();
+   if(nx.mini)lines.push(...S.MINI_INTRO[nx.id]);
    if(nx.id==='final')lines.push(...S.FINAL_INTRO);else if(nx.bout)lines.push(...S.BOUT_INTRO[(nx.bout.n-1)%S.BOUT_INTRO.length]);else if(nx.id==='scan')lines.push(...S.SCAN_INTRO);
   }
   if(checkpoint&&!this.ready){this.hp=this.maxHP;this.items.forEach(i=>{if(i.name!=='EGG')i.count=Math.max(i.count,ITEMS().find(j=>j.name===i.name).count);});lines.push(S.N('* QU5EN runs a quick system restore.\n* On you, by accident.\n* Full HP. Supplies restored.'));this.saveCheckpoint();this.emit('heal');}
   this.message(lines.length?lines:[S.N(this.text)],'menu');
+ }
+ // A minigame's result: how well it went (the shell game: whether Seth found the egg), DATA for the score, her verdict.
+ miniResult(r){
+  const m=this.mini||{},q=this.quiz,shell=r.id==='shell',ratio=shell?(q&&q.chosen>=0&&q.answers[q.chosen].correct?1:0):(m.total?m.score/m.total:0);
+  const lines=[...S.MINI_RESULT[r.id][ratio>=.75?0:ratio>=.4?1:2]];
+  if(!shell){const d=Math.round(DATA.mini*Math.min(1,ratio/.85));if(d)this.addData(d);lines.push(S.N(`* ${m.label}: ${Math.round(ratio*100)}%.${d?' (DATA +'+d+')':''}`));}
+  return lines;
  }
  // A bout's result: punching her heals Seth; a K.O. heals more and wins a bonus; a K.O. without being hit heals more still.
  boutResult(r){
@@ -163,7 +174,7 @@ class BattleEngine{
  answer(i){
   const q=this.quiz;if(!q||q.resolved)return;q.resolved=true;q.chosen=i;const ok=i>=0&&q.answers[i].correct,round=this.round;
   if(round.id==='scan'){this.effects.push({type:'verdict',text:'SCANNING...',ok:true,life:1.6});this.emit('cue');return;}
-  this.addData(ok?DATA.correct:DATA.wrong);const bank=i<0?S.NO_ANSWER:ok?S.CORRECT:S.WRONG;
+  this.addData(ok?DATA.correct:DATA.wrong);const bank=i<0?S.NO_ANSWER:q.shell?(ok?S.SHELL_RIGHT:S.SHELL_WRONG):ok?S.CORRECT:S.WRONG;
   this.effects.push({type:'verdict',text:ok?'CORRECT!':i<0?'TIME!':'WRONG!',ok,life:1.4},{type:'quip',text:bank[(this.turn+this.waves)%bank.length],life:2.6});
   this.emit(ok?'correct':'wrong');round.resolve?.(this,ok,i);
  }
@@ -171,6 +182,8 @@ class BattleEngine{
  setArena(a){this.targetArena={...a};}
  at(t,fn){this.timeline.push({at:snap(t),action:fn,done:false});}
  every(start,end,interval,fn){const step=Math.max(HALF,snap(interval/this.cfg.speed));for(let i=0,t=snap(start);t<end;i++,t+=step){const k=i;this.at(t,()=>fn(k));}}
+ // The shell game: two of her monitors trade places.
+ swapPair(i,j){const q=this.quiz;if(!q||q.resolved)return;[q.slots[i],q.slots[j]]=[q.slots[j],q.slots[i]];this.emit('cue');}
  spawn(b){const o={age:0,vx:0,vy:0,...b};this.bullets.push(o);return o;}
  cue(text){this.effects.push({type:'instruction',text,life:1.8});}
  hurt(amount=this.cfg.damage){
@@ -201,7 +214,7 @@ class BattleEngine{
   if(b.kind==='fighter')return inRect(b.x,b.y,b.w,b.h)||b.punching&&inRect(b.x+b.dir*34,b.y-22,46,14);
   if(b.kind==='head'&&b.age<b.form)return false;
   if(b.kind==='sector'){if(b.age<b.warn||b.age>b.warn+b.live)return false;const t=((this.orbitTheta+Math.PI/2)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);return t>=b.t0&&t<b.t1;}
-  if(b.kind==='packet')return false;
+  if(b.kind==='packet'||b.kind==='note'||b.kind==='bit')return false;
   return Math.hypot(s.x-b.x,s.y-b.y)<(b.r||5)+4;
  }
  // ------------------------------------------------------------ physics
@@ -218,7 +231,12 @@ class BattleEngine{
   this.attackTime+=dt;this.invulnerability=Math.max(0,this.invulnerability-dt);
   for(const e of this.timeline)if(!e.done&&this.attackTime>=e.at){e.done=true;e.action();if(this.state!=='defend')return;}
   const q=this.quiz;if(q&&!q.resolved&&this.attackTime>=q.at){this.answer(q.instant?-1:this.chosen());if(this.state!=='defend')return;}
+  // Fresh presses this frame (the rhythm game scores presses, not holds); a touch counts when it lands or changes side.
+  {const pr=this.prevInput||{};this.pressed={};for(const k of SIDES)this.pressed[k]=!!input[k]&&!pr[k];let ts=null;
+   if(input.touch&&this.mode==='green'){const a=this.arena,dx=input.touch.x-(a.x+a.w/2),dy=input.touch.y-(a.y+a.h/2);if(Math.hypot(dx,dy)>20){ts=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');if(ts!==pr.touchSide)this.pressed[ts]=true;}}
+   this.prevInput={up:!!input.up,down:!!input.down,left:!!input.left,right:!!input.right,touchSide:ts};}
   this.move(dt,input);if(this.state!=='defend')return;
+  this.mini?.tick?.(dt);if(this.state!=='defend')return;
   const s=this.soul;
   for(const b of this.bullets){
    b.age+=dt;if(b.delay&&b.age<b.delay)continue;
@@ -281,7 +299,8 @@ class BattleEngine{
    // Aqua's cyan: ride the ring; arrows push along it, otherwise it drifts; Z turns it back.
    const push=sx||sy?(sx||-sy):0,r=Math.min(a.w,a.h)*.38;this.orbitTheta+=(push||this.orbitSign*.4)*2.2*dt;s.x=a.x+a.w/2+Math.cos(this.orbitTheta)*r;s.y=a.y+a.h/2+Math.sin(this.orbitTheta)*r;return;
   }
-  if(this.mode==='green'){if(input.up)this.shield='up';else if(input.down)this.shield='down';else if(input.left)this.shield='left';else if(input.right)this.shield='right';
+  // Green: the shield faces the arrow pressed last (or one still held once that is let go).
+  if(this.mode==='green'){const fresh=SIDES.find(k=>this.pressed?.[k]);if(fresh)this.shield=fresh;else if(!input[this.shield]){const held=SIDES.find(k=>input[k]);if(held)this.shield=held;}
    if(touch){const dx=touch.x-(a.x+a.w/2),dy=touch.y-(a.y+a.h/2);if(Math.hypot(dx,dy)>20)this.shield=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');}return;}
   if(this.mode==='strings'){
    if(this.dash>0)s.x+=this.dashDir.x*speed*2.6*dt;else{s.x+=sx*speed*dt;if(touch){const tx=touch.x-s.x;s.x+=clamp(tx,-250*dt,250*dt);}}

@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-11-01 — QU5EN: real minigames, and she is colour blind
+
+- **Four minigames that aren't quizzes,** after Mettalot's ACT minigames, each still played in a SOUL mode under her hazards and scored for DATA:
+  - REACTOR SYNC (rhythm, green shield): notes land on the beat from four sides; press the arrow as each arrives for PERFECT or GOOD.
+  - FIND THE EGG (shell game, purple): watch the EGG's monitor through eight swaps on the beat, then stand under it.
+  - MEMORY UPLOAD (copy the sequence, purple + lasers): her four panels light up in order; touch them in the same order.
+  - DATA HARVEST (catch game, blue + boots): catch the falling data before it hits the floor.
+  Two are in each act; the fight is now 22 turns (about 7 minutes of dodging).
+- **She is colour blind:** that's why she can't just look at Seth's SOUL and has to run tests. Lines in the intro, CHECK, flavour text, ASK ABOUT HIM, the minigames and the scan ("Which Means Your SOUL Is: Purple. Says Here. I Will Have To Take Its Word For It").
+- **Questions no longer contradict the lore:** "What Color Is Your SOUL?", "What Is Your SOUL's Trait?" and "Which SOUL Is Purple?" are gone, since she can't know Seth's trait before the scan. Replaced with fair ones about what she has said (her colour blindness, his secret colour) and UNDERTALE itself (seven kinds of human SOUL).
+- **Green shield:** now faces the arrow pressed last, not a fixed priority order.
+- **Measured (test bot):** spared in 22 turns with no deaths on Gentle, Normal and Hard. A missed REACTOR SYNC note chips 1 HP on every difficulty.
+
 ## 2026-11-01 — QU5EN: the punch-out rebuilt from the full video; her mouth closes
 
 - **The bouts now play like the Chapter 2 Queen arcade fight** (studied from the full video): her fighter above Seth's over the globe, as in the cabinet. Seth moves freely with LEFT / RIGHT, ducks with DOWN, and punches with Z or X, lunging up into her; punches land whenever he is under her, and she sways, so he follows her. Her attacks: a STOMP (she flashes white, green arrows appear beside Seth, her leg comes down where he stood), WHEELS rolling in at head height with DOWN arrows (duck), and HIT IT targets dropping from the top (punch one for big damage and +2 HP; it bursts into shards). White tutorial bubbles teach each control in the early bouts. Every 5 landed punches heal 1 HP; K.O. rewards are unchanged. The final round's QU5EN HP is now 100 (was 120), so a good player can K.O. it in time.
