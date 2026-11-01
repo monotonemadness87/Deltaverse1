@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-11-01 — QU5EN, the CORE's own intelligence (new pacifist fight)
+
+A new pacifist-only fight in the CORE, before Sans: QU5EN, the Quantum 5 Engine, an Undertale-side analog of DELTARUNE's Queen. She was built by the previous royal scientist (never named) to find the red SOUL of determination, and she runs Seth through her test suite to find out whether he is it.
+
+- **Every attack is all at once:** a SOUL mode, a quiz and a minigame. Your answer is where your SOUL is when TIME runs out (or what you shoot or dash through), and the wrong answers are where the round hurts. Six tests (purple, blue, cyan, yellow, green, orange), then her arcade cabinet (ROUND 2: FIGHT!), then the final scan on Seth's purple strings.
+- **DATA:** answers fill her research bar; it decides when the arcade and the scan come.
+- **ACTs matter:** ASK ABOUT HIM (a hint, and a new trait for him), HYPE CHAT (DATA for a wilder round), CALL ALPHYS (declined; the third call gets the answer through). FIGHT is percussive maintenance: it knocks the next answer loose.
+- **The scan:** Variant Perseverance. Close to determination, yet lacking. She's let down, and decides to wait for the red SOUL.
+- **Her voice:** Queen's capitalised royal chat-speak over the Forgotten Man's gentle ALL CAPS. Her creator gets whatever traits are coolest in the moment. The designer's lines are verbatim.
+- **Art and music:** the designer's sheet and screenshot (giant head, vector fighter, talk heads, blue fighter recoloured purple as Seth's, globe, arcade text) and their "QU5EN" theme. Game over is her cabinet's YOU LOSE! / FIGHT AGAIN / GIVE UP.
+- **Measured (test bot, Normal):** spared in 8 turns, no deaths, about 0.2 HP-fraction lost per minute.
+- **Hub:** her card sits in Hotland / the CORE between Ant Tenna + Spamson and Sans.
+
 ## 2026-10-30 — Count Anansi: burn stacks for fire attacks
 
 - **Fire sets you alight:** burning spiders, their flame trails, embers, candelabra flames and the genocide floor and wall fire no longer hit directly. Each adds burn stacks (+1 on the pacifist show, up to 3; +2 on genocide, up to 6; the floor fire adds 1). A stack burns off every 0.32 s and takes 1 HP with it (never the last HP on the pacifist show).

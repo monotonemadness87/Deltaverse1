@@ -61,7 +61,7 @@ The hub is currently an encounter launcher, **not a continuous campaign save**. 
 | Snowdin | Marigold — The Forgotten Memorial: THE TRAP (pacifist only; no neutral fight) | Marigold — THE HUNT |
 | Waterfall | Mettalot — Waterfall After Dark | Gerson — What For? |
 | Hotland | Ant Tenna + Spamson — The Next Big Thing, currently pacifist only in launcher | Spamson NEO — A Deal in the Dark, then Muffet — The Dark Nest |
-| CORE | Sans — No Promises | Sans + Alphys — Misery Likes Company |
+| CORE | QU5EN — Quantum 5 Engine (pacifist only), then Sans — No Promises | Sans + Alphys — Misery Likes Company |
 | New Home | Flowey — two neutral versions: FALSE PACIFIST (Inside Your Best Friend) and FALSE GENOCIDE (She Gets Her Game Back) | Aqua — Last Playmate (KILL or the R35 SPARE) |
 
 Aqua finale practice is a shortcut into the same canonical fight. Battle Lab, LAST BELL and Ant vs Termite are Extras. LAST BELL's separate universe and the colony simulation do not establish Underground lore.
@@ -263,6 +263,36 @@ Lobby residents seek stardom/hero status by capturing the human. Spamson wears o
 
 Genocide Spamson injects stolen determination only after0HP. Muffet captures him before Seth finishes him. Persistence/no dust/strange taste explain her curiosity, not automatic scientific knowledge of determination.
 
+
+### QU5EN — Quantum 5 Engine (CORE, pacifist only)
+
+A unique pacifist fight, so the pacifist route has something genocide never gets. She is the CORE's own intelligence, an Undertale-side analog of DELTARUNE's Queen (as Spamson and Mr. Ant Tenna are of theirs). On pacifist she comes first in the CORE, then Sans's *No Promises*. There is no genocide or neutral version. Sources and build: `tools/qu5en/` (see its README).
+
+**Who she is (designer canon):**
+- QU5EN = Quantum 5 Engine. Built by the previous royal scientist to run the CORE and finish his research: tapping into the nature of the SOUL, and finding what he theorised was the SOUL of pure determination, the red SOUL.
+- **Never name him.** He was erased from history: on screen he is only ever "the previous royal scientist". She can't remember him.
+- He is played for laughs as the quirk of a defective machine, like Atua for Angie: her creator has whatever traits she decides, in the moment, are the coolest and most convenient ("HE LOVED HUMANS!" / "Then why are we fighting?" / "COMPUTING: AH, MY BAD, I MEANT HE LOVED *STUDYING* HUMANS. HATES THE LITTLE BRATS. PROBLEM: SOLVED!").
+- She doesn't like Alphys and doesn't think she lives up to her master: Alphys's calls are declined.
+- Voice: DELTARUNE Queen's (Every Word Capitalised, almost no punctuation, colons in odd places, stage directions in brackets, chat-speak) mixed with the Forgotten Man's (gentle ALL CAPS, seasons, lists, eggs as keepsakes). The ALL-CAPS lines are where the older code surfaces.
+- The scan's answer: Seth is **Variant Perseverance**, the closest trait to determination as a pure trait, yet lacking. She isn't wrong that the red SOUL exists; she is centuries early. She is let down, then decides to wait ("I WILL KEEP THE CORE WARM FOR THEM.").
+
+**Contract:**
+- **Every attack is a SOUL mode, a quiz and a minigame at once.** A question shows over the box with a TIME count; the answer is wherever the SOUL is when TIME runs out (or what you shoot or dash through), and the wrong answers are where the round hurts:
+  - HERE IS QU5EN (purple): stand in your answer's column; her vector fighter strolls through punching; at TIME her boot stomps every wrong column.
+  - GRAVITY TEST (blue): stand on your answer's platform over rising acid; wrong platforms crumble.
+  - RING TOSS (cyan, Aqua's ring): be in your answer's sector; her laser screens aim ahead of you; wrong sectors are fired on.
+  - SHOOTING GALLERY (yellow): shoot the head carrying your answer; wrong heads burst.
+  - GUARD THE EGG (green): shield the egg from messages; at TIME face your answer's side (nothing flies in the second before TIME).
+  - COMMENT SECTION (orange): spam scrolls through and hurts; dash through your answer. Standing still burns.
+  - ROUND 2: FIGHT! (her arcade cabinet): Seth's purple fighter (the sheet's blue fighter, recoloured) vs her vector fighter. Duck HIGH, jump LOW, punch when she misses; 3 hits is a K.O.
+  - THE FINAL SCAN (purple strings): the scan sweeps while heads ride the strings; its question has no wrong answer. The scan ends the fight.
+- **DATA:** answers fill her research bar (correct +11, wrong +3, each round +2). After all six tests, at 70% she challenges Seth to ROUND 2: FIGHT!; at 100% she runs the final scan. Weak answers mean extra rounds.
+- **ACTs change the fight:** ASK ABOUT HIM (she invents a trait, then crosses out a wrong answer next round); HYPE CHAT (+8 DATA, next round wilder); CALL ALPHYS (declined; the third call gets a text through with the next answer). FIGHT is percussive maintenance: it can't end the fight (chassis never below 1%), but a clean hit makes the next correct answer flicker (+4 DATA).
+- **The EGG:** she gives Seth one partway through; using it is +12 DATA and a moment she can't explain.
+- **Seth:** LV 1 / 30 HP, 2 damage per hit on Normal (1 Gentle, 3 Hard). Checkpoint with full HP and supplies every 3 rounds. Game over is her cabinet's: YOU LOSE! / FIGHT AGAIN (Z) / GIVE UP (X, from the top).
+- **Spare:** after the scan, SPARE is yellow.
+- **Measured (test bot, Normal, answering 75% right):** spared in 8 turns with no deaths; about 0.2 HP-fraction lost per minute, level with Marigold's trap.
+- **Art and music:** her giant head is traced from the designer's screenshot; her fighter, talk heads, the blue fighter, the globe and the arcade text are cleaned from the designer's sheet (`tools/qu5en/tools/extract_qu5en.py`). Music: the designer's "QU5EN". Effects are UNDERTALE's own sounds plus synthesized arcade blips; her text is the designer's snd_txt1 with a square chirp.
 
 ### Encore — Count Anansi
 

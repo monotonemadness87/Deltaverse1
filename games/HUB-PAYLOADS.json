@@ -60,6 +60,11 @@
     "sha256": "4ca237ac38e634def7f4f195f0668cbf04ea88200c8a8955d256fba1e13ee085"
   },
   {
+    "file": "qu5en.html",
+    "bytes": 5560789,
+    "sha256": "2e9eea6db6d2ffd130c22666571920d8e223b12b064717cea47d5d614ef3371e"
+  },
+  {
     "file": "sans-genocide.html",
     "bytes": 11669189,
     "sha256": "9e50178f585bf28e67677a43a859e0b1d16e260807f334b777abaeb5e68b30c5"
