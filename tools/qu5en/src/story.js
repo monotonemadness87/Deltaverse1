@@ -102,39 +102,38 @@ const NO_ANSWER=['You Did Not Answer. That Is Also An Answer. A Wrong One'];
 const FINAL_KO=[Q('talk','K.O.'),Q('smug','I Let You Win. For Science. Mostly Science'),Q('smile','HE WAS UNDEFEATED, YOU KNOW. UNTIL JUST NOW. THAT WAS HIM. I WAS HIM.'),Q('talk','...Ignore That')];
 const FINAL_DRAW=[Q('talk','TIME. DRAW.'),Q('smug','A Draw Is Just A Win Where Everyone Is Sad')];
 
-// The quiz bank. The first answer listed is correct; the game shuffles them. Some only make sense later ('after').
+// The quiz bank. Every question can be answered from UNDERTALE itself or from something she has already said in this
+// fight ('after' / 'after2': only once that story beat has played). The first answer listed is correct; the game
+// shuffles them. 'act': Act 2 only. 'all': every answer is right (she can't decide either).
 const QUIZ=[
- {q:'What Color Is Your SOUL?',a:['PURPLE','RED','EGG']},
- {q:'What Do Monsters Turn Into?',a:['DUST','EGGS','NEWS']},
+ {q:'What Color Is Your SOUL?',a:['PURPLE','RED','GREEN']},
+ {q:'What Do Monsters Turn Into When They Die?',a:['DUST','EGGS','STARS']},
  {q:'How Many Human SOULs Does The King Need?',a:['SEVEN','SIX','ONE']},
- {q:'Who Built Me?',a:['THE PREVIOUS ROYAL SCIENTIST','ALPHYS','(PLEASE HOLD)']},
- {q:'Which Trait Is The Best Trait?',a:['DETERMINATION','PERSEVERANCE']},
- {q:'What Is In The Egg?',a:['YES','NOTHING','A MEMORY']},
- {q:'Pick The Real Royal Scientist',a:['NOT ALPHYS','ALPHYS']},
- {q:'What Does The CORE Make?',a:['POWER','SOUP','FRIENDS']},
- {q:'Is This A Trick Question?',a:['NO','YES']},
+ {q:'Who Built Me?',a:['THE PREVIOUS ROYAL SCIENTIST','ALPHYS','THE KING']},
+ {q:'What Does QU5EN Stand For?',a:['QUANTUM 5 ENGINE','QUEEN','QUITE 5 EGGS']},
+ {q:'What Am I Looking For?',a:['THE RED SOUL','MY KEYS','ALPHYS']},
+ {q:'Who Is The Royal Scientist Now?',a:['ALPHYS','UNDYNE','ME']},
+ {q:'What Does The CORE Make?',a:['POWER','SOUP','SNOW']},
  {q:'What Is 2 + 2?',a:['4','5','FISH','22']},
  {q:'Spell My Name',a:['Q-U-5-E-N','Q-U-E-E-N']},
- {q:'What Did He Love?',a:['STUDYING HUMANS','HUMANS'],after:2},
  {q:'Which Way Is Up?',a:['UP','DOWN']},
- {q:'How Long Have I Been Waiting?',a:['[DATE NOT FOUND]','A WHILE','5 MINUTES']},
- {q:'Who Is Calling?',a:['NOBODY','ALPHYS'],after:3},
- {q:'What Comes After Summer?',a:['COLD','AUTUMN','WINTER']},
- {q:'Determination Is...',a:['THE RED ONE','A TRAIT','MAGIC']},
- {q:'Is The Previous Royal Scientist Cool?',a:['VERY YES','YES','NO']},
- {q:'Where Does The King Live?',a:['NEW HOME','THE CORE','MY HEART']},
- {q:'What Did He Wear?',a:['THE COOLEST HAT','NO HAT'],after:1},
- {q:'How Many Pockets Do I Have?',a:['ZERO','ONE','EGG'],after:5},
- // Act 2's meaner questions. 'all': every answer is right.
- {q:'Which Answer Is Correct?',a:['THIS ONE','NOT THIS ONE','THE OTHER ONE'],act:2},
+ {q:'Where Does The King Live?',a:['NEW HOME','THE CORE','SNOWDIN']},
+ {q:'What Keeps Monsters Underground?',a:['THE BARRIER','A DOOR','GRAVITY']},
+ {q:'Which SOUL Color Is Determination?',a:['RED','PURPLE','YELLOW']},
+ {q:'Which Of These Is An Egg?',a:['EGG','A ROCK','ALPHYS']},
+ {q:'What Did He Wear?',a:['THE COOLEST HAT','A CROWN','NOTHING'],after:0},
+ {q:'What Did He Love?',a:['STUDYING HUMANS','HUMANS'],after:1},
+ {q:'Who Keeps Calling?',a:['ALPHYS','THE KING','NOBODY'],after:2},
+ {q:'What Comes After Summer?',a:['COLD','SPRING'],after:3},
+ {q:'How Many Pockets Do I Have?',a:['ZERO','ONE','EGG'],after:4},
+ // Act 2.
+ {q:'What Is Your SOUL\'s Trait?',a:['PERSEVERANCE','DETERMINATION','KINDNESS'],act:2},
  {q:'Is The Answer To This Question NO?',a:['NO','YES'],act:2,all:true},
- {q:'What Comes After Cold?',a:['SPRING','SUMMER','MORE COLD'],act:2},
- {q:'How Tall Was He?',a:['ALL OF THE ABOVE','SEVEN FEET','NINE FEET'],act:2},
- {q:'Who Is The Best Royal Scientist?',a:['HIM','ME','ALPHYS'],act:2},
- {q:'What Is My Favorite Color?',a:['#B5E61D','LIME','GREEN'],act:2},
- {q:'Which Of These Is The Real Egg?',a:['EGG','EGG?','EGG.','EGGG'],act:2},
- {q:'How Many Tests Have There Been?',a:['TOO MANY','NINE','ONE'],act:2},
- {q:'What Did He Look Like?',a:['COOL','A HAND','A SKELETON'],act:2}
+ {q:'How Tall Was He?',a:['ALL OF THE ABOVE','SEVEN FEET','NINE FEET'],act:2,after2:0},
+ {q:'How Many Times Has Alphys Called?',a:['14','2','0'],act:2,after2:1},
+ {q:'What Trait Does He Have Now?',a:['COOL','HUMAN','HANDS'],act:2,after2:3},
+ {q:'What Will The Red SOUL Wear?',a:['STRIPES','A HAT','PURPLE'],act:2,after2:4},
+ {q:'Which SOUL Is Purple?',a:['PERSEVERANCE','PATIENCE','JUSTICE'],act:2}
 ];
 
 // ACTs, and what she says to each.

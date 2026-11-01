@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-11-01 — QU5EN: the real punch-out, fair questions, readable SOUL combos
+
+- **The bouts are DELTARUNE's arcade punch-out now**, after the Chapter 2 Queen arcade fight: full-screen in her cabinet, Seth's fighter seen from behind with hers facing him, TIME counting down from 99, HERO HP and QU5EN HP bars. Hold LEFT or RIGHT to dodge; she flashes once per attack in the combo; jabs and kicks are dodged either way, hooks away from their side (an arrow shows which), side arrows by staying in the middle. When she misses she's OPEN: Z punches land with a HIT!! burst, each healing 1 HP. K.O. heals and wins a bonus; later bouts add hooks, side arrows, longer combos and faster tells.
+- **Every question can be answered:** the arbitrary ones are gone. Questions come from UNDERTALE itself or from something she has already said in this fight, and callback questions only appear after their line has played. Shuffling answers stop three beats before TIME.
+- **SOUL combos are readable:** every round opens on a title card naming its SOUL modes and their controls (held longer for new and two-mode rounds); the modes stay as chips beside the TIME count; two-mode rounds show a two-coloured SOUL.
+- **Visual fixes:** answer labels sit on dark plates; RING TOSS labels moved off the centre, where heads burst; instruction text no longer overlaps the TIME count; laser warnings stay inside the box (the screen they fire from still shows); control hints no longer use arrow symbols the game font lacks.
+- **Measured (test bot, Normal, 75% right):** 18–23 turns, no deaths.
+
 ## 2026-11-01 — QU5EN: two acts and punch-out bouts
 
 The fight is now 18 turns instead of 8.

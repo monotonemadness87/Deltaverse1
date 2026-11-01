@@ -4,47 +4,49 @@
 // Act 1 runs six single-mode experiments; Act 2 (the Double-Blind Trials) runs six that each combine two of them,
 // and shuffles some answers as you go. Between experiments she challenges Seth to bouts in her arcade cabinet.
 const box=(w,h,y=null)=>({x:320-w/2,y:y??(388-h),w,h});
-const R=(id,name,mode,arena,duration,quiz,cue,extra={})=>({id,name,mode,arena,duration,quiz,cue,...extra});
-// Bouts get meaner: combos (a second attack right after the first), feints (the tell switches a beat before it
-// lands), shorter tells. tell is in beats; hits is how many punches knock her out.
+const R=(id,name,mode,arena,duration,quiz,souls,extra={})=>({id,name,mode,arena,duration,quiz,souls,...extra});
+// souls: what the round asks of Seth, one chip per SOUL mode (colour, controls, short label). Shown on the round's title card
+// and beside the TIME counter all round, so a combined round says plainly what both halves want.
+// The bouts are DELTARUNE's arcade punch-out, seen from behind Seth's fighter. Her tells flash once per attack in
+// the coming combo; jabs and kicks are dodged either way, hooks away from the side they come from, side arrows by
+// staying put; when she misses she is open and punches land. hp is her QUEEN HP; tell is in beats.
 const BOUTS=[
- {n:1,hits:3,tell:1.5,combo:0,feint:0,duration:16},
- {n:2,hits:3,tell:1.5,combo:.35,feint:0,duration:17},
- {n:3,hits:3,tell:1.5,combo:.3,feint:.3,duration:18},
- {n:4,hits:3,tell:1,combo:.4,feint:.3,duration:18},
- {n:5,hits:5,tell:1,combo:.45,feint:.35,duration:28,final:true}
+ {n:1,hp:60,tell:2,combo:1,open:2.5,moves:['jab','kick'],duration:20},
+ {n:2,hp:60,tell:2,combo:2,open:2.5,moves:['jab','kick','hookL','hookR'],duration:22},
+ {n:3,hp:70,tell:1.5,combo:2,open:2,moves:['jab','kick','hookL','hookR','arrows'],duration:24},
+ {n:4,hp:70,tell:1.5,combo:3,open:2,moves:['jab','kick','hookL','hookR','arrows'],duration:24},
+ {n:5,hp:120,tell:1.5,combo:3,open:2,moves:['jab','kick','hookL','hookR','arrows'],duration:34,final:true}
 ];
-const ARCADE_CUE='↑ JUMP HER LOW KICK · ↓ DUCK HER HIGH PUNCH · Z PUNCH WHEN SHE MISSES';
-const bouts=BOUTS.map(b=>R(b.final?'final':'bout'+b.n,b.final?'FINAL ROUND: FIGHT!':`ROUND ${b.n}: FIGHT!`,'arcade',box(520,190),b.duration,null,ARCADE_CUE,{bout:b,final:!!b.final}));
+const PUNCH=[['white','LEFT / RIGHT DODGE · Z PUNCHES WHEN SHE IS OPEN','DODGE · PUNCH']];
+const arena=box(600,368,18);
+const bouts=BOUTS.map(b=>R(b.final?'final':'bout'+b.n,b.final?'FINAL ROUND: FIGHT!':`ROUND ${b.n}: FIGHT!`,'arcade',arena,b.duration,null,PUNCH,{bout:b,final:!!b.final}));
 const ROUNDS={
  cycle:[
-  R('hereis','HERE IS QU5EN','red',box(420,180),14,{at:10,max:4},'STAND IN YOUR ANSWER WHEN TIME RUNS OUT'),
-  R('gravity','GRAVITY TEST','blue',box(400,190),16,{at:11,max:3},'BLUE: ↑ JUMP · STAND ON YOUR ANSWER'),
-  R('ring','RING TOSS','cyan',box(260,190),15,{at:11,max:4},'CYAN: RIDE THE RING · Z TURNS BACK'),
-  R('gallery','SHOOTING GALLERY','yellow',box(400,190),15,{at:12.5,max:4,instant:true},'YELLOW: Z SHOOTS · SHOOT YOUR ANSWER'),
-  R('egg','GUARD THE EGG','green',box(190,190),15,{at:11,max:4},'GREEN: ARROWS TURN THE SHIELD · FACE YOUR ANSWER'),
-  R('comments','COMMENT SECTION','orange',box(420,180),16,{at:13.5,max:4,instant:true},'ORANGE: KEEP MOVING · Z DASH THROUGH YOUR ANSWER')
+  R('hereis','HERE IS QU5EN','red',box(420,180),14,{at:10,max:4},[['purple','MOVE · STAND IN YOUR ANSWER AT TIME','IN YOUR ANSWER']]),
+  R('gravity','GRAVITY TEST','blue',box(400,190),16,{at:11,max:3},[['blue','UP JUMPS · LAND ON YOUR ANSWER','UP JUMPS']]),
+  R('ring','RING TOSS','cyan',box(260,190),15,{at:11,max:4},[['cyan','RIDE THE RING · Z TURNS BACK · BE IN YOUR ANSWER','RIDE THE RING']]),
+  R('gallery','SHOOTING GALLERY','yellow',box(400,190),15,{at:12.5,max:4,instant:true},[['yellow','Z SHOOTS · SHOOT YOUR ANSWER','Z SHOOTS']]),
+  R('egg','GUARD THE EGG','green',box(190,190),15,{at:11,max:4},[['green','ARROW KEYS TURN THE SHIELD · FACE YOUR ANSWER','FACE YOUR ANSWER']]),
+  R('comments','COMMENT SECTION','orange',box(420,180),16,{at:13.5,max:4,instant:true},[['orange','KEEP MOVING · Z DASHES THROUGH YOUR ANSWER','Z DASHES']])
  ],
  // Act 2: two experiments at once.
  remix:[
-  R('freefall','TARGET PRACTICE IN FREEFALL','blue',box(400,190),16,{at:13.5,max:4,instant:true},'BLUE + YELLOW: ↑ JUMP · Z SHOOTS · SHOOT YOUR ANSWER',{shoot:true}),
-  R('stomp','RING STOMP','cyan',box(260,190),15,{at:11,max:4},'CYAN + HER BOOTS: RIDE THE RING UNDER THEM'),
-  R('feed','COMMENTS ON A STRING','strings',box(420,190),16,{at:13.5,max:3,instant:true},'STRINGS + ORANGE: ↑↓ SWITCH · Z DASH THROUGH YOUR ANSWER',{dash:true}),
-  R('roulette','EGG ROULETTE','green',box(190,190),15,{at:11,max:4},'GREEN: THE ANSWERS CHANGE SIDES · FACE YOURS AT TIME',{swap:true}),
-  R('shuffle','THE SHUFFLE','red',box(420,180),15,{at:11,max:4},'THE COLUMNS SHUFFLE · BE IN YOURS AT TIME',{swap:true}),
-  R('shooter','STRING SHOOTER','strings',box(420,190),15,{at:12.5,max:4,instant:true},'STRINGS + YELLOW: ↑↓ SWITCH · Z SHOOTS',{shoot:true})
+  R('freefall','TARGET PRACTICE IN FREEFALL','blue',box(400,190),16,{at:13.5,max:4,instant:true},[['blue','UP JUMPS · STAY OUT OF THE ACID','UP JUMPS'],['yellow','Z SHOOTS · SHOOT YOUR ANSWER','Z SHOOTS']],{shoot:true,heart:['blue','yellow']}),
+  R('stomp','RING STOMP','cyan',box(260,190),15,{at:11,max:4},[['cyan','RIDE THE RING · Z TURNS BACK','RIDE THE RING'],['white','HER BOOTS STOMP · BE IN YOUR ANSWER','BOOTS']]),
+  R('feed','COMMENTS ON A STRING','strings',box(420,190),16,{at:13.5,max:3,instant:true},[['purple','UP / DOWN SWITCH STRINGS','UP/DOWN STRINGS'],['orange','KEEP MOVING · Z DASHES THROUGH YOUR ANSWER','Z DASHES']],{dash:true,heart:['purple','orange']}),
+  R('roulette','EGG ROULETTE','green',box(190,190),15,{at:11,max:4},[['green','FACE YOUR ANSWER AT TIME','FACE YOUR ANSWER'],['white','THE ANSWERS SWAP SIDES, THEN STOP','SWAPS']],{swap:true}),
+  R('shuffle','THE SHUFFLE','red',box(420,180),15,{at:11,max:4},[['purple','STAND IN YOUR ANSWER AT TIME','IN YOUR ANSWER'],['white','THE COLUMNS SHUFFLE, THEN STOP','SHUFFLES']],{swap:true}),
+  R('shooter','STRING SHOOTER','strings',box(420,190),15,{at:12.5,max:4,instant:true},[['purple','UP / DOWN SWITCH STRINGS','UP/DOWN STRINGS'],['yellow','Z SHOOTS · SHOOT YOUR ANSWER','Z SHOOTS']],{shoot:true,heart:['purple','yellow']})
  ],
  bout:n=>bouts[Math.min(n,BOUTS.length-1)-1],
  final:bouts[BOUTS.length-1],
- scan:R('scan','THE FINAL SCAN','strings',box(420,190),20,null,'STRINGS: ↑↓ SWITCH · ←→ MOVE')
+ scan:R('scan','THE FINAL SCAN','strings',box(420,190),20,null,[['purple','UP / DOWN SWITCH STRINGS · LEFT / RIGHT MOVE','UP/DOWN STRINGS']])
 };
 const SPAM=['lol','POG','first','W','based','ratio','lmao','???','GG','L','real','kino','clip it','F','omg'];
 
 function buildRound(g,r){
  const a=r.arena,cx=a.x+a.w/2,cy=a.y+a.h/2,R=()=>g.random(),sp=()=>g.cfg.speed;
  const every=(s,e,i,f)=>g.every(s,e,i,f),at=(t,f)=>g.at(t,f);g.acid=null;
- // Each new rule explains itself the first time it appears.
- if(r.cue&&!g.told.has(r.cue)){g.told.add(r.cue);at(0,()=>g.cue(r.cue));}
  // Timed to the music: whatever a hazard does, it does on a beat. untilBeat(n) is the time to the first whole beat
  // at least n beats away: heads burst on it, boots land on it, lasers fire on it, messages reach the shield on it.
  const B=g.beat,untilBeat=n=>(Math.ceil(g.beatPos+n)-g.beatPos)*B;
@@ -67,7 +69,7 @@ function buildRound(g,r){
   every(1.5,end-2.5,answersEvery,i=>{if(g.quiz.resolved)return;const order=lanes.map((l,k)=>k).sort(()=>R()-.5);for(let k=0;k<n;k++){const left=(i+k)%2===0;g.spawn({kind:'bubble',x:left?a.x-70-k*30:a.x+a.w+70+k*30,y:lanes[order[k%lanes.length]],vx:(left?1:-1)*68*sp(),w:120,h:22,label:g.quiz.answers[k].text,ans:k});}});
   r.resolve=(g,ok)=>{for(const b of g.bullets)if(b.kind==='bubble'&&b.ans>=0){b.gone=true;if(!ok)g.burst(b.x,b.y,5,90);}};
  };
- const shuffles=()=>{for(let t=2;t<q.at-1.5*B;t+=2*B)at(t,()=>g.shuffle());};
+ const shuffles=()=>{for(let t=2;t<q.at-3.5*B;t+=2*B)at(t,()=>g.shuffle());at(q.at-3.5*B,()=>g.cue('NO MORE SHUFFLING'));};
  switch(r.id){
   // ---------------------------------------------------------------- Act 1
   case 'hereis':

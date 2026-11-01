@@ -97,7 +97,7 @@ class BattleEngine{
   return ROUNDS.remix[this.extra%ROUNDS.remix.length];
  }
  pickQuiz(n){
-  const bank=S.QUIZ.map((q,i)=>({...q,i})).filter(q=>!this.used.includes(q.i)&&(q.after===undefined||this.storyIdx>q.after)&&(q.act===undefined||q.act===this.phase)&&q.a.length<=n);
+  const bank=S.QUIZ.map((q,i)=>({...q,i})).filter(q=>!this.used.includes(q.i)&&(q.after===undefined||this.storyIdx>q.after)&&(q.after2===undefined||this.story2>q.after2)&&(q.act===undefined||q.act===this.phase)&&q.a.length<=n);
   let pick=bank[Math.floor(this.random()*bank.length)];if(!pick){this.used=[];return this.pickQuiz(n);}this.used.push(pick.i);
   const answers=pick.a.map((text,k)=>({text,correct:k===0||!!pick.all}));for(let k=answers.length-1;k>0;k--){const j=Math.floor(this.random()*(k+1));[answers[k],answers[j]]=[answers[j],answers[k]];}
   const q={q:pick.q,answers,crossed:-1,shown:false,resolved:false,chosen:-1,slots:answers.map((a,k)=>k)};
@@ -118,7 +118,9 @@ class BattleEngine{
   if(this.mode==='yellow')this.soul={x:a.x+a.w/2,y:a.y+a.h-30};
   if(this.mode==='strings'){const top=r.shoot?.35:.25,gap=r.shoot?.22:.25;this.strings=[0,1,2].map(k=>a.y+a.h*(top+gap*k));this.lane=1;this.soul.y=this.strings[1];this.laneHeld=false;}
   if(this.mode==='blue')this.soul={x:a.x+a.w/2,y:a.y+20};
-  if(this.mode==='arcade')this.arc={seth:{air:0,duck:false,punch:0,punchCD:0,hurt:0,upHeld:false},queen:{state:'idle',t:.9,move:'high',hits:0,hurt:0},result:'',tookHit:false};
+  if(this.mode==='arcade')this.arc={seth:{lane:0,x:0,punch:0,punchCD:0,hurt:0},queen:{state:'idle',t:BEAT*2,hp:r.bout.hp,hpMax:r.bout.hp,plan:[],i:0,move:null,flash:0,hit:0},tookHit:false};
+  // The title card stays up longer the first time a round appears, and for every two-mode round, so it can be read.
+  this.warnMin=r.souls.length>1||!this.told.has(r.id)?2.2:1;this.told.add(r.id);
   buildRound(this,r);this.timeline.sort((x,y)=>x.at-y.at);this.emit('warning');
  }
  finishWave(){
@@ -138,9 +140,9 @@ class BattleEngine{
  }
  // A bout's result: punching her heals Seth; a K.O. heals more and wins a bonus; a K.O. without being hit heals more still.
  boutResult(r){
-  const q=this.arc.queen,ko=q.hits>=r.bout.hits,perfect=ko&&!this.arc.tookHit,before=this.hp;
+  const q=this.arc.queen,ko=q.hp<=0,perfect=ko&&!this.arc.tookHit,before=this.hp;
   if(r.final){this.finalDone=true;this.addData(ko?DATA.finalKO:DATA.finalDraw);if(ko)this.hp=this.maxHP;return [...(ko?S.FINAL_KO:S.FINAL_DRAW),S.N(`* ${ko?'K.O.! QU5EN patches you up completely.':'TIME.'}${ko?'':'\n* You recover '+(this.hp-before)+' HP.'}`)];}
-  this.hp=Math.min(this.maxHP,this.hp+(ko?10:4)+(perfect?6:0));const healed=this.hp-before;let bonus=null;
+  this.hp=Math.min(this.maxHP,this.hp+(ko?6:2)+(perfect?6:0));const healed=this.hp-before+(this.arc.punchHeal||0);let bonus=null;
   if(ko){bonus=BONUSES[this.bouts%BONUSES.length];if(bonus==='HINT')this.hint='show';else if(bonus==='ARMOR')this.armor=-1;else if(bonus==='SNACK')this.items.find(i=>i.name==='GLAMBURGER').count++;else if(bonus==='DATA')this.addData(DATA.bonus);}
   this.bouts++;this.emit('heal');
   return [...(ko?S.BOUT_KO[(r.bout.n-1)%S.BOUT_KO.length]:S.BOUT_DRAW),S.N(`* ${ko?(perfect?'PERFECT K.O.!':'K.O.!'):'TIME.'} You recover ${healed} HP.${bonus?'\n* BONUS: '+S.BONUS[bonus]:''}`)];
@@ -183,7 +185,7 @@ class BattleEngine{
  // cyan turns back; the arcade punches.
  action(){
   const r=this.round||{};
-  if(this.mode==='arcade'){const p=this.arc.seth;if(p.punchCD<=0&&!p.hurt){p.punch=.2;p.punchCD=.45;this.emit('swing');}return;}
+  if(this.mode==='arcade'){this.punch();return;}
   if(this.mode==='yellow'||r.shoot){if(this.fireCD<=0){this.shots.push({x:this.soul.x,y:this.soul.y-10});this.fireCD=.22;this.emit('shoot');}return;}
   if(this.mode==='orange'||r.dash){this.queued=.3;return;}
   if(this.mode==='cyan'){this.orbitSign*=-1;this.emit('select');return;}
@@ -211,7 +213,7 @@ class BattleEngine{
   for(const k of ['x','y','w','h']){const d=this.targetArena[k]-this.arena[k];this.arena[k]+=Math.abs(d)<.3?d:d*Math.min(1,dt*12);}
   if(this.state==='dialogue'){this.displayChars=Math.min(this.text.length,this.displayChars+dt*40);return;}
   if(this.state==='fight'){this.attackCursor+=this.attackDir*330*dt;if(this.attackCursor>584||this.attackCursor<56){this.attackCursor=clamp(this.attackCursor,56,584);this.attackDir*=-1;}return;}
-  if(this.state==='warning'){this.queued=Math.max(0,(this.queued||0)-dt);if(this.timer>.9&&Math.floor(this.beatPos)>lastBeat||this.timer>2.5){this.state='defend';this.timer=0;this.emit('defend');}return;}
+  if(this.state==='warning'){this.queued=Math.max(0,(this.queued||0)-dt);if(this.timer>this.warnMin&&Math.floor(this.beatPos)>lastBeat||this.timer>this.warnMin+1.6){this.state='defend';this.timer=0;this.emit('defend');}return;}
   if(this.state!=='defend')return;
   this.attackTime+=dt;this.invulnerability=Math.max(0,this.invulnerability-dt);
   for(const e of this.timeline)if(!e.done&&this.attackTime>=e.at){e.done=true;e.action();if(this.state!=='defend')return;}
@@ -287,31 +289,34 @@ class BattleEngine{
   }
   if(this.mode==='arcade')this.arcade(dt,input);
  }
- // The bouts: her fighter telegraphs HIGH (duck under it) or LOW (jump over it); a whiff leaves her open to a punch.
- // Later bouts add combos (another attack right after the first), feints (the tell switches sides a beat before
- // it lands) and shorter tells. Her tells start so that every attack lands on a beat. Each punch that lands heals 1 HP.
+ // The bouts: DELTARUNE's arcade punch-out, seen from behind Seth's fighter. Hold LEFT or RIGHT to dodge.
+ // She flashes once per attack in the coming combo; each attack lands on a beat:
+ //   jab, kick: straight down the middle (dodge either way); hookL / hookR: sweeps in from that side and the middle
+ //   (dodge away from it); arrows: fly in at both sides (stay in the middle).
+ // When the combo is over she is open: punches land (Z, from the middle), each heals 1 HP. At 0 QUEEN HP: K.O.
  arcade(dt,input){
-  const A=this.arc,p=A.seth,qn=A.queen,bout=this.round.bout,tellBeats=bout.tell+(this.cfg.warn>1.2?1:0);
-  p.punch=Math.max(0,p.punch-dt);p.punchCD=Math.max(0,p.punchCD-dt);p.hurt=Math.max(0,p.hurt-dt);p.air=Math.max(0,p.air-dt);qn.hurt=Math.max(0,qn.hurt-dt);
-  if(input.up&&!p.upHeld&&!p.air&&!p.hurt){p.air=.62;this.emit('jump');}p.upHeld=!!input.up;p.duck=!!input.down&&!p.air;
-  qn.t-=dt;
+  const A=this.arc,p=A.seth,qn=A.queen,bout=this.round.bout,untilBeat=n=>(Math.ceil(this.beatPos+n)-this.beatPos)*BEAT;
+  p.punch=Math.max(0,p.punch-dt);p.punchCD=Math.max(0,p.punchCD-dt);p.hurt=Math.max(0,p.hurt-dt);qn.flash=Math.max(0,qn.flash-dt);qn.hit=Math.max(0,qn.hit-dt);
+  let lane=(input.right?1:0)-(input.left?1:0);if(!lane&&input.touch){const dx=input.touch.x-320;lane=Math.abs(dx)>50?Math.sign(dx):0;}
+  if(p.hurt<=0)p.lane=lane;p.x+=(p.lane*130-p.x)*Math.min(1,dt*20);
   if(qn.state==='ko')return;
-  const ph=((this.beatPos%1)+1)%1,frac=tellBeats%1,startOk=Math.abs(ph-frac)<.1||Math.abs(ph-frac-1)<.1;
-  // A tell of about n beats, timed so that the attack lands exactly on a beat.
-  const tell=beats=>{qn.state='tell';qn.move=this.random()<.5?'high':'low';qn.feint=this.random()<bout.feint;qn.switched=false;qn.t=(Math.ceil(this.beatPos+beats-.25)-this.beatPos)*BEAT;this.emit('cue');};
-  if(qn.state==='idle'&&qn.t<=0&&startOk)tell(tellBeats);
+  qn.t-=dt;
+  const tell=(next)=>{qn.state='tell';qn.move=qn.plan[qn.i];qn.t=next;qn.flash=.12;this.emit('cue');};
+  if(qn.state==='idle'&&qn.t<=0){const n=1+Math.floor(this.random()*bout.combo);qn.plan=Array.from({length:n},()=>bout.moves[Math.floor(this.random()*bout.moves.length)]);qn.i=0;qn.flashes=n;tell(untilBeat(bout.tell*this.cfg.warn+(n-1)*.5));}
   else if(qn.state==='tell'&&qn.t<=0){
-   if(qn.feint&&!qn.switched){qn.switched=true;qn.move=qn.move==='high'?'low':'high';qn.t=BEAT;this.emit('warning');}
-   else{qn.state='attack';qn.t=.24;const dodged=qn.move==='high'?p.duck:p.air>0;if(!dodged){if(!this.settings.invincible&&this.invulnerability<=0)p.hurt=.45;this.hurt();if(this.state==='dead')return;qn.hit=true;}else qn.hit=false;this.emit('swing');}
+   const lanes={jab:[0],kick:[0],hookL:[-1,0],hookR:[0,1],arrows:[-1,1]}[qn.move];qn.state='strike';qn.t=.3;this.emit('swing');
+   if(lanes.includes(p.lane)){if(this.invulnerability<=0&&!this.settings.invincible)p.hurt=.4;this.hurt();if(this.state==='dead')return;}else this.effects.push({type:'arcadeMiss',life:.4});
   }
-  else if(qn.state==='attack'&&qn.t<=0){if(!qn.hit&&this.random()<bout.combo&&!qn.comboing){qn.comboing=true;tell(1);}else{qn.comboing=false;qn.state=qn.hit?'idle':'recover';qn.t=qn.hit?BEAT:2*BEAT*this.cfg.warn;}}
-  else if(qn.state==='recover'&&qn.t<=0){qn.state='idle';qn.t=.35+this.random()*.5;}
-  else if(qn.state==='hurt'&&qn.t<=0){qn.state='idle';qn.t=.6;}
-  if(p.punch>.14&&p.punch<=.2&&!p.landed){p.landed=true;
-   if(qn.state==='recover'){qn.state='hurt';qn.t=.5;qn.hits++;qn.hurt=.4;this.boss.glitch=.4;this.hp=Math.min(this.maxHP,this.hp+1);this.effects.push({type:'arcadeHit',life:.4},{type:'hpup',text:'+1 HP',life:.8});this.emit('attack');
-    if(qn.hits>=bout.hits){qn.state='ko';A.result='ko';this.effects.push({type:'verdict',text:'K.O.!',ok:true,life:2});this.at(this.attackTime+1.8,()=>{this.duration=Math.min(this.duration,this.attackTime+.01);});}}
-   else{this.effects.push({type:'arcadeBlock',life:.3});this.emit('block');}}
-  if(p.punch<=0)p.landed=false;
+  else if(qn.state==='strike'&&qn.t<=0){qn.i++;if(qn.i<qn.plan.length)tell(untilBeat(.75));else{qn.state='open';qn.t=bout.open*BEAT*this.cfg.warn;this.emit('open');}}
+  else if(qn.state==='open'&&qn.t<=0){qn.state='idle';qn.t=BEAT*(.5+this.random());}
+ }
+ punch(){
+  const A=this.arc,p=A.seth,qn=A.queen;if(p.punchCD>0||p.hurt>0||qn.state==='ko')return;p.punch=.18;p.punchCD=.3;this.emit('swing');
+  if(p.lane!==0)return;
+  if(qn.state!=='open'){this.effects.push({type:'arcadeBlock',life:.3});this.emit('block');return;}
+  qn.hp=Math.max(0,qn.hp-10);qn.hit=.25;this.boss.glitch=.3;const before=this.hp;this.hp=Math.min(this.maxHP,this.hp+1);A.punchHeal=(A.punchHeal||0)+(this.hp-before);
+  this.effects.push({type:'arcadeHit',life:.4},{type:'hpup',text:'+1 HP',life:.8});this.emit('attack');
+  if(qn.hp<=0){qn.state='ko';this.effects.push({type:'verdict',text:'K.O.!',ok:true,life:2});this.at(this.attackTime+1.8,()=>{this.duration=Math.min(this.duration,this.attackTime+.01);});}
  }
  snapshot(){return{state:this.state,hp:this.hp,maxHP:this.maxHP,lv:this.lv,data:this.data,chassis:this.chassis,turn:this.turn,waves:this.waves,step:this.step,phase:this.phase,bouts:this.bouts,round:this.round?.id,mode:this.mode,ready:this.ready,scanDone:this.scanDone,finalDone:this.finalDone,ending:this.ending,items:this.items.map(i=>({...i}))};}
 }
