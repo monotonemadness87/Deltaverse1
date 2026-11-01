@@ -7,7 +7,7 @@ python3 -I tools/qu5en/build.py
 ```
 
 - `src/story.js`: every line, the quiz bank, and the ACTs' lines. The designer's lines are verbatim. Her creator is only ever "the previous royal scientist".
-- `src/engine.js`: the battle: the quiz (answers by position, shot or dash), DATA, the eight rounds' SOUL modes (purple, blue gravity, cyan ring, yellow shooting, green shield, orange with dash and heat, the arcade fighter, purple strings), ACTs, FIGHT as percussive maintenance, checkpoints, the scan and the spare. It keeps the Notebook's FIGHT contract (`target` → `fight` → `attackCursor`).
+- `src/engine.js`: the battle: the quiz (answers by position, shot or dash), DATA, the eight rounds' SOUL modes (purple, blue gravity, cyan ring, yellow shooting, green shield, orange with dash and heat, the arcade punch-out: free movement, duck, punch, stomp / wheels / HIT IT, purple strings), ACTs, FIGHT as percussive maintenance, checkpoints, the scan and the spare. It keeps the Notebook's FIGHT contract (`target` → `fight` → `attackCursor`).
 - `src/attacks.js`: the experiments (Act 1's six, Act 2's six double-mode ones), the bouts' settings, and what a wrong answer costs. The order of the fight is `SCHEDULE` in `src/engine.js`.
 - `src/qu5en-art.js`: draws her frames and the globe.
 - `src/audio.js`: the designer's theme, UNDERTALE's own effects, synthesized arcade blips, and snd_txt1 for text.

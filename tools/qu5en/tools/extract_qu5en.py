@@ -5,7 +5,8 @@ python3 -I tools/qu5en/tools/extract_qu5en.py <sheet.png> <head.jpg> <out-dir>
 - <sheet.png>: the designer's sprite sheet (grid of cells on a purple key): the blue fighter (6 poses), the
   vector fighter (22 poses), three talk heads, the wireframe globe, and the arcade text (YOU LOSE!, HERO HP, ROUND 1, FIGHT, DRAW, FIGHT AGAIN, GIVE UP, RETIRE, TIME) and bursts.
 - <head.jpg>: the designer's screenshot of the giant wireframe head; the head is traced from its colour and
-  scaled down to its 2-pixel line grid.
+  scaled down to its 2-pixel line grid. A closed-mouth copy ('head_closed') is drawn from it; she only opens her
+  mouth while she talks.
 Writes qu5en.png (the atlas), qu5en.json (frame rectangles) and globe.png (the backdrop) into <out-dir>.
 The blue fighter is also written recoloured purple ('seth_*'), as Seth's arcade avatar.
 """
@@ -69,6 +70,25 @@ def head(path):
     return out
 
 
+def closed_mouth(head):
+    """Her head with the mouth shut: the open jaw's inner lines go, the jaw and chin outline stay, and a closed smirk
+    is drawn under the visor. The pixel ranges are in the 66x71 head this file produces."""
+    img = head.copy(); px = img.load(); lime = (181, 230, 29, 255)
+    erase = [((22, 23), (45, 46)), ((44, 45), (45, 46)), ((22, 45), (47, 48)), ((26, 31), (49, 51)), ((26, 27), (52, 58)),
+             ((26, 29), (59, 59)), ((28, 29), (60, 62)), ((30, 31), (63, 64)), ((34, 37), (63, 64)), ((38, 39), (57, 62)),
+             ((40, 41), (49, 62))]
+    for (x0, x1), (y0, y1) in erase:
+        for y in range(y0, y1 + 1):
+            for x in range(x0, x1 + 1):
+                if x < img.width and y < img.height:
+                    px[x, y] = (0, 0, 0, 0)
+    for (x0, x1), (y0, y1) in [((28, 39), (52, 53)), ((26, 27), (50, 51)), ((40, 41), (50, 51))]:
+        for y in range(y0, y1 + 1):
+            for x in range(x0, x1 + 1):
+                px[x, y] = lime
+    return img
+
+
 def main():
     sheet, head_path, out = sys.argv[1:4]
     im = Image.open(sheet).convert('RGB'); cs = cells(im)
@@ -86,6 +106,7 @@ def main():
     for name, box in zip(TEXT, rest):
         frames['ui_' + name] = keyed(im, box)
     frames['head'] = head(head_path)
+    frames['head_closed'] = closed_mouth(frames['head'])
     keyed(im, globe, (0, 0, 0)).save(f'{out}/globe.png')
     # Shelf-pack the frames into one atlas.
     order = sorted(frames, key=lambda k: -frames[k].height); x = y = row = 0; W = 512; rects = {}

@@ -118,7 +118,7 @@ class BattleEngine{
   if(this.mode==='yellow')this.soul={x:a.x+a.w/2,y:a.y+a.h-30};
   if(this.mode==='strings'){const top=r.shoot?.35:.25,gap=r.shoot?.22:.25;this.strings=[0,1,2].map(k=>a.y+a.h*(top+gap*k));this.lane=1;this.soul.y=this.strings[1];this.laneHeld=false;}
   if(this.mode==='blue')this.soul={x:a.x+a.w/2,y:a.y+20};
-  if(this.mode==='arcade')this.arc={seth:{lane:0,x:0,punch:0,punchCD:0,hurt:0},queen:{state:'idle',t:BEAT*2,hp:r.bout.hp,hpMax:r.bout.hp,plan:[],i:0,move:null,flash:0,hit:0},tookHit:false};
+  if(this.mode==='arcade')this.arc={reach:170,seth:{x:0,walk:0,duck:false,punch:0,punchCD:0,hurt:0},queen:{state:'idle',t:BEAT*3,x:0,swayTo:0,swayBeat:null,hp:r.bout.hp,hpMax:r.bout.hp,plan:[],i:0,move:null,spot:0,flash:0,hit:0},wheels:[],targets:[],shards:[],landed:0,tookHit:false};
   // The title card stays up longer the first time a round appears, and for every two-mode round, so it can be read.
   this.warnMin=r.souls.length>1||!this.told.has(r.id)?2.2:1;this.told.add(r.id);
   buildRound(this,r);this.timeline.sort((x,y)=>x.at-y.at);this.emit('warning');
@@ -289,34 +289,61 @@ class BattleEngine{
   }
   if(this.mode==='arcade')this.arcade(dt,input);
  }
- // The bouts: DELTARUNE's arcade punch-out, seen from behind Seth's fighter. Hold LEFT or RIGHT to dodge.
- // She flashes once per attack in the coming combo; each attack lands on a beat:
- //   jab, kick: straight down the middle (dodge either way); hookL / hookR: sweeps in from that side and the middle
- //   (dodge away from it); arrows: fly in at both sides (stay in the middle).
- // When the combo is over she is open: punches land (Z, from the middle), each heals 1 HP. At 0 QUEEN HP: K.O.
+ // The bouts: DELTARUNE's arcade punch-out (her fighter above, Seth's below, both over the globe). Seth's fighter
+ // moves freely with LEFT / RIGHT, ducks while DOWN is held, and Z (or X) lunges up for a punch: it lands when he is
+ // under her, and she sways, so he has to follow her. Every few beats she attacks, flashing white on the beats of
+ // the tell, and each attack lands on a beat:
+ //   stomp: green arrows appear beside Seth and her leg comes down on the spot he stood on when she flashed (step aside);
+ //   wheels: wheels wait at both edges with DOWN arrows, then roll across at head height (duck under them);
+ //   hitit: a crosshair target drops from the top ("HIT IT"); punch it before it lands for big damage and HP, or get clear.
+ // Every 5 punches that land heal 1 HP. At 0 QU5EN HP: K.O.
  arcade(dt,input){
-  const A=this.arc,p=A.seth,qn=A.queen,bout=this.round.bout,untilBeat=n=>(Math.ceil(this.beatPos+n)-this.beatPos)*BEAT;
-  p.punch=Math.max(0,p.punch-dt);p.punchCD=Math.max(0,p.punchCD-dt);p.hurt=Math.max(0,p.hurt-dt);qn.flash=Math.max(0,qn.flash-dt);qn.hit=Math.max(0,qn.hit-dt);
-  let lane=(input.right?1:0)-(input.left?1:0);if(!lane&&input.touch){const dx=input.touch.x-320;lane=Math.abs(dx)>50?Math.sign(dx):0;}
-  if(p.hurt<=0)p.lane=lane;p.x+=(p.lane*130-p.x)*Math.min(1,dt*20);
+  const A=this.arc,p=A.seth,qn=A.queen,bout=this.round.bout,warn=this.cfg.warn,untilBeat=n=>(Math.ceil(this.beatPos+n)-this.beatPos)*BEAT;
+  for(const k of ['punch','punchCD','hurt'])p[k]=Math.max(0,p[k]-dt);for(const k of ['flash','hit'])qn[k]=Math.max(0,qn[k]-dt);
+  // Seth's fighter.
+  let mx=(input.right?1:0)-(input.left?1:0),duck=!!input.down;
+  if(input.touch){const dx=input.touch.x-(320+p.x);if(input.touch.y>this.arena.y+this.arena.h-60)duck=true;else if(Math.abs(dx)>14)mx=Math.sign(dx);}
+  p.duck=p.hurt<=0&&p.punch<=0&&duck;
+  if(p.hurt<=0&&!p.duck&&p.punch<=0)p.x=clamp(p.x+mx*300*dt,-A.reach,A.reach);
+  p.walk=mx&&!p.duck&&p.hurt<=0?p.walk+dt:0;
+  const hitSeth=()=>{if(this.invulnerability>0||this.settings.invincible)return false;p.hurt=.45;p.punch=0;this.hurt();return true;};
+  // Things in flight: the wheels and the HIT IT target.
+  for(const w of A.wheels){if(!w.rolling)continue;const was=w.x;w.x+=w.dir*720*dt;if(!p.duck&&Math.abs(w.x-p.x)<26&&!w.hit){w.hit=true;if(hitSeth()&&this.state==='dead')return;}if(Math.abs(w.x)>A.reach+80)w.gone=true;if(was*w.x<=0)this.emit('swing');}
+  A.wheels=A.wheels.filter(w=>!w.gone);
+  for(const t of A.targets){t.u+=dt/t.fall;if(t.u>=1&&!t.burst){t.burst=true;t.landed=.5;this.emit('burst');if(Math.abs(t.x-p.x)<44&&hitSeth()&&this.state==='dead')return;}if(t.landed!=null){t.landed-=dt;if(t.landed<=0)t.gone=true;}}
+  A.targets=A.targets.filter(t=>!t.gone);
+  for(const sh of A.shards){sh.x+=sh.vx*dt;sh.y+=sh.vy*dt;sh.vy+=300*dt;sh.life-=dt;}A.shards=A.shards.filter(sh=>sh.life>0);
   if(qn.state==='ko')return;
+  // Her sway: a new spot every two beats.
+  const bp=Math.floor(this.beatPos/2);if(bp!==qn.swayBeat){qn.swayBeat=bp;qn.swayTo=[-60,-30,0,30,60][Math.floor(this.random()*5)];}
+  qn.x+=(qn.swayTo-qn.x)*Math.min(1,dt*4);
+  // Her attacks.
   qn.t-=dt;
-  const tell=(next)=>{qn.state='tell';qn.move=qn.plan[qn.i];qn.t=next;qn.flash=.12;this.emit('cue');};
-  if(qn.state==='idle'&&qn.t<=0){const n=1+Math.floor(this.random()*bout.combo);qn.plan=Array.from({length:n},()=>bout.moves[Math.floor(this.random()*bout.moves.length)]);qn.i=0;qn.flashes=n;tell(untilBeat(bout.tell*this.cfg.warn+(n-1)*.5));}
+  const beat=Math.floor(this.beatPos);if(qn.state==='tell'&&beat!==qn.tellBeat){qn.tellBeat=beat;qn.flash=.14;this.emit('cue');}
+  const tell=()=>{const mv=qn.plan[qn.i];qn.state='tell';qn.move=mv;qn.tellBeat=beat;qn.flash=.14;this.emit('cue');
+   const beats=bout.tell*warn;
+   if(mv==='stomp'){qn.spot=p.x;qn.t=untilBeat(beats);}
+   else if(mv==='wheels'){qn.t=untilBeat(beats);A.wheels.push({x:-A.reach-60,dir:1,rolling:false},{x:A.reach+60,dir:-1,rolling:false});}
+   else{qn.t=untilBeat(beats);const side=this.random()<.5?-1:1,x=clamp(qn.x+side*(70+this.random()*50),-A.reach+20,A.reach-20);A.targets.push({x,u:0,fall:untilBeat(beats+2*warn)});}};
+  if(qn.state==='idle'&&qn.t<=0){const n=1+Math.floor(this.random()*bout.combo);qn.plan=Array.from({length:n},()=>bout.moves[Math.floor(this.random()*bout.moves.length)]);qn.i=0;tell();}
   else if(qn.state==='tell'&&qn.t<=0){
-   const lanes={jab:[0],kick:[0],hookL:[-1,0],hookR:[0,1],arrows:[-1,1]}[qn.move];qn.state='strike';qn.t=.3;this.emit('swing');
-   if(lanes.includes(p.lane)){if(this.invulnerability<=0&&!this.settings.invincible)p.hurt=.4;this.hurt();if(this.state==='dead')return;}else this.effects.push({type:'arcadeMiss',life:.4});
+   qn.state='strike';this.emit('swing');
+   if(qn.move==='stomp'){qn.t=.4;this.emit('stomp');if(Math.abs(p.x-qn.spot)<34){if(hitSeth()&&this.state==='dead')return;}else this.effects.push({type:'arcadeMiss',life:.5});}
+   else if(qn.move==='wheels'){qn.t=(A.reach*2+120)/720;for(const w of A.wheels)w.rolling=true;}
+   else qn.t=BEAT*.5;
   }
-  else if(qn.state==='strike'&&qn.t<=0){qn.i++;if(qn.i<qn.plan.length)tell(untilBeat(.75));else{qn.state='open';qn.t=bout.open*BEAT*this.cfg.warn;this.emit('open');}}
-  else if(qn.state==='open'&&qn.t<=0){qn.state='idle';qn.t=BEAT*(.5+this.random());}
+  else if(qn.state==='strike'&&qn.t<=0){qn.i++;if(qn.i<qn.plan.length)tell();else{qn.state='idle';qn.t=BEAT*(1+Math.floor(this.random()*2));}}
  }
  punch(){
-  const A=this.arc,p=A.seth,qn=A.queen;if(p.punchCD>0||p.hurt>0||qn.state==='ko')return;p.punch=.18;p.punchCD=.3;this.emit('swing');
-  if(p.lane!==0)return;
-  if(qn.state!=='open'){this.effects.push({type:'arcadeBlock',life:.3});this.emit('block');return;}
-  qn.hp=Math.max(0,qn.hp-10);qn.hit=.25;this.boss.glitch=.3;const before=this.hp;this.hp=Math.min(this.maxHP,this.hp+1);A.punchHeal=(A.punchHeal||0)+(this.hp-before);
-  this.effects.push({type:'arcadeHit',life:.4},{type:'hpup',text:'+1 HP',life:.8});this.emit('attack');
-  if(qn.hp<=0){qn.state='ko';this.effects.push({type:'verdict',text:'K.O.!',ok:true,life:2});this.at(this.attackTime+1.8,()=>{this.duration=Math.min(this.duration,this.attackTime+.01);});}
+  const A=this.arc,p=A.seth,qn=A.queen;if(p.punchCD>0||p.hurt>0||p.duck||qn.state==='ko')return;p.punch=.2;p.punchCD=.28;this.emit('swing');
+  const heal=n=>{const before=this.hp;this.hp=Math.min(this.maxHP,this.hp+n);A.punchHeal=(A.punchHeal||0)+(this.hp-before);if(this.hp>before)this.effects.push({type:'hpup',text:`+${this.hp-before} HP`,life:.8});};
+  const damage=n=>{qn.hp=Math.max(0,qn.hp-n);qn.hit=.18;this.boss.glitch=.2;if(qn.hp<=0){qn.state='ko';A.wheels=[];A.targets=[];this.effects.push({type:'verdict',text:'K.O.!',ok:true,life:2});this.at(this.attackTime+1.8,()=>{this.duration=Math.min(this.duration,this.attackTime+.01);});}};
+  // HIT IT: a target low enough to reach and right above him.
+  const t=A.targets.find(t=>!t.burst&&t.u>=.5&&Math.abs(t.x-p.x)<30);
+  if(t){t.burst=true;t.gone=true;for(let k=0;k<8;k++){const an=k/8*Math.PI*2;A.shards.push({x:t.x,u:t.u,y:0,vx:Math.cos(an)*160,vy:Math.sin(an)*160-80,life:.7});}
+   this.effects.push({type:'arcadeHit',x:t.x,u:t.u,life:.4});this.emit('attack');heal(2);damage(8);return;}
+  if(Math.abs(p.x-qn.x)>34){this.effects.push({type:'arcadeWhiff',life:.25});return;}
+  A.landed++;this.effects.push({type:'arcadeHit',x:qn.x,life:.3});this.emit('attack');damage(2);if(A.landed%5===0)heal(1);
  }
  snapshot(){return{state:this.state,hp:this.hp,maxHP:this.maxHP,lv:this.lv,data:this.data,chassis:this.chassis,turn:this.turn,waves:this.waves,step:this.step,phase:this.phase,bouts:this.bouts,round:this.round?.id,mode:this.mode,ready:this.ready,scanDone:this.scanDone,finalDone:this.finalDone,ending:this.ending,items:this.items.map(i=>({...i}))};}
 }

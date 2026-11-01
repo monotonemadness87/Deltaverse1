@@ -7,17 +7,17 @@ const box=(w,h,y=null)=>({x:320-w/2,y:y??(388-h),w,h});
 const R=(id,name,mode,arena,duration,quiz,souls,extra={})=>({id,name,mode,arena,duration,quiz,souls,...extra});
 // souls: what the round asks of Seth, one chip per SOUL mode (colour, controls, short label). Shown on the round's title card
 // and beside the TIME counter all round, so a combined round says plainly what both halves want.
-// The bouts are DELTARUNE's arcade punch-out, seen from behind Seth's fighter. Her tells flash once per attack in
-// the coming combo; jabs and kicks are dodged either way, hooks away from the side they come from, side arrows by
-// staying put; when she misses she is open and punches land. hp is her QUEEN HP; tell is in beats.
+// The bouts are DELTARUNE's arcade punch-out: Seth's fighter below hers, moving freely, punching up into her. She flashes
+// white on the beats of each tell, then stomps where he stood (step aside), rolls wheels at head height (duck) or drops
+// a HIT IT target (punch it). hp is her QU5EN HP; tell is in beats; combo is the most attacks in a row.
 const BOUTS=[
- {n:1,hp:60,tell:2,combo:1,open:2.5,moves:['jab','kick'],duration:20},
- {n:2,hp:60,tell:2,combo:2,open:2.5,moves:['jab','kick','hookL','hookR'],duration:22},
- {n:3,hp:70,tell:1.5,combo:2,open:2,moves:['jab','kick','hookL','hookR','arrows'],duration:24},
- {n:4,hp:70,tell:1.5,combo:3,open:2,moves:['jab','kick','hookL','hookR','arrows'],duration:24},
- {n:5,hp:120,tell:1.5,combo:3,open:2,moves:['jab','kick','hookL','hookR','arrows'],duration:34,final:true}
+ {n:1,hp:60,tell:2,combo:1,moves:['stomp','stomp','hitit'],duration:20},
+ {n:2,hp:60,tell:2,combo:2,moves:['stomp','wheels','hitit'],duration:22},
+ {n:3,hp:70,tell:1.5,combo:2,moves:['stomp','wheels','hitit'],duration:24},
+ {n:4,hp:70,tell:1.5,combo:3,moves:['stomp','stomp','wheels','hitit'],duration:24},
+ {n:5,hp:100,tell:1.5,combo:3,moves:['stomp','stomp','wheels','hitit'],duration:34,final:true}
 ];
-const PUNCH=[['white','LEFT / RIGHT DODGE · Z PUNCHES WHEN SHE IS OPEN','DODGE · PUNCH']];
+const PUNCH=[['white','LEFT / RIGHT MOVE · Z PUNCHES (STAND UNDER HER) · DOWN DUCKS','MOVE · PUNCH · DUCK']];
 const arena=box(600,368,18);
 const bouts=BOUTS.map(b=>R(b.final?'final':'bout'+b.n,b.final?'FINAL ROUND: FIGHT!':`ROUND ${b.n}: FIGHT!`,'arcade',arena,b.duration,null,PUNCH,{bout:b,final:!!b.final}));
 const ROUNDS={

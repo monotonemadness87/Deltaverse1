@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-01 — QU5EN: the punch-out rebuilt from the full video; her mouth closes
+
+- **The bouts now play like the Chapter 2 Queen arcade fight** (studied from the full video): her fighter above Seth's over the globe, as in the cabinet. Seth moves freely with LEFT / RIGHT, ducks with DOWN, and punches with Z or X, lunging up into her; punches land whenever he is under her, and she sways, so he follows her. Her attacks: a STOMP (she flashes white, green arrows appear beside Seth, her leg comes down where he stood), WHEELS rolling in at head height with DOWN arrows (duck), and HIT IT targets dropping from the top (punch one for big damage and +2 HP; it bursts into shards). White tutorial bubbles teach each control in the early bouts. Every 5 landed punches heal 1 HP; K.O. rewards are unchanged. The final round's QU5EN HP is now 100 (was 120), so a good player can K.O. it in time.
+- **Her mouth is closed now:** her big head keeps a closed smirk and only opens its mouth while she talks (flapping with the text) or is hit. The hub portrait uses the closed head too.
+- **Measured (test bot, Normal, 75% right):** 18–20 turns, no deaths. A strong bot K.O.s her in every bout on every difficulty, taking 0–3 hits (mostly wheels).
+
 ## 2026-11-01 — QU5EN: the real punch-out, fair questions, readable SOUL combos
 
 - **The bouts are DELTARUNE's arcade punch-out now**, after the Chapter 2 Queen arcade fight: full-screen in her cabinet, Seth's fighter seen from behind with hers facing him, TIME counting down from 99, HERO HP and QU5EN HP bars. Hold LEFT or RIGHT to dodge; she flashes once per attack in the combo; jabs and kicks are dodged either way, hooks away from their side (an arrow shows which), side arrows by staying in the middle. When she misses she's OPEN: Z punches land with a HIT!! burst, each healing 1 HP. K.O. heals and wins a bonus; later bouts add hooks, side arrows, longer combos and faster tells.

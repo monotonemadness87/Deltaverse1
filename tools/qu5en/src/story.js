@@ -56,7 +56,7 @@ const STORY2=[
 // The bouts between experiments, and what she says going in.
 const BOUT_INTRO=[
  [Q('smug','Intermission. Let Us Punch'),Q('smile','HE INVENTED PUNCHING. BEFORE HIM, PEOPLE JUST HELD HANDS VERY HARD.'),Q('talk','Win And I Will Patch You Up. Lose And I Will Patch You Up Less')],
- [Q('smug','Round Two Of Punching. I Have Learned A New Word: Combo')],
+ [Q('smug','Round Two Of Punching. I Have Learned A New Word: Combo'),Q('smile','Also: Wheels. HE INVENTED WHEELS. Duck Under Them')],
  [Q('smile','I Have Downloaded A New Move: Lying (With My Legs)')],
  [Q('smug','Last Warm-Up. My Reflexes Are Now Faster Than Your Reading Spe')]
 ];

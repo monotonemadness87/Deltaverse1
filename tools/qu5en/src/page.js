@@ -61,8 +61,10 @@ function machinery(alpha=1){
 function drawHead(y0=6,clip=1){
  const b=game.boss,t=game.clock,bob=reduceMotion?0:Math.round((1-beat().ph)**3*3),hurt=b.hurt>.3&&!reduceMotion,talk=typing()&&game.speaker==='boss';
  const tint=hurt?'#ffffff':b.sad?'#6f8a1c':talk&&Math.floor(t*14)%3===0?'#e2ff7a':null;
- if(b.glitch>0&&!reduceMotion){const [w,h]=art.size('head');for(let k=0;k<5;k++){const off=Math.round(Math.sin(t*80+k)*6*b.glitch*2);ctx.save();ctx.beginPath();ctx.rect(0,y0+k*h*2/5+bob,640,h*2/5);ctx.clip();art.frame('head',320+off,y0+bob,2,{anchor:'top',tint,clip});ctx.restore();}}
- else art.frame('head',320,y0+bob,2,{anchor:'top',tint,clip});
+ // Mouth stays shut unless she is talking (flaps open/shut with the text) or reeling from a hit.
+ const face=hurt||(talk&&Math.floor(t*9)%2===0)?'head':'head_closed';
+ if(b.glitch>0&&!reduceMotion){const [w,h]=art.size(face);for(let k=0;k<5;k++){const off=Math.round(Math.sin(t*80+k)*6*b.glitch*2);ctx.save();ctx.beginPath();ctx.rect(0,y0+k*h*2/5+bob,640,h*2/5);ctx.clip();art.frame(face,320+off,y0+bob,2,{anchor:'top',tint,clip});ctx.restore();}}
+ else art.frame(face,320,y0+bob,2,{anchor:'top',tint,clip});
 }
 function speech(){
  if(game.state!=='dialogue'||game.speaker!=='boss')return;
@@ -171,37 +173,56 @@ function titleCard(a){
  const size=text.measure(game.attackName,2)>w-20?1.5:2;text(game.attackName,320,y+8,size,'#fff',true);
  let yy=y+38;for(const [c,ls] of lines){chipHeart(x+22,yy+5,c);ls.forEach((l,k)=>text(l,x+36,yy+k*14,1,c==='white'?'#ddd':'#fff'));yy+=ls.length*14+6;}
 }
-// The bouts: her arcade cabinet, DELTARUNE's punch-out seen from behind Seth's fighter (the blue fighter in his purple,
-// his SOUL on its chest). TIME counts down from 99; HERO HP is Seth's, QU5EN HP is hers.
-const MOVE_POSE={jab:'q_charge1',kick:'q_crouch',hookL:'q_punch',hookR:'q_punch',arrows:'q_charge0'},HIT_POSE={jab:'q_punch',kick:'q_kick0',hookL:'q_punch',hookR:'q_punch',arrows:'q_win1'};
+// The bouts: her arcade cabinet, laid out like DELTARUNE's: her vector fighter above, Seth's (the blue fighter in his
+// purple, his SOUL on its chest) below, both over the globe. TIME counts down from 99; HERO HP is Seth's.
 function plateText(str,x,y,col){const w=text.measure(str,1.5)+12;ctx.save();ctx.globalAlpha=.85;ctx.fillStyle='#000';ctx.fillRect(Math.round(x-w/2),y-4,Math.round(w),26);ctx.restore();ctx.strokeStyle=col;ctx.lineWidth=1;ctx.strokeRect(Math.round(x-w/2)+.5,y-3.5,Math.round(w)-1,25);text(str,x,y,1.5,col,true);}
-function bigArrow(x,y,dir,col){ctx.save();ctx.translate(x,y);ctx.scale(dir,1);ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(-26,-7);ctx.lineTo(6,-7);ctx.lineTo(6,-16);ctx.lineTo(26,0);ctx.lineTo(6,16);ctx.lineTo(6,7);ctx.lineTo(-26,7);ctx.closePath();ctx.fill();ctx.restore();}
+function bigArrow(x,y,dir,col,k=1){ctx.save();ctx.translate(x,y);ctx.scale(dir*k,k);ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(-26,-7);ctx.lineTo(6,-7);ctx.lineTo(6,-16);ctx.lineTo(26,0);ctx.lineTo(6,16);ctx.lineTo(6,7);ctx.lineTo(-26,7);ctx.closePath();ctx.fill();ctx.restore();}
+// An outlined arrow in the cabinet's green, pointing left/right (dir ±1) or down (dir 0).
+function cabArrow(x,y,dir,col){ctx.save();ctx.translate(Math.round(x)+.5,Math.round(y)+.5);if(!dir)ctx.rotate(Math.PI/2);else ctx.scale(dir,1);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-9,-4);ctx.lineTo(2,-4);ctx.lineTo(2,-9);ctx.lineTo(10,0);ctx.lineTo(2,9);ctx.lineTo(2,4);ctx.lineTo(-9,4);ctx.closePath();ctx.stroke();ctx.restore();}
+// The tutorial bubbles: white, with a tail pointing at Seth's fighter.
+function bubbleTip(str,x,y,side){const w=text.measure(str,1)+14,bx=side>0?x+16:x-16-w;ctx.fillStyle='#fff';ctx.fillRect(Math.round(bx),y-10,Math.round(w),22);ctx.beginPath();ctx.moveTo(x+side*4,y+1);ctx.lineTo(x+side*17,y-5);ctx.lineTo(x+side*17,y+7);ctx.closePath();ctx.fill();text(str,bx+7,y-5,1,'#000');}
 function arcade(){
- const a=game.arena,A=game.arc,p=A.seth,q=A.queen,t=game.clock,cx=320,qFeet=a.y+282,sFeet=a.y+a.h-4,b=game.round.bout;
+ const a=game.arena,A=game.arc,p=A.seth,q=A.queen,t=game.clock,cx=320,qFeet=a.y+198,sFeet=a.y+318,b=game.round.bout,green='#43e750';
  if(art.ready(art.globe)){ctx.save();ctx.imageSmoothingEnabled=false;ctx.globalAlpha=.9;ctx.drawImage(art.globe,0,0,320,240,cx-245,a.y+4,490,368);ctx.restore();}
- // Her fighter, facing Seth.
- const flash=q.flash>0||q.state==='tell'&&blink(8)&&q.t<BEATLEN*.6,pose=q.state==='ko'?'q_ko':q.hit>0?'q_hurt':q.state==='tell'?MOVE_POSE[q.move]:q.state==='strike'?HIT_POSE[q.move]:q.state==='open'?'q_lean':'q_idle'+(Math.floor(game.beatPos)%4+4)%4;
- art.frame(pose,cx+(q.state==='strike'&&q.move==='hookL'?-30:q.state==='strike'&&q.move==='hookR'?30:0),qFeet+(q.state==='strike'&&q.move==='jab'?18:0),2,{flip:q.move==='hookL'&&['tell','strike'].includes(q.state),tint:flash?'#ffffff':null});
- // Her tell: one flash per attack still to come, and what to do about the next one.
- if(q.state==='tell'){const left=q.plan.length-q.i;for(let k=0;k<left;k++){text('!',a.x+120-((left-1)*16)/2+k*16,a.y+88,2.5,'#ff5a5a',true);}
-  const tip={jab:'DODGE LEFT OR RIGHT',kick:'DODGE LEFT OR RIGHT',hookL:'DODGE RIGHT',hookR:'DODGE LEFT',arrows:'STAY IN THE MIDDLE'}[q.move];plateText(tip,a.x+120,a.y+120,'#ffff00');
-  if(q.move==='hookL')bigArrow(cx-150,a.y+250,1,blink(8)?'#ff5a5a':'#ffff00');if(q.move==='hookR')bigArrow(cx+150,a.y+250,-1,blink(8)?'#ff5a5a':'#ffff00');
-  if(q.move==='arrows')for(const s of [-1,1])bigArrow(cx+s*230,sFeet-80,-s,blink(8)?'#fff':'#888');}
- if(q.state==='strike'&&q.move==='arrows'){const u=Math.min(1,(.3-q.t)/.15);for(const s of [-1,1]){bigArrow(cx+s*(230-u*60),sFeet-80,-s,'#fff');}}
- if(q.state==='open'){plateText('OPEN! Z PUNCHES',a.x+120,a.y+120,blink(4)?'#ffff00':'#fff');for(let k=0;k<3;k++){const an=t*4+k*2.1;ctx.fillStyle='#ffff00';ctx.fillRect(Math.round(cx+Math.cos(an)*30),Math.round(a.y+92+Math.sin(an)*8),3,3);}}
- // Seth's fighter, from behind: holding LEFT or RIGHT leans him out of the way.
- const sx=cx+p.x,sp=p.hurt>0?'seth_ko':p.punch>0?'seth_high':p.lane?'seth_low':'seth_idle'+(Math.floor(game.beatPos)%2+2)%2;
- art.frame(sp,sx,sFeet-(p.punch>0?18:0),2,{flip:p.lane<0});
- if(!(game.invulnerability>0&&Math.floor(t*15)%2))heart(sx,sFeet-96-(p.punch>0?18:0),12,'purple');
+ const qx=cx+Math.round(q.x),sx=cx+Math.round(p.x),tellOn=q.state==='tell',strike=q.state==='strike';
+ // Her fighter: idle on the beat, flashing white on each beat of a tell.
+ const pose=q.state==='ko'?'q_ko':q.hit>0?'q_hurt':tellOn?{stomp:'q_stance',wheels:'q_charge1',hitit:'q_punch'}[q.move]:strike?{stomp:'q_stance2',wheels:'q_charge2',hitit:'q_punch'}[q.move]:'q_idle'+(Math.floor(game.beatPos)%4+4)%4;
+ const white=q.flash>0||q.hit>0;
+ // The stomp: her leg stretches down onto the spot.
+ if(strike&&q.move==='stomp'&&q.t>.05){const fx=cx+Math.round(q.spot),hx=qx,hy=qFeet-46;ctx.strokeStyle=LIME;ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(hx-6,hy);ctx.lineTo(fx-9,sFeet-14);ctx.lineTo(fx-15,sFeet);ctx.lineTo(fx+15,sFeet);ctx.lineTo(fx+9,sFeet-14);ctx.lineTo(hx+6,hy);ctx.stroke();
+  ctx.strokeStyle='#fff';ctx.beginPath();ctx.moveTo(fx-22,sFeet+3);ctx.lineTo(fx+22,sFeet+3);ctx.stroke();}
+ art.frame(pose,qx,qFeet,1,{tint:white?'#ffffff':null,flip:p.x<q.x-8});
+ // The stomp tell: where her foot will land, and green arrows either side saying which ways out there are.
+ if(q.move==='stomp'&&tellOn){const fx=cx+Math.round(q.spot);ctx.save();ctx.globalAlpha=.5+.5*blink(8);ctx.strokeStyle=green;ctx.setLineDash([4,4]);ctx.strokeRect(fx-30.5,sFeet-80.5,61,82);ctx.restore();
+  for(const d of [-1,1])cabArrow(fx+d*48,sFeet-44,d,green);
+  if(b.n<=2)bubbleTip('LEFT / RIGHT: DODGE!',sx+(p.x>60?-24:24),sFeet-102,p.x>60?-1:1);}
+ // The wheels: waiting at the edges with DOWN arrows under them, then rolling across at head height.
+ for(const w of A.wheels){const wx=cx+Math.round(w.x),wy=sFeet-74;art.frame('ui_wheel',wx,wy,.5,{anchor:'center'});
+  const spin=t*(w.rolling?14:3)*w.dir;ctx.strokeStyle='#ffff00';ctx.lineWidth=1;ctx.beginPath();for(let k=0;k<4;k++){const an=spin+k*Math.PI/4;ctx.moveTo(wx-Math.cos(an)*12,wy-Math.sin(an)*12);ctx.lineTo(wx+Math.cos(an)*12,wy+Math.sin(an)*12);}ctx.stroke();
+  cabArrow(wx,wy+30,0,blink(8)?green:'#1f7a2a');}
+ if(q.move==='wheels'&&tellOn){cabArrow(sx,sFeet-96,0,blink(6)?green:'#fff');if(b.n<=3)bubbleTip('DOWN: DUCK!',sx+(p.x>60?-24:24),sFeet-102,p.x>60?-1:1);}
+ // HIT IT: a crosshair dropping from the top; punch it once it is low enough (it turns bright).
+ const ty=u=>a.y+70+u*(sFeet-100-a.y-70);
+ for(const tg of A.targets){const x=cx+Math.round(tg.x),y=Math.round(ty(Math.min(1,tg.u)));
+  if(tg.burst){art.frame('ui_burst_red',x,y,1,{anchor:'center',alpha:Math.max(0,tg.landed*2)});continue;}
+  const live=tg.u>=.5,col=live?(blink(10)?'#ff3030':'#fff'):'#b02020';art.frame('ui_wheel',x,y,.375,{anchor:'center'});
+  ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,15,0,Math.PI*2);ctx.moveTo(x-22,y);ctx.lineTo(x-8,y);ctx.moveTo(x+8,y);ctx.lineTo(x+22,y);ctx.moveTo(x,y-22);ctx.lineTo(x,y-8);ctx.moveTo(x,y+8);ctx.lineTo(x,y+22);ctx.stroke();
+  const left=tg.x<A.reach-80;cabArrow(left?x+34:x-34,y,left?-1:1,green);text('HIT IT',left?x+46:x-46-text.measure('HIT IT',1.5),y-6,1.5,green);}
+ for(const sh of A.shards){const y=ty(sh.u)+sh.y;art.frame('ui_tri',cx+Math.round(sh.x),Math.round(y),1,{anchor:'center',alpha:Math.min(1,sh.life*2)});}
+ // Seth's fighter.
+ const lift=p.punch>0?34:0,sp=p.hurt>0?'seth_ko':p.duck?'seth_guard':p.punch>0?'seth_high':p.walk>0?'seth_low':'seth_idle'+(Math.floor(game.beatPos)%2+2)%2;
+ const blinkOff=game.invulnerability>0&&Math.floor(t*15)%2;
+ if(!blinkOff){art.frame(sp,sx,sFeet-lift,1,{flip:p.x>q.x+8});heart(sx,sFeet-lift-(p.duck?26:p.punch>0?52:40),8,'purple');}
  for(const e of game.effects){
-  if(e.type==='arcadeHit'){art.frame('ui_burst_red',cx,a.y+150,1,{anchor:'center',alpha:Math.min(1,e.life*3)});text('HIT!!',cx+46,a.y+138,2,'#7dff6a');}
-  if(e.type==='arcadeBlock')text('BLOCK',cx,a.y+120,1.5,'#aaa',true);
-  if(e.type==='arcadeMiss')text('DODGED!',sx,sFeet-176,1.5,CYAN,true);
+  if(e.type==='arcadeHit'){const y=e.u!=null?ty(e.u):qFeet-50;art.frame('ui_burst_red',cx+Math.round(e.x),y,.5,{anchor:'center',alpha:Math.min(1,e.life*3)});text('HIT!',cx+e.x+22,y-18,1.5,'#7dff6a');}
+  if(e.type==='arcadeMiss')text('DODGED!',sx,sFeet-124,1.5,CYAN,true);
  }
+ if(b.n===1&&game.attackTime>1.4&&game.attackTime<5&&!tellOn)bubbleTip('Z OR X: PUNCH! (STAND UNDER HER)',sx+24,sFeet-102,1);
  // The cabinet HUD: TIME from 99, HERO HP (Seth's HP), QU5EN HP (hers).
  const time=Math.max(0,Math.ceil(99*(1-game.attackTime/game.duration)));art.frame('ui_time',cx,a.y+30,1);text(String(time).padStart(2,'0'),cx,a.y+32,2.5,'#7dff6a',true);
  art.frame('ui_hero_hp',a.x+100,a.y+54,1);ctx.fillStyle='#103030';ctx.fillRect(a.x+24,a.y+28,160,10);ctx.fillStyle=CYAN;ctx.fillRect(a.x+24,a.y+28,Math.round(160*game.hp/game.maxHP),10);
- text('QU5EN HP',a.x+a.w-100,a.y+42,1,LIME,true);ctx.fillStyle='#0b2a12';ctx.fillRect(a.x+a.w-184,a.y+28,160,10);ctx.fillStyle='#43e750';ctx.fillRect(a.x+a.w-184,a.y+28,Math.round(160*q.hp/q.hpMax),10);
+ text('QU5EN HP',a.x+a.w-100,a.y+42,1,LIME,true);ctx.fillStyle='#0b2a12';ctx.fillRect(a.x+a.w-184,a.y+28,160,10);ctx.fillStyle=green;ctx.fillRect(a.x+a.w-184,a.y+28,Math.round(160*q.hp/q.hpMax),10);
  if(game.attackTime<1.4&&game.state==='defend'){if(game.attackTime<.7){if(b.n===1)art.frame('ui_round1',cx,a.y+a.h/2,2,{anchor:'center'});else text(b.final?'FINAL ROUND':'ROUND '+b.n,cx,a.y+a.h/2-10,2.5,LIME,true);}else art.frame('ui_fight',cx,a.y+a.h/2,2,{anchor:'center'});}
 }
 function prose(str,n=Infinity,x=48,width=528,max=44,color='#fff'){typedLines(wrap(str,max,width),str,n).slice(0,5).forEach((line,i)=>text(line,x,267+i*24,2,color));}
@@ -280,7 +301,7 @@ game.onEvent=event=>{syncUI();audio.effect(event);if(['text','turn','dead','end'
 function unlockSound(e){if(e?.target?.closest?.('#sound'))return;if(!audio.enabled&&!audio.userMuted)void audio.enable(true).then(()=>$('sound').setAttribute('aria-pressed','true'));}
 document.addEventListener('pointerdown',unlockSound);window.addEventListener('keydown',unlockSound);
 const keyMap={ArrowUp:'up',w:'up',ArrowDown:'down',s:'down',ArrowLeft:'left',a:'left',ArrowRight:'right',d:'right',Shift:'slow'};
-window.addEventListener('keydown',e=>{if($('options').open||e.target instanceof HTMLSelectElement||e.target instanceof HTMLInputElement)return;const k=e.key.length===1?e.key.toLowerCase():e.key,dir=keyMap[k];if(!e.repeat&&konami.input(['up','down','left','right'].includes(dir)&&!['b','a'].includes(k)?dir:k)){e.preventDefault();syncUI();return;}if(dir){e.preventDefault();keys[dir]=true;if(!e.repeat&&dir!=='slow')game.navigate(dir==='left'?-1:dir==='right'?1:0,dir==='up'?-1:dir==='down'?1:0);}if(['z','Enter',' ','x','Escape','Backspace','p'].includes(k)){if(e.target instanceof HTMLButtonElement&&(k==='Enter'||k===' '))return;e.preventDefault();if(e.repeat&&!(game.state==='defend'&&game.mode==='yellow'))return;if(k==='p')game.togglePause();else if(['x','Escape','Backspace'].includes(k))game.back();else game.confirm();}syncUI();});
+window.addEventListener('keydown',e=>{if($('options').open||e.target instanceof HTMLSelectElement||e.target instanceof HTMLInputElement)return;const k=e.key.length===1?e.key.toLowerCase():e.key,dir=keyMap[k];if(!e.repeat&&konami.input(['up','down','left','right'].includes(dir)&&!['b','a'].includes(k)?dir:k)){e.preventDefault();syncUI();return;}if(dir){e.preventDefault();keys[dir]=true;if(!e.repeat&&dir!=='slow')game.navigate(dir==='left'?-1:dir==='right'?1:0,dir==='up'?-1:dir==='down'?1:0);}if(['z','Enter',' ','x','Escape','Backspace','p'].includes(k)){if(e.target instanceof HTMLButtonElement&&(k==='Enter'||k===' '))return;e.preventDefault();if(e.repeat&&!(game.state==='defend'&&game.mode==='yellow'))return;if(k==='p')game.togglePause();else if(k==='x'&&game.state==='defend'&&game.mode==='arcade')game.confirm();else if(['x','Escape','Backspace'].includes(k))game.back();else game.confirm();}syncUI();});
 window.addEventListener('keyup',e=>{const k=e.key.length===1?e.key.toLowerCase():e.key;if(keyMap[k])keys[keyMap[k]]=false;});
 function clearInput(){Object.keys(keys).forEach(k=>keys[k]=false);Object.keys(touchKeys).forEach(k=>touchKeys[k]=false);touch=null;drag=null;document.querySelectorAll('.held').forEach(b=>b.classList.remove('held'));}
 function inactive(){clearInput();if(['defend','fight','warning'].includes(game.state)&&!game.paused)game.togglePause();}
