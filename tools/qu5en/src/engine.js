@@ -9,6 +9,10 @@ const DIFF={gentle:{speed:.85,warn:1.25,damage:1},normal:{speed:1,warn:1.1,damag
 const ITEMS=()=>[{name:'GLAMBURGER',heal:27,count:2},{name:'STARFAIT',heal:14,count:3},{name:'LEGENDARY HERO',heal:40,count:1},{name:'EGG',heal:0,count:0}];
 const DATA={correct:11,wrong:3,survive:2,hype:8,egg:12,strike:4,ko:25,draw:12};
 const SIDES=['up','right','down','left'];
+// The fight follows "QU5EN": 130.08 BPM, first beat 0.277 s into the track, kicks on beats 1 and 3 (measured from the file).
+// song is the track's time (the page keeps it on the real audio while it plays); rounds start on a beat, hazards land on half-beats.
+const MUSIC={bpm:130.08,first:.277},BEAT=60/MUSIC.bpm,HALF=BEAT/2;
+const snap=(t,unit=HALF)=>Math.round(t/unit)*unit;
 class BattleEngine{
  constructor(){this.settings={difficulty:'normal',invincible:false,skipIntro:false};this.reset();}
  reset(){
@@ -18,10 +22,11 @@ class BattleEngine{
   this.selected=0;this.option=0;this.items=ITEMS();this.pages=[];this.text='';this.displayChars=0;this.speaker='narrator';this.face='talk';this.next=null;
   this.arena={...MENU_BOX};this.targetArena={...MENU_BOX};this.bullets=[];this.timeline=[];this.effects=[];this.shots=[];this.platforms=[];
   this.soul={x:320,y:300};this.mode='red';this.round=null;this.quiz=null;this.invulnerability=0;this.shake=0;this.attackTime=0;this.duration=0;this.attackName='';
-  this.boss={hurt:0,glitch:0,sad:false};this.ending='';this.seed=4441;this.told=new Set();
+  this.boss={hurt:0,glitch:0,sad:false};this.ending='';this.seed=4441;this.told=new Set();this.song=this.song||0;this.beat=BEAT;
   this.emit('reset');if(this.settings.skipIntro)this.skipIntro();
  }
  emit(e){this.onEvent?.(e);}
+ get beatPos(){return (this.song-MUSIC.first)/BEAT;}
  random(){this.seed=(this.seed*1664525+1013904223)>>>0;return this.seed/4294967296;}
  config(){const d=DIFF[this.settings.difficulty]||DIFF.normal;return{speed:d.speed*(this.hype?1.12:1),warn:d.warn,damage:d.damage,cooldown:1};}
  // ------------------------------------------------------------ dialogue
@@ -91,7 +96,8 @@ class BattleEngine{
   this.turn++;const r=this.nextRound();this.round=r;this.attackName=r.name;this.duration=r.duration;this.mode=r.mode;this.cfg=this.config();
   this.state='warning';this.timer=0;this.attackTime=0;this.bullets=[];this.timeline=[];this.shots=[];this.platforms=[];this.effects=this.effects.filter(e=>e.type==='damage'||e.type==='data');
   this.setArena(r.arena);this.arena={...r.arena};const a=this.arena;this.soul={x:a.x+a.w/2,y:a.y+a.h/2};this.invulnerability=.4;this.queued=0;this.heat=0;this.dash=0;this.dashCD=0;this.vy=0;this.grounded=false;
-  this.quiz=r.quiz?this.pickQuiz(r.quiz.max):null;if(this.quiz){this.quiz.at=r.quiz.at;this.quiz.instant=!!r.quiz.instant;}
+  this.duration=Math.round(r.duration/BEAT)*BEAT;
+  this.quiz=r.quiz?this.pickQuiz(r.quiz.max):null;if(this.quiz){this.quiz.at=snap(r.quiz.at,BEAT);this.quiz.instant=!!r.quiz.instant;}
   if(this.mode==='cyan'){this.orbitTheta=-Math.PI/2;this.orbitSign=1;}
   if(this.mode==='green'){this.shield='up';this.soul={x:a.x+a.w/2,y:a.y+a.h/2};}
   if(this.mode==='yellow'){this.soul={x:a.x+a.w/2,y:a.y+a.h-30};this.fireCD=0;}
@@ -132,8 +138,8 @@ class BattleEngine{
  }
  // ------------------------------------------------------------ spawners (used by attacks.js)
  setArena(a){this.targetArena={...a};}
- at(t,fn){this.timeline.push({at:t,action:fn,done:false});}
- every(start,end,interval,fn){for(let i=0,t=start;t<end;i++,t+=interval/this.cfg.speed){const k=i;this.at(t,()=>fn(k));}}
+ at(t,fn){this.timeline.push({at:snap(t),action:fn,done:false});}
+ every(start,end,interval,fn){const step=Math.max(HALF,snap(interval/this.cfg.speed));for(let i=0,t=snap(start);t<end;i++,t+=step){const k=i;this.at(t,()=>fn(k));}}
  spawn(b){const o={age:0,vx:0,vy:0,...b};this.bullets.push(o);return o;}
  cue(text){this.effects.push({type:'instruction',text,life:1.8});}
  hurt(amount=this.cfg.damage){
@@ -150,7 +156,8 @@ class BattleEngine{
  }
  hitTest(b,s){
   if(b.delay&&b.age<b.delay)return false;
-  if(b.kind==='boot')return b.phase!=='warn'&&s.x>b.x-b.w/2-4&&s.x<b.x+b.w/2+4&&s.y>b.y-b.h-4&&s.y<b.y+4;
+  // Her boot and the whole leg above it.
+  if(b.kind==='boot')return b.phase!=='warn'&&s.x>b.x-b.w/2-4&&s.x<b.x+b.w/2+4&&s.y<b.y+4;
   if(b.kind==='beam'){if(b.age<b.warn||b.age>b.warn+b.live)return false;return Math.abs(-Math.sin(b.angle)*(s.x-b.x)+Math.cos(b.angle)*(s.y-b.y))<b.w/2+3;}
   const inRect=(x,y,w,h)=>s.x>x-w/2-4&&s.x<x+w/2+4&&s.y>y-h/2-4&&s.y<y+h/2+4;
   if(b.kind==='bubble')return inRect(b.x,b.y,b.w,b.h);
@@ -164,13 +171,13 @@ class BattleEngine{
  // ------------------------------------------------------------ physics
  update(dt,input={}){
   if(this.state==='dead'){if(!this.paused){dt=Math.min(Math.max(dt,0),.04);this.clock+=dt;this.deathAge+=dt;}return;}
-  dt=clamp(dt,0,.025);if(this.paused)return;this.clock+=dt;this.timer+=dt;
+  dt=clamp(dt,0,.025);if(this.paused)return;this.clock+=dt;this.timer+=dt;const lastBeat=Math.floor(this.beatPos);this.song+=dt;
   this.effects=this.effects.filter(e=>(e.life-=dt)>0);this.shake=Math.max(0,this.shake-dt);this.boss.hurt=Math.max(0,this.boss.hurt-dt);this.boss.glitch=Math.max(0,this.boss.glitch-dt);
   if(this.state==='intro'){this.intro+=dt;if(this.intro>6.2)this.skipIntro();return;}
   for(const k of ['x','y','w','h']){const d=this.targetArena[k]-this.arena[k];this.arena[k]+=Math.abs(d)<.3?d:d*Math.min(1,dt*12);}
   if(this.state==='dialogue'){this.displayChars=Math.min(this.text.length,this.displayChars+dt*40);return;}
   if(this.state==='fight'){this.attackCursor+=this.attackDir*330*dt;if(this.attackCursor>584||this.attackCursor<56){this.attackCursor=clamp(this.attackCursor,56,584);this.attackDir*=-1;}return;}
-  if(this.state==='warning'){this.queued=Math.max(0,(this.queued||0)-dt);if(this.timer>.9){this.state='defend';this.timer=0;this.emit('defend');}return;}
+  if(this.state==='warning'){this.queued=Math.max(0,(this.queued||0)-dt);if(this.timer>.9&&Math.floor(this.beatPos)>lastBeat||this.timer>2.5){this.state='defend';this.timer=0;this.emit('defend');}return;}
   if(this.state!=='defend')return;
   this.attackTime+=dt;this.invulnerability=Math.max(0,this.invulnerability-dt);
   for(const e of this.timeline)if(!e.done&&this.attackTime>=e.at){e.done=true;e.action();if(this.state!=='defend')return;}
@@ -184,7 +191,7 @@ class BattleEngine{
    else if(b.kind==='mini'){b.x+=b.vx*dt;b.y+=b.vy*dt;}
    else if(b.kind==='beam'){if(b.age>b.warn+b.live+.15)b.gone=true;}
    else if(b.kind==='sector'){if(b.age>b.warn+b.live+.15)b.gone=true;}
-   else if(b.kind==='bubble'||b.kind==='fighter'){b.x+=b.vx*dt;if(b.x<this.arena.x-120||b.x>this.arena.x+this.arena.w+120)b.gone=true;if(b.kind==='fighter'){b.t=(b.t||0)+dt;b.punching=(b.t%1.1)>.75;}}
+   else if(b.kind==='bubble'||b.kind==='fighter'){b.x+=b.vx*dt;if(b.x<this.arena.x-120||b.x>this.arena.x+this.arena.w+120)b.gone=true;if(b.kind==='fighter'){const ph=((this.beatPos%2)+2)%2;b.punching=ph<.5;}}
    else if(b.kind==='target'){b.x+=b.vx*dt;if(b.x<this.arena.x+20||b.x>this.arena.x+this.arena.w-20)b.vx*=-1;b.y=b.y0+Math.sin(b.age*2+b.p)*8;}
    else if(b.kind==='packet'){b.dist-=b.speed*dt;const p=packetPos(this,b);b.x=p.x;b.y=p.y;if(b.dist<30&&b.side===this.shield){b.gone=true;this.effects.push({type:'block',x:b.x,y:b.y,life:.25});this.emit('block');continue;}if(b.dist<10){b.gone=true;this.hurt();if(this.state==='dead')return;continue;}}
    else{b.x+=(b.vx||0)*dt;b.y+=(b.vy||0)*dt;}
@@ -247,9 +254,10 @@ class BattleEngine{
   if(input.up&&!p.upHeld&&!p.air&&!p.hurt){p.air=.62;this.emit('jump');}p.upHeld=!!input.up;p.duck=!!input.down&&!p.air;
   qn.t-=dt;
   if(qn.state==='ko')return;
-  if(qn.state==='idle'&&qn.t<=0){qn.state='tell';qn.move=this.random()<.5?'high':'low';qn.t=.62*w/this.cfg.speed;this.emit('cue');}
+  const ph=((this.beatPos%1)+1)%1;
+  if(qn.state==='idle'&&qn.t<=0&&ph>=.5&&ph<.6){qn.state='tell';qn.move=this.random()<.5?'high':'low';qn.t=1.5*BEAT-(ph-.5)*BEAT;this.emit('cue');}
   else if(qn.state==='tell'&&qn.t<=0){qn.state='attack';qn.t=.24;const dodged=qn.move==='high'?p.duck:p.air>0;if(!dodged){if(!this.settings.invincible&&this.invulnerability<=0){p.hurt=.45;}this.hurt();if(this.state==='dead')return;qn.state='attack';qn.hit=true;}else qn.hit=false;this.emit('swing');}
-  else if(qn.state==='attack'&&qn.t<=0){qn.state=qn.hit?'idle':'recover';qn.t=qn.hit?.5+this.random()*.4:.85*w;}
+  else if(qn.state==='attack'&&qn.t<=0){qn.state=qn.hit?'idle':'recover';qn.t=qn.hit?BEAT:2*BEAT*w;}
   else if(qn.state==='recover'&&qn.t<=0){qn.state='idle';qn.t=.35+this.random()*.5;}
   else if(qn.state==='hurt'&&qn.t<=0){qn.state='idle';qn.t=.6;}
   if(p.punch>.14&&p.punch<=.2&&!p.landed){p.landed=true;if(qn.state==='recover'){qn.state='hurt';qn.t=.5;qn.hits++;qn.hurt=.4;this.boss.glitch=.4;this.effects.push({type:'arcadeHit',life:.4});this.emit('attack');if(qn.hits>=3){qn.state='ko';A.result='ko';this.effects.push({type:'verdict',text:'K.O.!',ok:true,life:2});this.at(this.attackTime+1.8,()=>{this.duration=Math.min(this.duration,this.attackTime+.01);});}}else{this.effects.push({type:'arcadeBlock',life:.3});this.emit('block');}}
@@ -259,4 +267,4 @@ class BattleEngine{
 }
 // A packet's position: it flies straight at the centre of the box from its side.
 function packetPos(g,b){const a=g.arena,cx=a.x+a.w/2,cy=a.y+a.h/2,d={up:[0,-1],right:[1,0],down:[0,1],left:[-1,0]}[b.side];return{x:cx+d[0]*b.dist,y:cy+d[1]*b.dist};}
-Object.assign(exports,{BattleEngine,clamp,MENU_BOX,SIDES,packetPos,DATA});
+Object.assign(exports,{BattleEngine,clamp,MENU_BOX,SIDES,packetPos,DATA,MUSIC,BEAT});

@@ -26,10 +26,40 @@ const shown=()=>game.state==='dialogue'?Math.floor(game.displayChars):Infinity;
 const typing=()=>game.state==='dialogue'&&game.displayChars<game.text.length;
 const blink=(hz=6)=>reduceMotion||Math.floor(game.clock*hz)%2===0;
 
+// ======================================================================= the CORE's machinery
+// Pistons, cogs and vents around the arena pound on the beat of her theme: the vertical pistons slam in turn on
+// every beat, the side rams punch in on the kicks (beats 1 and 3), the cogs tick a notch per beat.
+const ease=u=>u<.5?2*u*u:1-2*(1-u)*(1-u);
+function beat(){const bp=game.beatPos,bi=Math.floor(bp);return{bp,bi,ph:bp-bi};}
+function pistonExtension(local){return local<1?1-ease(local):local<1.75?0:((local-1.75)/.25)**2;}
+function piston(x,top,len,local,alpha){
+ const e=pistonExtension(local),hy=top+40+e*len;ctx.save();ctx.globalAlpha=alpha;ctx.lineWidth=2;
+ ctx.strokeStyle=GRID;ctx.strokeRect(x-12,top,24,40);ctx.strokeRect(x-14,top+len+54,28,8);
+ ctx.strokeStyle='#5a8a20';ctx.beginPath();ctx.moveTo(x-3,top+40);ctx.lineTo(x-3,hy);ctx.moveTo(x+3,top+40);ctx.lineTo(x+3,hy);ctx.stroke();
+ ctx.strokeStyle=LIME;ctx.strokeRect(x-11,hy,22,12);
+ if(local<.14&&!reduceMotion){const k=1-local/.14;ctx.strokeStyle='#ffff9a';ctx.globalAlpha=alpha*k;for(const s of [-1,1]){ctx.beginPath();ctx.moveTo(x+s*12,hy+10);ctx.lineTo(x+s*(20+k*8),hy+4-k*4);ctx.stroke();}ctx.fillStyle='#ccc';for(let i=0;i<4;i++)ctx.fillRect(Math.round(x-10+i*6),Math.round(hy-6-(1-k)*14-i%2*3),2,2);}
+ ctx.restore();
+}
+function ram(side,y,local,alpha){
+ const e=pistonExtension(local),reach=120,x0=side<0?0:640,tip=x0-side*(30+e*reach);ctx.save();ctx.globalAlpha=alpha;ctx.lineWidth=2;
+ ctx.strokeStyle=GRID;ctx.strokeRect(side<0?0:610,y-10,30,20);ctx.strokeStyle='#5a8a20';ctx.beginPath();ctx.moveTo(x0-side*30,y-3);ctx.lineTo(tip,y-3);ctx.moveTo(x0-side*30,y+3);ctx.lineTo(tip,y+3);ctx.stroke();
+ ctx.strokeStyle=LIME;ctx.strokeRect(Math.round(side<0?tip:tip-12),y-9,12,18);ctx.restore();
+}
+function cog(x,y,r,angle,alpha){ctx.save();ctx.globalAlpha=alpha;ctx.translate(x,y);ctx.rotate(angle);ctx.strokeStyle=GRID;ctx.lineWidth=2;ctx.beginPath();for(let k=0;k<16;k++){const a0=k*Math.PI/8,rr=k%2?r:r+5;ctx.lineTo(Math.cos(a0)*rr,Math.sin(a0)*rr);}ctx.closePath();ctx.stroke();ctx.strokeStyle='#5a8a20';ctx.beginPath();ctx.arc(0,0,r*.45,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(-r*.45,0);ctx.lineTo(r*.45,0);ctx.stroke();ctx.restore();}
+function machinery(alpha=1){
+ const {bp,bi,ph}=beat(),m=k=>((bp+k)%2+2)%2;
+ // Two pistons a side, slamming in turn: one lands on every beat.
+ piston(22,104,206,m(0),alpha);piston(54,104,206,m(1),alpha);piston(586,104,206,m(1),alpha);piston(618,104,206,m(0),alpha);
+ // The side rams punch in on the kick (beats 1 and 3 of each bar).
+ const kick=((bp%2)+2)%2;ram(-1,124,kick,alpha*.8);ram(1,124,kick,alpha*.8);
+ const turn=(bi+ease(Math.min(1,ph*4)))*Math.PI/8;cog(214,46,20,turn,alpha);cog(426,46,20,-turn,alpha);
+ // Vents along the floor glow on the downbeat of each bar.
+ const bar=((bp%4)+4)%4,glow=bar<1?(1-bar)**2:0;ctx.save();ctx.globalAlpha=alpha*(.25+glow*.6);ctx.fillStyle=LIME;for(let x=8;x<640;x+=40)ctx.fillRect(x,392,24,2);ctx.restore();
+}
 // ======================================================================= her
 // The giant wireframe head over the globe. She glitches when hit, flickers while she talks, and dims when the scan misses.
 function drawHead(y0=6,clip=1){
- const b=game.boss,t=game.clock,bob=reduceMotion?0:Math.round(Math.sin(t*1.7)*2),hurt=b.hurt>.3&&!reduceMotion,talk=typing()&&game.speaker==='boss';
+ const b=game.boss,t=game.clock,bob=reduceMotion?0:Math.round((1-beat().ph)**3*3),hurt=b.hurt>.3&&!reduceMotion,talk=typing()&&game.speaker==='boss';
  const tint=hurt?'#ffffff':b.sad?'#6f8a1c':talk&&Math.floor(t*14)%3===0?'#e2ff7a':null;
  if(b.glitch>0&&!reduceMotion){const [w,h]=art.size('head');for(let k=0;k<5;k++){const off=Math.round(Math.sin(t*80+k)*6*b.glitch*2);ctx.save();ctx.beginPath();ctx.rect(0,y0+k*h*2/5+bob,640,h*2/5);ctx.clip();art.frame('head',320+off,y0+bob,2,{anchor:'top',tint,clip});ctx.restore();}}
  else art.frame('head',320,y0+bob,2,{anchor:'top',tint,clip});
@@ -104,13 +134,14 @@ function drawSoul(){
  if(!color)heart(s.x,s.y,16,'purple');else{heart(s.x,s.y,20,'purple',1,ang);heart(s.x,s.y,14,color,1,ang);}
  if(game.mode==='orange'&&game.heat>.05){ctx.save();ctx.strokeStyle=game.heat>=1?'#ff3a20':'#ffb060';ctx.lineWidth=2;ctx.beginPath();ctx.arc(s.x,s.y,15,-Math.PI/2,-Math.PI/2+Math.PI*2*game.heat);ctx.stroke();ctx.restore();}
 }
+function pulse(a){if(reduceMotion)return;const k=(1-beat().ph)**3;if(k<.05)return;ctx.save();ctx.globalAlpha=k*.7;ctx.strokeStyle=LIME;ctx.lineWidth=2;ctx.strokeRect(Math.round(a.x)-3,Math.round(a.y)-3,Math.round(a.w)+6,Math.round(a.h)+6);ctx.restore();}
 function field(){
- const a=game.arena;box(a.x,a.y,a.w,a.h);
+ const a=game.arena;box(a.x,a.y,a.w,a.h);pulse(a);
  ctx.save();ctx.beginPath();ctx.rect(a.x+4,a.y+4,a.w-8,a.h-8);ctx.clip();
  if(game.mode==='arcade'){arcade();ctx.restore();return;}
  if(game.mode==='strings'){ctx.fillStyle='#b249dc';for(const y of game.strings){ctx.globalAlpha=.75;ctx.fillRect(a.x,Math.round(y)-1,a.w,2);}ctx.globalAlpha=1;
   // The scan sweeps across and back.
-  const u=(game.attackTime*.45)%2,x=a.x+a.w*(u<1?u:2-u);ctx.save();ctx.globalAlpha=.5;ctx.fillStyle='#ff3030';ctx.fillRect(Math.round(x)-1,a.y,3,a.h);ctx.globalAlpha=.12;ctx.fillRect(Math.round(x)-24,a.y,48,a.h);ctx.restore();}
+  const u=((game.beatPos/8)%2+2)%2,x=a.x+a.w*(u<1?u:2-u);ctx.save();ctx.globalAlpha=.5;ctx.fillStyle='#ff3030';ctx.fillRect(Math.round(x)-1,a.y,3,a.h);ctx.globalAlpha=.12;ctx.fillRect(Math.round(x)-24,a.y,48,a.h);ctx.restore();}
  answers();
  // Spam first, answers on top, so an answer is never hidden.
  for(const b of game.bullets)if(b.kind!=='beam'&&!(b.kind==='bubble'&&b.ans>=0))hazard(b);
@@ -153,7 +184,7 @@ function effectsFX(){for(const e of game.effects){
 }}
 // The opening: the globe turns on, her head draws itself line by line, and the cabinet announces her.
 function intro(){
- const t=game.intro;ctx.fillStyle='#000';ctx.fillRect(0,0,640,480);art.backdrop(Math.min(1,Math.max(0,(t-.4)/1.1)));
+ const t=game.intro;ctx.fillStyle='#000';ctx.fillRect(0,0,640,480);machinery(Math.min(1,Math.max(0,(t-.4)/1.1)));art.backdrop(Math.min(1,Math.max(0,(t-.4)/1.1)));
  if(t>1.2)drawHead(80,Math.min(1,(t-1.2)/2));
  if(t>3.4)text('HERE IS',320,250,2,CYAN,true);if(t>4)text('QU5EN',320,280,4,LIME,true);
  if(t>5){art.frame('ui_round1',240,352,2,{anchor:'center'});if(t>5.5)art.frame('ui_fight',412,352,2,{anchor:'center'});}
@@ -162,7 +193,7 @@ function intro(){
 function renderBattle(){
  if(game.state==='intro'){intro();return;}
  const defending=['defend','warning'].includes(game.state);
- game.locationFX?.draw();art.backdrop(.7);drawHead();hud();speech();
+ game.locationFX?.draw();machinery();art.backdrop(.7);drawHead();hud();speech();
  if(defending){field();questionRow();}
  else{
   const a=game.arena;box(a.x,a.y,a.w,a.h);
@@ -185,6 +216,7 @@ function renderBattle(){
 function render(){
  soulVisual.advance(game.clock,'purple',1);ctx.save();ctx.fillStyle='#000';ctx.fillRect(0,0,640,480);
  if(game.shake&&!reduceMotion)ctx.translate(Math.sin(game.clock*109)*3,Math.cos(game.clock*73)*2);
+ if(!reduceMotion&&game.state!=='dead'){const k=((game.beatPos%2)+2)%2;if(k<.25)ctx.translate(0,Math.round((1-k/.25)*2));}
  // Game over is her cabinet's: YOU LOSE! / FIGHT AGAIN / GIVE UP.
  if(game.state==='dead'){const ready=soulBreak.draw(game,{x:game.soul.x,y:game.soul.y,reduced:reduceMotion});if(ready){art.frame('ui_you_lose',320,60,2,{anchor:'top'});art.frame(blink(3)?'ui_fight_again1':'ui_fight_again0',320,300,2,{anchor:'center'});text('Z',320-150,292,2,'#ffff00',true);art.frame('ui_give_up0',320,350,2,{anchor:'center'});text('X',320-108,342,2,'#888',true);text('FULL HP + RESTORED SUPPLIES',320,392,1.5,'#aaa',true);}ctx.restore();return;}
  renderBattle();
@@ -227,7 +259,7 @@ $('sound').onclick=async()=>{audio.userMuted=audio.enabled;await audio.enable(!a
 $('help').onclick=()=>{clearInput();resumeAfterOptions=!game.paused&&game.scene==='battle'&&game.state!=='intro';if(resumeAfterOptions)game.togglePause();$('options').showModal();};$('closeOptions').onclick=()=>$('options').close();$('options').addEventListener('close',()=>{if(resumeAfterOptions&&game.paused)game.togglePause();canvas.focus({preventScroll:true});});
 $('difficulty').onchange=e=>{game.settings.difficulty=e.target.value;};$('motion').onchange=e=>{reduceMotion=e.target.checked;};
 $('skipWalk').onchange=e=>{game.settings.skipIntro=e.target.checked;if(e.target.checked&&game.state==='intro')game.skipIntro();};
-function frame(now){accumulator=Math.min(accumulator+(now-last)/1000,.1);last=now;const input={};for(const k of ['up','down','left','right','slow'])input[k]=keys[k]||touchKeys[k];input.touch=touch;while(accumulator>=1/120){game.update(1/120,input);accumulator-=1/120;}if(typing()&&game.clock-textSound>.07){audio.blip(game.speaker);textSound=game.clock;}syncUI();render();requestAnimationFrame(frame);}
+function frame(now){accumulator=Math.min(accumulator+(now-last)/1000,.1);last=now;if(audio.enabled&&!audio.track.paused&&audio.track.readyState>=2)game.song=audio.track.currentTime;const input={};for(const k of ['up','down','left','right','slow'])input[k]=keys[k]||touchKeys[k];input.touch=touch;while(accumulator>=1/120){game.update(1/120,input);accumulator-=1/120;}if(typing()&&game.clock-textSound>.07){audio.blip(game.speaker);textSound=game.clock;}syncUI();render();requestAnimationFrame(frame);}
 syncUI();render();requestAnimationFrame(frame);
 window.battleDebug={game,render,syncUI,audio};
 

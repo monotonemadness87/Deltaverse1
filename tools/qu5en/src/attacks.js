@@ -18,21 +18,24 @@ const ROUNDS={
 const SPAM=['lol','POG','first','W','based','ratio','lmao','???','GG','L','real','kino','clip it','F','omg'];
 
 function buildRound(g,r){
- const a=r.arena,cx=a.x+a.w/2,cy=a.y+a.h/2,R=()=>g.random(),sp=()=>g.cfg.speed,w=()=>g.cfg.warn;
+ const a=r.arena,cx=a.x+a.w/2,cy=a.y+a.h/2,R=()=>g.random(),sp=()=>g.cfg.speed;
  const every=(s,e,i,f)=>g.every(s,e,i,f),at=(t,f)=>g.at(t,f);g.acid=null;
  // Each mode explains itself the first time it appears.
  if(!g.told.has(r.mode)){g.told.add(r.mode);at(0,()=>g.cue(r.cue));}
  // Her exploding heads: they form, laugh, and burst into small spinning heads.
- const head=(x,y,n=6,speed=110,form=.7)=>g.spawn({kind:'head',x,y,r:10,form:form*w(),pop:form*w()+.5,n,speed});
- const boot=(x,bw,warn=.7)=>g.spawn({kind:'boot',x,w:bw,h:34,y:a.y+4,floor:a.y+a.h-4,phase:warn?'warn':'drop',warn:warn*w(),stay:.3});
- const laser=(tx,ty)=>{const from=[[a.x-60,a.y-40],[a.x+a.w+60,a.y-40],[a.x-60,a.y+a.h+20],[a.x+a.w+60,a.y+a.h+20]][Math.floor(R()*4)],an=Math.atan2(ty-from[1],tx-from[0]);g.spawn({kind:'beam',x:tx,y:ty,fx:from[0],fy:from[1],angle:an,w:12,warn:.75*w(),live:.25});};
+ // Timed to the music: whatever a hazard does, it does on a beat. untilBeat(n) is the time to the first whole beat
+ // at least n beats away: heads burst on it, boots land on it, lasers fire on it, messages reach the shield on it.
+ const B=g.beat,untilBeat=n=>(Math.ceil(g.beatPos+n)-g.beatPos)*B;
+ const head=(x,y,n=6,speed=110)=>{const pop=untilBeat(2.5);g.spawn({kind:'head',x,y,r:10,form:pop-B,pop,n,speed});};
+ const boot=(x,bw,warn=true)=>g.spawn({kind:'boot',x,w:bw,h:34,y:warn?a.y+4:a.y+a.h-4,floor:a.y+a.h-4,phase:warn?'warn':'stay',t:0,warn:warn?untilBeat(1.6)-(a.h-38)/900:0,stay:warn?.3:.45});
+ const laser=(tx,ty)=>{const from=[[a.x-60,a.y-40],[a.x+a.w+60,a.y-40],[a.x-60,a.y+a.h+20],[a.x+a.w+60,a.y+a.h+20]][Math.floor(R()*4)],an=Math.atan2(ty-from[1],tx-from[0]);g.spawn({kind:'beam',x:tx,y:ty,fx:from[0],fy:from[1],angle:an,w:12,warn:untilBeat(1.6),live:.25});};
  const q=g.quiz,n=q?q.answers.length:0;
  switch(r.id){
   case 'hereis':
    // Her fighter strolls through, punching every second or so; heads go off; at TIME, her boot stomps every wrong column.
    every(.5,13,4,i=>{const left=i%2===0;g.spawn({kind:'fighter',x:left?a.x-30:a.x+a.w+30,y:a.y+a.h-58,w:30,h:100,vx:(left?1:-1)*72*sp(),dir:left?1:-1});});
-   every(1,9.4,1.9,()=>head(a.x+40+R()*(a.w-80),a.y+30+R()*(a.h*.5)));every(10.6,13.5,1.2,()=>head(a.x+40+R()*(a.w-80),a.y+30+R()*(a.h*.5)));
-   r.resolve=(g,ok,i)=>{const cw=a.w/n;for(let k=0;k<n;k++)if(!g.quiz.answers[k].correct)boot(a.x+cw*k+cw/2,cw-8,0);g.emit('stomp');};
+   every(1,9.4,1.9,()=>head(a.x+40+R()*(a.w-80),a.y+30+R()*(a.h*.5)));every(10.6,13.5,1.4,()=>head(a.x+40+R()*(a.w-80),a.y+30+R()*(a.h*.5)));
+   r.resolve=(g,ok,i)=>{const cw=a.w/n;for(let k=0;k<n;k++)if(!g.quiz.answers[k].correct)boot(a.x+cw*k+cw/2,cw-8,false);g.emit('stomp');};
    break;
   case 'gravity':
    // Answer platforms over rising acid; side ledges to jump from; boots stomp; heads rain.
@@ -44,20 +47,20 @@ function buildRound(g,r){
    // Her laser cursors aim ahead of you on the ring; at TIME, every wrong sector of the ring is fired on.
    every(.7,10.6,1.45,()=>{const r0=Math.min(a.w,a.h)*.38,t=g.orbitTheta+g.orbitSign*.4*2.2*.9;laser(cx+Math.cos(t)*r0,cy+Math.sin(t)*r0);});
    every(11.6,14.6,1.1,()=>{const r0=Math.min(a.w,a.h)*.38,t=g.orbitTheta+g.orbitSign*.4*2.2*.9;laser(cx+Math.cos(t)*r0,cy+Math.sin(t)*r0);});
-   every(2,14,3.2,()=>head(cx,cy,8,90,.8));
+   every(2,14,3.2,()=>head(cx,cy,8,90));
    r.resolve=(g)=>{const s=Math.PI*2/n;for(let k=0;k<n;k++)if(!g.quiz.answers[k].correct)g.spawn({kind:'sector',t0:k*s,t1:(k+1)*s,warn:0,live:.45});g.emit('stomp');};
    break;
   case 'gallery':
    // Her heads carry the answers across the top of the box: shoot yours. Shoot the wrong one and the rest burst.
    at(.5,()=>{for(let k=0;k<n;k++)g.spawn({kind:'target',x:a.x+40+(a.w-80)*(k+.5)/n,y:a.y+34+(k%2)*30,y0:a.y+34+(k%2)*30,vx:(k%2?-1:1)*(45+R()*25)*sp(),r:17,ans:k,p:k});});
-   every(.9,14.6,1.25,()=>head(a.x+40+R()*(a.w-80),a.y+a.h*.42,7,100,.6));
+   every(.9,14.6,1.4,()=>head(a.x+40+R()*(a.w-80),a.y+a.h*.42,7,100));
    r.resolve=(g,ok)=>{for(const b of g.bullets)if(b.kind==='target'){b.gone=true;if(!ok)g.burst(b.x,b.y,6,95);}};
    break;
   case 'egg':
    // Messages fly at the egg from every side; the shield blocks the side it faces. At TIME, face your answer.
    // Nothing flies in the second before TIME, so there is a moment to turn to your answer.
-   every(.5,14.6,.62,i=>{if(g.attackTime>9.4&&g.attackTime<11.3)return;const side=['up','right','down','left'][Math.floor(R()*4)];g.spawn({kind:'packet',side,dist:a.w/2+34,speed:150*sp(),x:cx,y:cy});});
-   every(6,14.6,1.6,()=>{if(g.attackTime>9.4&&g.attackTime<11.3)return;const side=['up','right','down','left'][Math.floor(R()*4)];g.spawn({kind:'packet',side,dist:a.w/2+60,speed:150*sp(),x:cx,y:cy});});
+   every(.5,14.6,.62,i=>{if(g.attackTime>9.4&&g.attackTime<11.3)return;const side=['up','right','down','left'][Math.floor(R()*4)];g.spawn({kind:'packet',side,dist:a.w/2+34,speed:(a.w/2+4)/untilBeat(1.6),x:cx,y:cy});});
+   every(6,14.6,1.6,()=>{if(g.attackTime>9.4&&g.attackTime<11.3)return;const side=['up','right','down','left'][Math.floor(R()*4)];g.spawn({kind:'packet',side,dist:a.w/2+60,speed:(a.w/2+30)/untilBeat(2.1),x:cx,y:cy});});
    r.resolve=(g,ok)=>{if(!ok){g.effects.push({type:'zap',life:.4});g.invulnerability=0;g.hurt();}};
    break;
   case 'comments':
@@ -73,7 +76,7 @@ function buildRound(g,r){
    // The final scan sweeps the strings while her heads ride them. The last question has no wrong answer.
    g.quiz={q:'Are You The Red SOUL?',answers:[{text:'YES',correct:true},{text:'NO',correct:true},{text:'EGG',correct:true}],crossed:-1,shown:false,resolved:false,chosen:-1,at:15};
    every(.4,19,1,i=>{const k=Math.floor(R()*3),left=R()<.5;g.spawn({kind:'mini',x:left?a.x-10:a.x+a.w+10,y:g.strings[k],vx:(left?1:-1)*150*sp(),r:6,life:5,spin:5});});
-   every(2,18,2.6,()=>head(a.x+50+R()*(a.w-100),cy,6,95,.7));
+   every(2,18,2.8,()=>head(a.x+50+R()*(a.w-100),cy,6,95));
    r.resolve=()=>{};
    break;
  }

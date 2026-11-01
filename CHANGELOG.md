@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-11-01 — QU5EN: the CORE pounds in time
+
+- **Machinery on the beat:** pistons on both sides of the arena slam in turn on every beat of her theme, side rams punch in on the kicks, cogs tick a notch per beat, and floor vents glow on each bar.
+- **The battle follows the music:** her theme was measured at 130.08 BPM. Rounds start on a beat, and her hazards land on beats: heads burst, boots stomp (the answer stomp hits exactly on the TIME beat), lasers fire, messages reach the egg's shield, her fighter punches, and in the arcade her attacks land on the beat. The box, her head and the screen pulse with it.
+- **Synced to the real track:** while the music plays, the battle's clock follows the track itself; muted, it keeps the same tempo.
+- **Reduced motion:** the machinery still moves, but there are no pulses, flashes or screen bumps.
+- **Measured (test bot, Normal):** unchanged, spared in 8 turns with no deaths. The boot's leg now counts as part of it (as drawn), so GRAVITY TEST is slightly harder (1.6 → 2.1 bot hits).
+
 ## 2026-11-01 — QU5EN, the CORE's own intelligence (new pacifist fight)
 
 A new pacifist-only fight in the CORE, before Sans: QU5EN, the Quantum 5 Engine, an Undertale-side analog of DELTARUNE's Queen. She was built by the previous royal scientist (never named) to find the red SOUL of determination, and she runs Seth through her test suite to find out whether he is it.
