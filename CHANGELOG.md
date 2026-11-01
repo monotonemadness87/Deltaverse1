@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-11-01 — QU5EN: two acts and punch-out bouts
+
+The fight is now 18 turns instead of 8.
+- **Act 2, PHASE 2: THE DOUBLE-BLIND TRIALS:** six new experiments, each combining two: TARGET PRACTICE IN FREEFALL (gravity + shooting), RING STOMP (the ring under her boots), COMMENTS ON A STRING (Seth's strings + dashing), EGG ROULETTE (the answers change sides on the beat), THE SHUFFLE (the columns shuffle on the beat), STRING SHOOTER (strings + shooting). Meaner questions too.
+- **Punch-out bouts between experiments:** after every two experiments she challenges Seth to her arcade cabinet. Every punch that lands heals 1 HP; a K.O. heals 10 (16 if you took no hit) and wins a bonus: a hint, armor that blocks the next hit, a GLAMBURGER, or DATA. Later bouts add combos, feints (the tell switches sides a beat before it lands) and faster tells. The FINAL ROUND needs 5 hits.
+- **New lines:** Act 2's story (his traits escalate until she deletes all but "cool", Alphys's 14 declined calls, more slips into the older voice, the red SOUL "will wear stripes"), and a line for every bout.
+- **DATA:** retuned so a good run reaches 100% right at the end; short of it, she runs more Double-Blind trials before the scan.
+- **Measured (test bot, Normal, 75% right):** 18 turns, about 4.5 minutes of dodging, no deaths. TARGET PRACTICE IN FREEFALL is the toughest experiment (about 4 bot hits); the bouts heal it back.
+
 ## 2026-11-01 — QU5EN: the CORE pounds in time
 
 - **Machinery on the beat:** pistons on both sides of the arena slam in turn on every beat of her theme, side rams punch in on the kicks, cogs tick a notch per beat, and floor vents glow on each bar.

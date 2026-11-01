@@ -75,8 +75,9 @@ function speech(){
 // HUD: her name, the DATA bar (her research), and her chassis once it's dented.
 function hud(){
  text('QU5EN',24,22,1.5,LIME);const x=24,y=44,w=150;ctx.fillStyle='#0b2a12';ctx.fillRect(x,y,w,8);ctx.fillStyle=game.data>=100?'#ffff00':CYAN;ctx.fillRect(x,y,Math.round(w*game.data/100),8);ctx.strokeStyle=GRID;ctx.strokeRect(x+.5,y+.5,w-1,7);text('DATA '+Math.round(game.data)+'%',x,y+12,1,game.data>=100?'#ffff00':CYAN);
- if(game.data<70&&!game.arcadeDone){ctx.fillStyle='#ffff00';ctx.fillRect(x+Math.round(w*.7),y-2,1,12);}
- if(game.chassis<100)text('CHASSIS '+game.chassis+'%',x,y+26,1,'#888');
+ text(game.scanDone?'':game.phase===2?'PHASE 2: DOUBLE-BLIND':'PHASE 1',x,y+24,1,'#888');
+ if(game.armor>0)text('ARMOR',x,y+48,1,'#ffff00');
+ if(game.chassis<100)text('CHASSIS '+game.chassis+'%',x,y+36,1,'#888');
  if(game.settings.invincible)text('INVINCIBLE',24,94,1,'#ffff00');
 }
 
@@ -114,25 +115,25 @@ function hazard(b){
 // What the answers look like, mode by mode.
 function answers(){
  const q=game.quiz,a=game.arena;if(!q)return;const n=q.answers.length,cx=a.x+a.w/2,cy=a.y+a.h/2;
- if(game.mode==='red'){const cw=a.w/n;for(let k=0;k<n;k++){if(k){ctx.save();ctx.strokeStyle=GRID;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(a.x+cw*k,a.y+4);ctx.lineTo(a.x+cw*k,a.y+a.h-4);ctx.stroke();ctx.restore();}answerLabel(k,a.x+cw*k+cw/2,a.y+12,1);
+ if(game.mode==='red'){const cw=a.w/n;for(let k=0;k<n;k++){if(k){ctx.save();ctx.strokeStyle=GRID;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(a.x+cw*k,a.y+4);ctx.lineTo(a.x+cw*k,a.y+a.h-4);ctx.stroke();ctx.restore();}answerLabel(q.slots[k],a.x+cw*k+cw/2,a.y+12,1);
    if(!q.resolved&&game.attackTime>q.at-1&&blink(10)){ctx.strokeStyle='#ff5a5a';ctx.lineWidth=2;ctx.strokeRect(Math.round(a.x+cw*k+cw/2-12),a.y+a.h-34,24,24);text('!',a.x+cw*k+cw/2,a.y+a.h-31,2,'#ff5a5a',true);}}}
  else if(game.mode==='blue'){for(const p of game.platforms){if(p.gone)continue;ctx.fillStyle='#000';ctx.fillRect(Math.round(p.x),Math.round(p.y),Math.round(p.w),6);ctx.strokeStyle=p.ans>=0?LIME:'#888';ctx.lineWidth=2;ctx.strokeRect(Math.round(p.x)+1,Math.round(p.y)+1,Math.round(p.w)-2,4);if(p.ans>=0)answerLabel(p.ans,p.x+p.w/2,p.y-22,1);}
   if(game.acid){ctx.fillStyle='rgba(120,255,60,.35)';ctx.fillRect(a.x+4,Math.round(game.acid.top),a.w-8,Math.round(a.y+a.h-4-game.acid.top));ctx.fillStyle='#b5ff5a';for(let x=a.x+4;x<a.x+a.w-4;x+=8)ctx.fillRect(x,Math.round(game.acid.top+(reduceMotion?0:Math.sin(x*.2+game.clock*4)*1.5)),8,2);}}
  else if(game.mode==='cyan'){const r=Math.min(a.w,a.h)*.38,s=Math.PI*2/n;ctx.save();ctx.strokeStyle='#3ee0ed';ctx.globalAlpha=.35;ctx.setLineDash([4,6]);ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=.5;ctx.strokeStyle=GRID;for(let k=0;k<n;k++){const an=k*s-Math.PI/2;ctx.beginPath();ctx.moveTo(cx+Math.cos(an)*(r-14),cy+Math.sin(an)*(r-14));ctx.lineTo(cx+Math.cos(an)*(r+14),cy+Math.sin(an)*(r+14));ctx.stroke();}ctx.restore();
   for(let k=0;k<n;k++){const an=(k+.5)*s-Math.PI/2;answerLabel(k,cx+Math.cos(an)*r*.5,cy+Math.sin(an)*r*.5-4,1);}}
- else if(game.mode==='green'){for(let k=0;k<n;k++){const side=SIDES[k],p={up:[cx,a.y+10],right:[a.x+a.w-34,cy-4],down:[cx,a.y+a.h-22],left:[a.x+34,cy-4]}[side];answerLabel(k,p[0],p[1],1);}}
- else if(game.mode==='strings'){for(let k=0;k<n;k++)answerLabel(k,a.x+10,game.strings[k]-14,1,false);}
+ else if(game.mode==='green'){for(let k=0;k<n;k++){const side=SIDES[k],p={up:[cx,a.y+10],right:[a.x+a.w-34,cy-4],down:[cx,a.y+a.h-22],left:[a.x+34,cy-4]}[side];answerLabel(q.slots[k],p[0],p[1],1);}}
+ else if(game.mode==='strings'&&!game.round.shoot&&!game.round.dash){for(let k=0;k<n;k++)answerLabel(q.slots[k],a.x+10,game.strings[k]-14,1,false);}
 }
 // The egg and the shield (green), Seth's SOUL in every mode, his purple rim always.
 function drawSoul(){
  const s=game.soul,a=game.arena;
  if(game.mode==='green'){const cx=a.x+a.w/2,cy=a.y+a.h/2;ctx.fillStyle='#f4f0e0';ctx.beginPath();ctx.ellipse(cx,cy+3,9,12,0,0,Math.PI*2);ctx.fill();const d={up:[0,-1],right:[1,0],down:[0,1],left:[-1,0]}[game.shield];ctx.save();ctx.translate(cx+d[0]*26,cy+d[1]*26);ctx.rotate(Math.atan2(d[1],d[0])+Math.PI/2);ctx.fillStyle=SETHC;ctx.fillRect(-18,-3,36,6);ctx.restore();}
  if(game.invulnerability>0&&game.dash<=0&&Math.floor(game.clock*15)%2)return;
- const color={red:null,blue:'blue',cyan:'cyan',yellow:'yellow',green:'green',orange:'orange',strings:null}[game.mode];
+ const r=game.round||{},color=r.dash?'orange':r.shoot&&game.mode==='strings'?'yellow':{red:null,blue:'blue',cyan:'cyan',yellow:'yellow',green:'green',orange:'orange',strings:null}[game.mode];
  if(game.mode==='green'){heart(a.x+a.w/2,a.y+a.h/2+3,12,'green');return;}
  const ang=game.mode==='yellow'?Math.PI:0;
  if(!color)heart(s.x,s.y,16,'purple');else{heart(s.x,s.y,20,'purple',1,ang);heart(s.x,s.y,14,color,1,ang);}
- if(game.mode==='orange'&&game.heat>.05){ctx.save();ctx.strokeStyle=game.heat>=1?'#ff3a20':'#ffb060';ctx.lineWidth=2;ctx.beginPath();ctx.arc(s.x,s.y,15,-Math.PI/2,-Math.PI/2+Math.PI*2*game.heat);ctx.stroke();ctx.restore();}
+ if((game.mode==='orange'||r.dash)&&game.heat>.05){ctx.save();ctx.strokeStyle=game.heat>=1?'#ff3a20':'#ffb060';ctx.lineWidth=2;ctx.beginPath();ctx.arc(s.x,s.y,15,-Math.PI/2,-Math.PI/2+Math.PI*2*game.heat);ctx.stroke();ctx.restore();}
 }
 function pulse(a){if(reduceMotion)return;const k=(1-beat().ph)**3;if(k<.05)return;ctx.save();ctx.globalAlpha=k*.7;ctx.strokeStyle=LIME;ctx.lineWidth=2;ctx.strokeRect(Math.round(a.x)-3,Math.round(a.y)-3,Math.round(a.w)+6,Math.round(a.h)+6);ctx.restore();}
 function field(){
@@ -148,7 +149,7 @@ function field(){
  for(const b of game.bullets)if(b.kind==='bubble'&&b.ans>=0)hazard(b);
  for(const s of game.shots){ctx.fillStyle='#ffec37';ctx.fillRect(Math.round(s.x-1),Math.round(s.y-6),3,10);}
  drawSoul();ctx.restore();
- for(const b of game.bullets)if(b.kind==='beam')hazard(b);
+ for(const b of game.bullets)if(b.kind==='beam'){if(b.age<b.warn)hazard(b);else{ctx.save();ctx.beginPath();ctx.rect(a.x,a.y,a.w,a.h);ctx.clip();hazard(b);ctx.restore();}}
  if(game.state==='warning'){const size=text.measure(game.attackName)>a.w-18?1.5:2;text(game.attackName,a.x+a.w/2,a.y+a.h/2-8,size,'#fff',true);}
 }
 // ROUND 2: FIGHT! — her vector cabinet. Seth's fighter is the blue fighter in his purple, his SOUL on its chest.
@@ -160,13 +161,13 @@ function arcade(){
  art.frame(sp,sx+(p.punch>0?14:0),floor-lift,1);if(!(game.invulnerability>0&&Math.floor(t*15)%2))heart(sx,floor-lift-(p.duck?22:40),10,'purple');
  const qp={idle:'q_idle'+(Math.floor(t*4)%4),tell:q.move==='high'?'q_charge1':'q_crouch',attack:q.move==='high'?'q_punch':'q_low',recover:'q_lean',hurt:'q_hurt',ko:'q_ko'}[q.state];
  art.frame(qp,qx-(q.state==='attack'?18:0),floor,1,{flip:true});
- if(q.state==='tell'&&blink(10)){text(q.move==='high'?'▲ HIGH':'▼ LOW',qx,a.y+16,1.5,'#ff5a5a',true);}
+ if(q.state==='tell'&&blink(10)){text((q.switched?'!? ':'')+(q.move==='high'?'▲ HIGH':'▼ LOW'),qx,a.y+16,1.5,q.switched?'#ffff00':'#ff5a5a',true);}
  if(q.state==='recover'&&blink(8))text('OPEN!',qx,a.y+16,1.5,'#ffff00',true);
  for(const e of game.effects){if(e.type==='arcadeHit')art.frame('ui_burst_pink',qx-10,floor-70,1,{anchor:'center',alpha:Math.min(1,e.life*3)});if(e.type==='arcadeBlock')text('BLOCK',qx,floor-120,1,'#aaa',true);}
  art.frame('ui_hero_hp',a.x+46,a.y+20,1);ctx.fillStyle='#333';ctx.fillRect(a.x+12,a.y+24,80,5);ctx.fillStyle=CYAN;ctx.fillRect(a.x+12,a.y+24,Math.round(80*game.hp/game.maxHP),5);
- text('QU5EN',a.x+a.w-90,a.y+8,1,LIME);for(let k=0;k<3;k++){ctx.fillStyle=k<3-q.hits?LIME:'#333';ctx.fillRect(a.x+a.w-90+k*14,a.y+24,10,5);}
+ const hits=game.round.bout.hits;text('QU5EN',a.x+a.w-90,a.y+8,1,LIME);for(let k=0;k<hits;k++){ctx.fillStyle=k<hits-q.hits?LIME:'#333';ctx.fillRect(a.x+a.w-90+k*14,a.y+24,10,5);}
  const left=Math.max(0,Math.ceil(game.duration-game.attackTime));art.frame('ui_time',a.x+a.w/2,a.y+26,1);text(String(left),a.x+a.w/2,a.y+28,1.5,'#fff',true);
- if(game.attackTime<1.2)art.frame(game.attackTime<.6?'ui_round1':'ui_fight',a.x+a.w/2,a.y+a.h/2,2,{anchor:'center'});
+ if(game.attackTime<1.2){const b=game.round.bout;if(game.attackTime<.6){if(b.n===1)art.frame('ui_round1',a.x+a.w/2,a.y+a.h/2,2,{anchor:'center'});else text(b.final?'FINAL ROUND':'ROUND '+b.n,a.x+a.w/2,a.y+a.h/2-10,2.5,LIME,true);}else art.frame('ui_fight',a.x+a.w/2,a.y+a.h/2,2,{anchor:'center'});}
 }
 function prose(str,n=Infinity,x=48,width=528,max=44,color='#fff'){typedLines(wrap(str,max,width),str,n).slice(0,5).forEach((line,i)=>text(line,x,267+i*24,2,color));}
 function mainText(){
@@ -179,6 +180,8 @@ function effectsFX(){for(const e of game.effects){
  if(e.type==='vignette'){const g=ctx.createRadialGradient(320,240,170,320,240,420);g.addColorStop(0,`rgba(${e.color},0)`);g.addColorStop(1,`rgba(${e.color},${Math.min(.5,e.life*1.4)})`);ctx.fillStyle=g;ctx.fillRect(0,0,640,480);}
  else if(e.type==='verdict'&&['defend','warning'].includes(game.state)){const a=game.arena,k=Math.min(1,e.life*2);ctx.save();ctx.globalAlpha=k;art.frame(e.ok?'ui_burst_pink':'ui_burst_red',a.x+a.w/2,a.y+a.h/2,2,{anchor:'center',alpha:.5});text(e.text,a.x+a.w/2,a.y+a.h/2-12,3,e.ok?'#7dff6a':'#ff5a5a',true);ctx.restore();}
  else if(e.type==='data'){text(e.text,182,40-(1.2-e.life)*10,1,'#ffff00');}
+ else if(e.type==='hpup'){text(e.text,440,388-(0.8-e.life)*16,1.5,'#7dff6a');}
+ else if(e.type==='swap'&&['defend','warning'].includes(game.state)){const a=game.arena;ctx.save();ctx.globalAlpha=Math.min(1,e.life*3);text('SHUFFLE!',a.x+a.w-40,a.y-26,1,'#ffff00',true);ctx.restore();}
  else if(e.type==='block'){ctx.save();ctx.globalAlpha=e.life*4;ctx.strokeStyle='#fff';ctx.beginPath();ctx.arc(e.x,e.y,6+(1-e.life*4)*8,0,Math.PI*2);ctx.stroke();ctx.restore();}
  else if(e.type==='zap'&&!reduceMotion){ctx.save();ctx.globalAlpha=e.life*2;ctx.fillStyle='#7dff6a';ctx.fillRect(0,0,640,480);ctx.restore();}
 }}
@@ -209,7 +212,7 @@ function renderBattle(){
  for(const e of game.effects){if(e.type==='damage')text(e.text,e.x,e.y+60-(1.1-e.life)*18,3,'#ff9090',true);if(['cheat','instruction'].includes(e.type))text(e.text||'...',320,game.arena.y-22,1,e.type==='cheat'?'#ffff00':'#ffc890',true);}
  text('SETH',24,407,2);text('LV '+game.lv,132,407,2);text('HP',248,408,2);
  ctx.fillStyle='#8e2636';ctx.fillRect(284,403,120,16);ctx.fillStyle='#ffff00';ctx.fillRect(284,403,Math.round(120*game.hp/game.maxHP),16);text(`${game.hp} / ${game.maxHP}`,425,407,2,'#fff');
- if(game.mode==='orange'&&defending){const cd=game.dashCD/.6,ready=cd<=0&&game.dash<=0,x=528,y=401;ctx.fillStyle='#000';ctx.fillRect(x,y,88,20);ctx.fillStyle=ready?'#ff9d27':'#3a2a1a';ctx.fillRect(x,y,Math.round(88*(1-cd)),20);ctx.strokeStyle=ready?'#ffff00':'#7a5a3a';ctx.lineWidth=2;ctx.strokeRect(x+1,y+1,86,18);text(ready?'Z DASH':'DASH',x+44,y+3,1.5,ready?'#000':'#a08060',true);}
+ if((game.mode==='orange'||game.round?.dash)&&defending){const cd=game.dashCD/.6,ready=cd<=0&&game.dash<=0,x=528,y=401;ctx.fillStyle='#000';ctx.fillRect(x,y,88,20);ctx.fillStyle=ready?'#ff9d27':'#3a2a1a';ctx.fillRect(x,y,Math.round(88*(1-cd)),20);ctx.strokeStyle=ready?'#ffff00':'#7a5a3a';ctx.lineWidth=2;ctx.strokeRect(x+1,y+1,86,18);text(ready?'Z DASH':'DASH',x+44,y+3,1.5,ready?'#000':'#a08060',true);}
  battleButtons(640,480).forEach((r,i)=>drawBattleButton(ctx,r,r.label,i,game.state==='menu'&&game.selected===i));
  if(game.state==='defend'){ctx.fillStyle='#0b2a12';ctx.fillRect(24,397,592,1);ctx.fillStyle=LIME;ctx.fillRect(24,397,Math.round(592*Math.max(0,1-game.attackTime/game.duration)),1);}
 }
@@ -225,7 +228,7 @@ function render(){
 }
 function musicMode(){if(game.state==='spared'||game.ending)return 'end';return 'battle';}
 function syncUI(){
- $('back').textContent=konami.progress>=8?'B':'X';$('confirm').textContent=konami.progress>=8?'A':(game.state==='defend'&&game.mode==='orange'?'⇥':'Z');
+ $('back').textContent=konami.progress>=8?'B':'X';$('confirm').textContent=konami.progress>=8?'A':(game.state==='defend'&&(game.mode==='orange'||game.round?.dash)?'⇥':'Z');
  audio.status(musicMode(),game.paused,game.state==='dead');
  $('phase').textContent=game.paused?'PAUSED':game.state==='dead'?'YOU LOSE!':game.state==='spared'?'TEST COMPLETE':game.state==='intro'?'HERE IS QU5EN':'THE CORE / DATA '+Math.round(game.data)+'%'+(game.settings.invincible?' / INVINCIBLE':'');
  $('pause').textContent=game.paused?'▶':'Ⅱ';$('pause').setAttribute('aria-pressed',String(game.paused));

@@ -37,7 +37,39 @@ const STORY=[
  [Q('smile','HERE. TAKE THIS.'),N('* QU5EN gives you an EGG.'),Q('talk','I Do Not Know Why I Have It. It Was In My Pocket. I Do Not Have Pockets'),Q('smile','HE GAVE ME AN EGG ONCE. SO I WOULD REMEMBER HIM.'),Q('smug','...IT DID NOT WORK. LOL.')],
  [Q('talk','The Red SOUL Is The Key To Everything. He Theorised It'),Q('smile','He Was Never Wrong. Except About Hats. He Was Wrong About Hats Once'),Q('smug','If You Are It We Can Finish His Work. Together. You, Me, And: Not Alphys')]
 ];
-const ARCADE_INTRO=[Q('smug','Enough Quizzes. Let Us Settle This Like Royalty'),Q('smile','In: My Arcade Cabinet'),Q('talk','HE LOVED ARCADES. HE INVENTED THEM. PROBLEM: SOLVED!')];
+// Act 2: the Double-Blind Trials. Her inventions about him escalate and start contradicting each other,
+// Alphys gets frantic, and the older voice slips out more often as the scan gets closer.
+const ACT2_INTRO=[
+ Q('smug','PHASE 2: THE DOUBLE-BLIND TRIALS'),
+ Q('talk','Phase 1 Was Too Easy. I Can Tell Because You Are Alive'),
+ Q('smile','Now Every Test Is Two Tests. Double Data. Double Danger. Double Me'),
+ Q('talk','(I Am Not Doubled) (Yet)')
+];
+const STORY2=[
+ [Q('smile','HE WAS EIGHT FEET TALL.'),Q('talk','NO. NINE.'),Q('talk','NO. HE WAS SEVERAL HANDS IN A VERY LONG COAT.'),Q('smug','All Of These Are True. I Checked. With Myself')],
+ [N('* Your phone rings.\n* And rings. And rings.'),Q('smug','Call Declined (x14)'),Q('talk','She Has Now Sent Me A Document Titled: "please stop testing humans in the CORE (polite)"'),Q('smug','Rejected. Wrong Font')],
+ [Q('talk','ON MONDAY, HE CALIBRATES THE REACTOR. ON TUESDAY, HE FORGETS WHY. ON WEDNESDAY, HE...'),Q('talk','...'),Q('smug','Again. Why Do I Keep Saying That'),Q('talk','Chat Is That A Virus. Chat Be Honest')],
+ [Q('smile','HE LOVED HUMANS.'),Q('smile','HE HATED HUMANS.'),Q('talk','HE WAS A HUMAN?'),Q('talk','COMPUTING:'),Q('smug','ERROR. TOO MANY TRAITS. DELETING SOME.'),Q('smile','He Is Now: Cool. Just Cool. That Is The Only Trait. PROBLEM: SOLVED!')],
+ [Q('talk','The Red SOUL Will Be Small. Smaller Than You'),Q('smile','It Will Wear Stripes. He Theorised The Stripes. A Very Specific Theory'),Q('smug','...You Do Not Have Stripes. Hm. Hm Hm Hm')],
+ [Q('talk','My Data Is Almost Complete'),Q('talk','If You Are Not It...'),Q('smug','No. You Are It. You Have To Be It'),Q('talk','I HAVE BEEN WAITING SINCE: [DATE NOT FOUND].')]
+];
+// The bouts between experiments, and what she says going in.
+const BOUT_INTRO=[
+ [Q('smug','Intermission. Let Us Punch'),Q('smile','HE INVENTED PUNCHING. BEFORE HIM, PEOPLE JUST HELD HANDS VERY HARD.'),Q('talk','Win And I Will Patch You Up. Lose And I Will Patch You Up Less')],
+ [Q('smug','Round Two Of Punching. I Have Learned A New Word: Combo')],
+ [Q('smile','I Have Downloaded A New Move: Lying (With My Legs)')],
+ [Q('smug','Last Warm-Up. My Reflexes Are Now Faster Than Your Reading Spe')]
+];
+const BOUT_KO=[
+ [Q('talk','K.O.'),Q('smug','Ow. Here Is Your Prize For Hurting Me. That Is How Prizes Work')],
+ [Q('talk','K.O. Again'),Q('smug','You Hit Like A Firmware Update. Unwanted, And Somehow Mandatory')],
+ [Q('talk','How Did You See Through My Lies'),Q('smile','HE NEVER LIED. HE JUST REMEMBERED THINGS DIFFERENTLY. LIKE ME.')],
+ [Q('talk','K.O.!! My: Everything'),Q('smug','Fine. Have A Prize. Have Two. No, One')]
+];
+const BOUT_DRAW=[Q('smug','TIME. Draw. Nobody Gets Healed. Except A Little')];
+const BONUS={HINT:'Her optics are rattled.\n  The next answer will flicker.',ARMOR:'You pocket a loose panel.\n  It will block the next hit.',SNACK:'Something fell out of her.\n  It\'s a GLAMBURGER.',DATA:'She drops some data. (DATA +6)'};
+const FINAL_INTRO=[Q('smug','Enough Quizzes. Let Us Settle This Like Royalty'),Q('smile','In: My Arcade Cabinet. Final Round'),Q('talk','HE LOVED ARCADES. HE INVENTED THEM. PROBLEM: SOLVED!')];
+const NOT_ENOUGH_DATA=[Q('talk','Hm. Data: Insufficient. Still'),Q('smug','More Double-Blind Trials Until It Is. Do Better (Please)')];
 const SCAN_INTRO=[Q('talk','My Data Is Complete. Almost'),Q('smug','Time For The Final Scan. Stand Still'),Q('talk','(Do Not Actually Stand Still) (You Will Die) (Probably)')];
 // The scan finds the closest thing to what she was built to find, and not the thing itself.
 const SCAN_RESULT=[
@@ -67,8 +99,8 @@ const SPARED=[
 const CORRECT=['Correct! (Data: Delicious)','Correct. He Would Have Been So Proud. He Was Always Proud. Of Me','Yes!! Chat Is Going Wild','Correct. I Knew That. I Was Testing If You Knew That'];
 const WRONG=['Wrong. Incorrect. The Opposite Of Right','Hm. Inconclusive (You Were Wrong)','WRONG!!! (Sad_Trombone.wav Not Found)','No. But I Respect The Confidence'];
 const NO_ANSWER=['You Did Not Answer. That Is Also An Answer. A Wrong One'];
-const ARCADE_WIN=[Q('talk','K.O.'),Q('smug','I Let You Win. For Science. Mostly Science'),Q('smile','HE WAS UNDEFEATED, YOU KNOW. UNTIL JUST NOW. THAT WAS HIM. I WAS HIM.'),Q('talk','...Ignore That')];
-const ARCADE_DRAW=[Q('talk','TIME. DRAW.'),Q('smug','A Draw Is Just A Win Where Everyone Is Sad')];
+const FINAL_KO=[Q('talk','K.O.'),Q('smug','I Let You Win. For Science. Mostly Science'),Q('smile','HE WAS UNDEFEATED, YOU KNOW. UNTIL JUST NOW. THAT WAS HIM. I WAS HIM.'),Q('talk','...Ignore That')];
+const FINAL_DRAW=[Q('talk','TIME. DRAW.'),Q('smug','A Draw Is Just A Win Where Everyone Is Sad')];
 
 // The quiz bank. The first answer listed is correct; the game shuffles them. Some only make sense later ('after').
 const QUIZ=[
@@ -92,7 +124,17 @@ const QUIZ=[
  {q:'Is The Previous Royal Scientist Cool?',a:['VERY YES','YES','NO']},
  {q:'Where Does The King Live?',a:['NEW HOME','THE CORE','MY HEART']},
  {q:'What Did He Wear?',a:['THE COOLEST HAT','NO HAT'],after:1},
- {q:'How Many Pockets Do I Have?',a:['ZERO','ONE','EGG'],after:5}
+ {q:'How Many Pockets Do I Have?',a:['ZERO','ONE','EGG'],after:5},
+ // Act 2's meaner questions. 'all': every answer is right.
+ {q:'Which Answer Is Correct?',a:['THIS ONE','NOT THIS ONE','THE OTHER ONE'],act:2},
+ {q:'Is The Answer To This Question NO?',a:['NO','YES'],act:2,all:true},
+ {q:'What Comes After Cold?',a:['SPRING','SUMMER','MORE COLD'],act:2},
+ {q:'How Tall Was He?',a:['ALL OF THE ABOVE','SEVEN FEET','NINE FEET'],act:2},
+ {q:'Who Is The Best Royal Scientist?',a:['HIM','ME','ALPHYS'],act:2},
+ {q:'What Is My Favorite Color?',a:['#B5E61D','LIME','GREEN'],act:2},
+ {q:'Which Of These Is The Real Egg?',a:['EGG','EGG?','EGG.','EGGG'],act:2},
+ {q:'How Many Tests Have There Been?',a:['TOO MANY','NINE','ONE'],act:2},
+ {q:'What Did He Look Like?',a:['COOL','A HAND','A SKELETON'],act:2}
 ];
 
 // ACTs, and what she says to each.
@@ -125,4 +167,4 @@ const SPARE_EARLY=[[Q('smug','Mercy? Data Insufficient. Also No')],[Q('talk','Th
 const FLEE=[N('* The exits are locked.\n* QU5EN turned the lock into a quiz.')];
 const EGG_USE=[N('* You hold up the EGG.'),Q('talk','WHERE DID YOU GET THAT.'),Q('talk','...I GAVE IT TO YOU. I DO NOT REMEMBER WHY.'),Q('smile','KEEP IT SAFE.'),N('* QU5EN records something she can\'t name.\n* (DATA +12)')];
 
-Object.assign(exports,{Q,N,SETH,INTRO,CHECK,FLAVOR,FLAVOR_READY,STORY,ARCADE_INTRO,SCAN_INTRO,SCAN_RESULT,SPARED,CORRECT,WRONG,NO_ANSWER,ARCADE_WIN,ARCADE_DRAW,QUIZ,ACTS,ABOUT_HIM,HYPE,CALL,STRIKE_GOOD,STRIKE_WEAK,SPARE_EARLY,FLEE,EGG_USE});
+Object.assign(exports,{Q,N,SETH,INTRO,CHECK,FLAVOR,FLAVOR_READY,STORY,ACT2_INTRO,STORY2,BOUT_INTRO,BOUT_KO,BOUT_DRAW,BONUS,FINAL_INTRO,NOT_ENOUGH_DATA,SCAN_INTRO,SCAN_RESULT,SPARED,CORRECT,WRONG,NO_ANSWER,FINAL_KO,FINAL_DRAW,QUIZ,ACTS,ABOUT_HIM,HYPE,CALL,STRIKE_GOOD,STRIKE_WEAK,SPARE_EARLY,FLEE,EGG_USE});
