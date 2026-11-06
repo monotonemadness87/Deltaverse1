@@ -1,5 +1,6 @@
-// Music: a synthesized placeholder until the designer supplies themes (a slow crystal arpeggio for the walk, a
-// steadier one for the Undertale half, a brighter, faster one with a bass line once the battle turns Deltarune).
+// Music: the designer's "Your Humble Service" (a DELTARUNE fan track) is the battle theme, through both halves and
+// the finale; it pauses for the roar that breaks the battle and picks up where it left off. The walk keeps a
+// synthesized crystal arpeggio until a walk theme is supplied.
 // Effects are UNDERTALE's own sounds that PURPLE already uses (hurt, select, slash, ding, heavy hit), plus synthesized
 // graze, shatter and roar; text uses the designer's snd_txt1, pitched per speaker.
 const SOUNDS=__SOUNDS__;
@@ -13,9 +14,9 @@ const SCORE={
  finale:{step:.18,arp:[9,7,4,7,8,7,5,4,9,7,4,7,9,8,9,7],lead:'square',gain:.04,bass:[0,5,3,4]}
 };
 class StageAudio{
- constructor(){this.enabled=false;this.paused=false;this.context=null;this.master=null;this.mode='off';this.nextTime=0;this.step=0;this.timer=null;this.userMuted=false;this.buffers={};}
+ constructor(){this.theme=new Audio(SOUNDS.theme);this.theme.loop=true;this.theme.preload='auto';this.theme.volume=.5;this.enabled=false;this.paused=false;this.context=null;this.master=null;this.mode='off';this.nextTime=0;this.step=0;this.timer=null;this.userMuted=false;this.buffers={};}
  async enable(value){
-  this.enabled=value;if(!value){this.updateGain();return;}
+  this.enabled=value;if(!value){this.updateGain();this.syncTheme();return;}
   try{
    this.context??=new(window.AudioContext||window.webkitAudioContext)();
    if(!this.master){
@@ -25,17 +26,19 @@ class StageAudio{
    }
    await this.context.resume();
   }catch{/* No Web Audio: silent. */}
-  this.updateGain();this.schedule();
+  this.updateGain();this.syncTheme();this.schedule();
  }
  makeNoise(){const c=this.context,b=c.createBuffer(1,c.sampleRate,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;return b;}
+ // The battle theme plays in the battle modes; it starts from the top whenever a battle starts from the walk.
+ syncTheme(){const on=this.enabled&&!this.paused&&!this.gameOver&&['ut','dr','finale'].includes(this.mode);if(on&&this.theme.paused)this.theme.play().catch(()=>{});else if(!on&&!this.theme.paused)this.theme.pause();}
  updateGain(){if(this.master)this.master.gain.setTargetAtTime(this.enabled&&!this.paused&&!this.gameOver?.9:0,this.context.currentTime,.05);}
  status(mode,paused,gameOver=false){
-  if(mode!==this.mode){this.mode=mode;this.step=0;if(this.context)this.nextTime=this.context.currentTime+.08;}
+  if(mode!==this.mode){if(mode==='walk')this.fresh=true;if(['ut','dr','finale'].includes(mode)&&this.fresh){this.fresh=false;this.theme.currentTime=0;}this.mode=mode;this.step=0;if(this.context)this.nextTime=this.context.currentTime+.08;}
   if(paused!==this.paused||gameOver!==this.gameOver){this.paused=paused;this.gameOver=gameOver;this.updateGain();}
-  this.schedule();
+  this.syncTheme();this.schedule();
  }
  schedule(){
-  if(!this.enabled||!this.context||!this.master||this.paused)return;const c=this.context,score=SCORE[this.mode];if(this.nextTime<c.currentTime)this.nextTime=c.currentTime+.05;
+  if(!this.enabled||!this.context||!this.master||this.paused)return;const c=this.context,score=this.mode==='walk'?SCORE.walk:null;if(this.nextTime<c.currentTime)this.nextTime=c.currentTime+.05;
   if(score){while(this.nextTime<c.currentTime+.4){const k=this.step,deg=score.arp[k%score.arp.length],f=NOTES[deg%NOTES.length];
    this.voice(f,this.nextTime,score.step*.9,score.lead,score.gain,this.music);
    if(k%4===0)this.voice(f*2,this.nextTime,score.step*.5,'sine',score.gain*.5,this.music);

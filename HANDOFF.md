@@ -374,7 +374,7 @@ The designer revived their White Roaring Knight concept (a union of DELTARUNE's 
 - **Art:**
   - **The Knight:** the designer's sprite sheets. 24 eight-frame animations; each move plays its own (the orbiting-blade cast for ENCIRCLING BLADES, ground slam for the eruptions, dash, thrust, cleave, star and diamond storms, the roar during the UI break, hurt, the vanish at the spare, the finale ascend), and the arrival animation plays as it forms from the crystal. Its effect sprites draw the swords, stars, diamonds, heal hearts, reticles, the vortex in the finale and the hammer beside the GREEN SOUL box. Cut by `tools/knight/tools/extract_sheets.py`; only the dialogue portrait is still from the concept sheet.
   - **Human Seth:** the designer's Human Seth pack. He walks with its walk cycles and talks with its portraits. On the Deltarune side he reads (WISH), adjusts his glasses (LISTEN), laughs (ROAR BACK), casts his glasses (PERSEVERE), casts a notebook page (FIGHT), kneels behind the glasses shield (DEFEND), flinches when hit, and offers his hand (SPARE).
-  - Gerson is cropped from `games/gerson.html`; rooms are painted by `tools/knight/tools/paint_rooms.py`. Music is still a synthesized placeholder until themes are supplied.
+  - Gerson is cropped from `games/gerson.html`; rooms are painted by `tools/knight/tools/paint_rooms.py`. Music: the designer's "Your Humble Service" (a DELTARUNE fan track) is the battle theme through both halves and the finale. It pauses for the roar that breaks the battle and resumes where it left off, and starts from the top when a battle starts from the walk. The walk is still a synthesized placeholder.
 
 ### Marigold — The Forgotten Memorial
 

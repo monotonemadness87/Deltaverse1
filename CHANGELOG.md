@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-06 — The White Roaring Knight's theme
+
+- The designer's "Your Humble Service" (a DELTARUNE fan track) is now the battle theme, replacing the synthesized placeholder. It plays through the Undertale half, the Deltarune half and the finale, falls silent for the roar that breaks the battle, then picks up where it left off. Its 2.3 s silent tail is trimmed so it loops cleanly.
+- The walk keeps its synthesized crystal arpeggio until a walk theme is supplied.
+
 ## 2026-11-06 — The White Roaring Knight and Human Seth: the designer's sprites
 
 - **The Knight** is now drawn from the designer's sprite sheets: 24 animations, each move with its own (slashes, thrust, dash, cleave, star and diamond storms, orbiting blades, ground slam, the roar that breaks the battle, hurt, its arrival out of the crystal, its vanish at the spare). Its effect sprites replace the drawn swords, stars, shards, heal hearts and reticles, plus a vortex in the finale and the hammer beside the GREEN SOUL wave.
