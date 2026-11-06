@@ -54,7 +54,8 @@ function renderWorld(){
 function manifestation(t){
  const cx=320,cy=226;
  if(t>1.1){const u=clamp((t-1.1)/1.4,0,1);['blade','wild','hope'].forEach((h,k)=>{const an=k*Math.PI*2/3+t*(reduceMotion?0:2.6),r=(1-u)*120*Math.sin(Math.min(1,u*3)*Math.PI/2)+(u>=1?0:10);battleSoul(ctx,cx+Math.cos(an)*r,cy+Math.sin(an)*r*.6,18,HEART[h]);});}
- if(t>2.4){const u=clamp((t-2.4)/.6,0,1);art.frame('p1',320,346,1,{alpha:u});}
+ // The Knight arrives out of the light (its arrival animation), then idles in front of the crystal.
+ if(t>2.4){const k=Math.floor((t-2.4)*8);if(k<8)art.anim('arrival',k,320,346,1.2);else art.anim('idle',Math.floor(game.clock*LOOP)%8,320,346,1.2);}
  if(t>2.3&&t<3.1){ctx.save();ctx.globalAlpha=(reduceMotion?.4:1)*Math.max(0,1-Math.abs(t-2.55)/.4);ctx.fillStyle='#fff';ctx.fillRect(0,0,640,480);ctx.restore();}
 }
 function worldDialogue(w){
@@ -62,7 +63,7 @@ function worldDialogue(w){
  let tx=56,width=520,max=40,col='#fff';const sp=game.speaker;
  if(sp==='gerson'){art.gersonFace(52,y+20,96);tx=168;width=420;max=31;}
  else if(sp==='boss'){art.portrait(50,y+18,104);tx=170;width=416;max=30;col=HEART[game.heart]||'#fff';}
- else if(sp==='seth')col='#d9a6ff';
+ else if(sp==='seth'){art.sethFace(game.face&&game.face!=='face'?game.face:'talking',56,y+22,96);tx=168;width=420;max=31;col='#d9a6ff';}
  typedLines(wrap(game.text,max,width),game.text,shown()).slice(0,4).forEach((l,i)=>text(l,tx,y+20+i*30,2,col));
  if(game.displayChars>=game.text.length)text('Z',590,y+118,1,'#777');
 }
@@ -85,6 +86,7 @@ function hazard(b){
   case 'spike':{if(b.age<b.warn){ctx.save();ctx.globalAlpha=.35+(reduceMotion?.2:.25*Math.sin(b.age*30));ctx.strokeStyle='#9ad4ff';ctx.setLineDash([4,3]);spikePath(b,b.len);ctx.stroke();ctx.restore();return;}if(b.cur<1)return;ctx.save();ctx.fillStyle='#bfe6ff';spikePath(b,b.cur);ctx.fill();ctx.strokeStyle='#3a78d8';ctx.lineWidth=1;ctx.stroke();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(b.x+b.dx*2,b.y+b.dy*2);ctx.lineTo(b.x+b.dx*b.cur*.8,b.y+b.dy*b.cur*.8);ctx.stroke();ctx.restore();return;}
   case 'slash':{ctx.save();if(b.age<b.warn){ctx.globalAlpha=.45+(reduceMotion?0:.2*Math.sin(b.age*28));ctx.strokeStyle=HEART.blade;ctx.lineWidth=1;ctx.setLineDash([6,4]);}else{ctx.globalAlpha=Math.max(0,1-(b.age-b.warn-b.live)/.2);ctx.strokeStyle=HEART.blade;ctx.lineWidth=b.w+4;ctx.beginPath();ctx.moveTo(b.x1,b.y1);ctx.lineTo(b.x2,b.y2);ctx.stroke();ctx.strokeStyle='#fff';ctx.lineWidth=b.w-3;}ctx.beginPath();ctx.moveTo(b.x1,b.y1);ctx.lineTo(b.x2,b.y2);ctx.stroke();ctx.restore();return;}
   case 'lance':{const cx=Math.cos(b.angle),cy=Math.sin(b.angle);if(b.age<b.warn){ctx.save();ctx.strokeStyle=HEART.blade;ctx.globalAlpha=.55;ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(b.x+cx*700,b.y+cy*700);ctx.stroke();ctx.restore();}
+   if(game.dr&&art.anim('sword_projectile',Math.floor(game.clock*8)%4,b.x+cx*(b.tip-b.len/2),b.y+cy*(b.tip-b.len/2),b.len/110,{rot:b.angle+Math.PI/2}))return;
    const tx=b.x+cx*b.tip,ty=b.y+cy*b.tip;ctx.save();ctx.translate(tx,ty);ctx.rotate(b.angle);ctx.fillStyle='#e8f4ff';ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-b.len,-b.w/2);ctx.lineTo(-b.len,b.w/2);ctx.closePath();ctx.fill();ctx.fillStyle=HEART.blade;ctx.fillRect(-b.len,-1,b.len-6,2);ctx.fillStyle='#3a78d8';ctx.fillRect(-b.len-14,-3,14,6);ctx.restore();return;}
   case 'buster':{if(b.moon){moon(b);return;}ctx.save();const warn=b.age<b.warn;ctx.globalAlpha=warn?.3+(reduceMotion?0:.2*Math.sin(b.age*30)):1;ctx.lineCap='round';
    if(!warn){ctx.strokeStyle='rgba(176,58,216,.45)';ctx.lineWidth=b.thick+10;ctx.beginPath();ctx.arc(b.x-Math.sign(b.vx)*12,b.y,b.R,b.facing-b.span,b.facing+b.span);ctx.stroke();}
@@ -94,15 +96,15 @@ function hazard(b){
    ctx.fillStyle='#b03ad8';for(let x=b.x;x<b.x+b.wd;x+=12){if(Math.abs(x-b.gap)<b.gapW/2)continue;const y=ribbonY(b,x);ctx.fillRect(Math.round(x),Math.round(y+b.w/2-1),4,3+((x*7)%5));}ctx.restore();return;}
   case 'axe':{ctx.save();ctx.translate(b.x,b.y);ctx.rotate(reduceMotion?0:b.age*14);ctx.fillStyle='#7a3a9a';ctx.fillRect(-2,-10,4,20);ctx.fillStyle='#ff4aa8';ctx.beginPath();ctx.moveTo(2,-10);ctx.lineTo(11,-6);ctx.lineTo(11,2);ctx.lineTo(2,-2);ctx.closePath();ctx.fill();ctx.restore();return;}
   case 'orbitblade':{ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.theta+Math.PI/2);ctx.fillStyle='#e8f4ff';ctx.beginPath();ctx.moveTo(0,-9);ctx.lineTo(4,0);ctx.lineTo(0,9);ctx.lineTo(-4,0);ctx.closePath();ctx.fill();ctx.fillStyle=HEART.blade;ctx.fillRect(-1,-6,2,12);ctx.restore();return;}
-  case 'star':{const r=b.fuse&&b.age>b.fuse-.3&&blink(14)?7:5;star4(b.x,b.y,r+1,HEART.blade);star4(b.x,b.y,r-1,'#fff');return;}
-  case 'shard':{if(b.big){ctx.fillStyle='#dfe8ff';ctx.beginPath();ctx.moveTo(b.x,b.y-8);ctx.lineTo(b.x+5,b.y);ctx.lineTo(b.x,b.y+8);ctx.lineTo(b.x-5,b.y);ctx.closePath();ctx.fill();return;}star4(b.x,b.y,3,'#bfe6ff');return;}
-  case 'gift':{battleSoul(ctx,b.x,b.y,14,blink(5)?HEART.hope:'#a8ffd0');return;}
+  case 'star':{if(art.anim('star_projectile',Math.floor(b.age*10)%4,b.x,b.y,.17))return;const r=b.fuse&&b.age>b.fuse-.3&&blink(14)?7:5;star4(b.x,b.y,r+1,HEART.blade);star4(b.x,b.y,r-1,'#fff');return;}
+  case 'shard':{if(b.big&&art.anim('diamond_shard',Math.floor(b.age*8)%4,b.x,b.y,.16))return;if(b.big){ctx.fillStyle='#dfe8ff';ctx.beginPath();ctx.moveTo(b.x,b.y-8);ctx.lineTo(b.x+5,b.y);ctx.lineTo(b.x,b.y+8);ctx.lineTo(b.x-5,b.y);ctx.closePath();ctx.fill();return;}star4(b.x,b.y,3,'#bfe6ff');return;}
+  case 'gift':{if(!art.anim('heal_heart',Math.floor(b.age*6)%4,b.x,b.y,.17))battleSoul(ctx,b.x,b.y,14,blink(5)?HEART.hope:'#a8ffd0');return;}
   case 'zee':{ctx.save();ctx.globalAlpha=.85;text('Z',b.x,b.y-7,1.5,'#c8f0ff',true);ctx.restore();return;}
-  case 'orbitsword':{swordShape(b.x,b.y,b.ang??0,24,b.launched?'#ffffff':'#c8d8ff');return;}
-  case 'sword':{if(b.age<b.warn){const A=game.arena,y=b.vy>0?A.y+8:A.y+A.h-8;ctx.save();ctx.globalAlpha=.45+.55*blink(12);star4(b.x,y,6,'#fff');ctx.restore();return;}swordShape(b.x,b.y-(b.vy>0?b.len/2:-b.len/2),b.vy>0?Math.PI/2:-Math.PI/2,b.len,'#ffffff');return;}
-  case 'eruption':{const u=clamp(b.age/b.warn,0,1);ctx.save();ctx.globalAlpha=.3+.5*u;ctx.fillStyle='#c8d0ff';ctx.beginPath();ctx.ellipse(b.x,b.y-5,b.w*(.4+.4*u),4+2*u,0,0,6.283);ctx.fill();ctx.restore();return;}
+  case 'orbitsword':{if(!art.anim('sword_projectile',Math.floor(game.clock*8)%4,b.x,b.y,.27,{rot:(b.ang??0)+Math.PI/2,alpha:b.launched?1:.85}))swordShape(b.x,b.y,b.ang??0,24,'#fff');return;}
+  case 'sword':{if(b.age<b.warn){const A=game.arena,y=b.vy>0?A.y+10:A.y+A.h-10;art.anim('twinkle',Math.floor(b.age*10),b.x,y,.3);return;}const cy=b.y-(b.vy>0?b.len/2:-b.len/2);if(!art.anim('sword_projectile',Math.floor(game.clock*8)%4,b.x,cy,.32,{rot:b.vy>0?Math.PI:0}))swordShape(b.x,cy,b.vy>0?Math.PI/2:-Math.PI/2,b.len,'#fff');return;}
+  case 'eruption':{const u=clamp(b.age/b.warn,0,1);art.anim('warning_reticle',Math.floor(b.age*8),b.x,b.y-14,.32,{alpha:.5+.5*u});ctx.save();ctx.globalAlpha=.3+.5*u;ctx.fillStyle='#c8d0ff';ctx.beginPath();ctx.ellipse(b.x,b.y-5,b.w*(.4+.4*u),4+2*u,0,0,6.283);ctx.fill();ctx.restore();return;}
   case 'bar':{ctx.fillStyle=b.blue?'#3a6aff':'#ffffff';const x=Math.round(b.x-b.w/2);if(b.blue)ctx.fillRect(x,b.y0,b.w,b.y1-b.y0);else{ctx.fillRect(x,b.y0,b.w,Math.round(b.gapY-b.gapH/2-b.y0));ctx.fillRect(x,Math.round(b.gapY+b.gapH/2),b.w,Math.round(b.y1-b.gapY-b.gapH/2));}return;}
-  case 'star6':{if(b.delay&&b.age<b.delay)return;star6(b.x,b.y,b.r+3,b.fuse&&b.age>b.fuse-.25&&blink(14)?'#ffe8a0':'#ffffff');return;}
+  case 'star6':{if(b.delay&&b.age<b.delay)return;if(!art.anim('star_projectile',Math.floor(b.age*10)%4,b.x,b.y,.24,{tint:b.fuse&&b.age>b.fuse-.25&&blink(14)?'rgba(255,232,160,1)':null}))star6(b.x,b.y,b.r+3,'#fff');return;}
   case 'dashline':{const warn=b.age<b.warn;ctx.save();if(warn){ctx.globalAlpha=.45+.3*blink(14);ctx.fillStyle='#ffffff';ctx.fillRect(0,Math.round(b.y),640,1);}else{ctx.globalAlpha=Math.max(0,1-(b.age-b.warn-b.live)/.25);ctx.fillStyle='#bfe6ff';ctx.fillRect(0,Math.round(b.y-b.w/2-3),640,b.w+6);ctx.fillStyle='#fff';ctx.fillRect(0,Math.round(b.y-b.w/2),640,b.w);}ctx.restore();return;}
   case 'laser':{const cx=Math.cos(b.angle),cy=Math.sin(b.angle),L=1200;ctx.save();if(b.age<b.warn){ctx.globalAlpha=.5;ctx.strokeStyle=b.col;ctx.lineWidth=1;ctx.setLineDash([6,4]);}else{ctx.globalAlpha=Math.max(0,Math.min(1,(b.warn+b.live+.2-b.age)/.2));ctx.strokeStyle=b.col;ctx.lineWidth=b.w+6;ctx.beginPath();ctx.moveTo(b.ox,b.oy);ctx.lineTo(b.ox+cx*L,b.oy+cy*L);ctx.stroke();ctx.strokeStyle='#ffffff';ctx.lineWidth=Math.max(2,b.w-6);}ctx.beginPath();ctx.moveTo(b.ox,b.oy);ctx.lineTo(b.ox+cx*L,b.oy+cy*L);ctx.stroke();ctx.restore();return;}
   case 'cone':{const live=b.age>=b.warn,a1=b.angle-b.half,a2=b.angle+b.half;ctx.save();ctx.globalAlpha=live?Math.max(0,Math.min(.75,(b.warn+b.live+.2-b.age)*2)):.12+.12*blink(10);const g=ctx.createLinearGradient(b.ox,b.oy,b.ox+Math.cos(b.angle)*b.len,b.oy+Math.sin(b.angle)*b.len);g.addColorStop(0,'#ffffff');g.addColorStop(.4,live?'#8a9cff':'#4a5aaa');g.addColorStop(1,live?'#5a6cff':'#2a3466');ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(b.ox,b.oy);ctx.lineTo(b.ox+Math.cos(a1)*b.len,b.oy+Math.sin(a1)*b.len);ctx.lineTo(b.ox+Math.cos(a2)*b.len,b.oy+Math.sin(a2)*b.len);ctx.closePath();ctx.fill();ctx.restore();return;}
@@ -115,6 +117,7 @@ function drawSoul(){
   // The HAMMER OF JUSTICE: a green SOUL (purple rim kept) with a shield, and the spears coming for it.
   const d={up:[0,-1],right:[1,0],down:[0,1],left:[-1,0]}[game.shield];ctx.save();ctx.translate(s.x+d[0]*24,s.y+d[1]*24);ctx.rotate(Math.atan2(d[1],d[0])+Math.PI/2);ctx.fillStyle='#43e750';ctx.fillRect(-17,-3,34,6);ctx.fillStyle='#b8ffc0';ctx.fillRect(-17,-3,34,2);ctx.restore();
   ctx.save();ctx.strokeStyle='rgba(67,231,80,.35)';ctx.beginPath();ctx.arc(s.x,s.y,24,0,6.283);ctx.stroke();ctx.restore();
+  for(const e of game.effects)if(e.type==='block'&&!e.x)art.anim('ring_pulse',Math.floor((.25-e.life)*16),s.x+d[0]*24,s.y+d[1]*24,.35);
   if(!(game.invulnerability>0&&Math.floor(game.clock*15)%2)){heart(s.x,s.y,20,'purple');heart(s.x,s.y,14,'green');}
   for(const e of game.effects)if(e.type==='block'&&!e.x){ctx.save();ctx.globalAlpha=e.life*4;ctx.strokeStyle='#b8ffc0';ctx.lineWidth=2;ctx.beginPath();ctx.arc(s.x+d[0]*24,s.y+d[1]*24,8+(.25-e.life)*30,0,6.283);ctx.stroke();ctx.restore();}
   return;
@@ -136,7 +139,8 @@ function starVoid(){const t=game.clock,hue=(t*30)%360,g=ctx.createRadialGradient
  ctx.save();ctx.globalAlpha=.25;for(let i=0;i<26;i++){const an=i*2.4+t*(reduceMotion?0:.15),r=60+(i*37)%260;star6(320+Math.cos(an)*r,166+Math.sin(an)*r*.7,9,'#ffffff');}ctx.restore();}
 function field(border='#fff'){
  const a=game.arena,dr=game.dr;
- if(game.voidMode)starVoid();
+ if(game.mode==='green'&&!reduceMotion)art.anim('hammer',Math.floor(game.clock*5)%4,a.x+a.w+46,a.y+a.h/2,.5);
+ if(game.voidMode){starVoid();art.anim('vortex_ring',Math.floor(game.clock*6)%4,320,166,1.4,{alpha:.55});}
  else{const spin=dr&&!reduceMotion?clamp((game.boxSpin||0)/.45,0,1):0;ctx.save();if(spin>0){const cx=a.x+a.w/2,cy=a.y+a.h/2;ctx.translate(cx,cy);ctx.rotate(spin*Math.PI/2);ctx.scale(1-spin*.35,1-spin*.35);ctx.translate(-cx,-cy);}
   if(game.split){const hw=(a.w-12)/2;box(a.x,a.y,hw,a.h,border,3);box(a.x+hw+12,a.y,hw,a.h,border,3);}else box(a.x,a.y,a.w,a.h,border,dr?3:4);ctx.restore();}
  const outside=['lance','laser','cone','dashline','orbitsword'];
@@ -158,15 +162,36 @@ function effectsFX(){for(const e of game.effects){
  else if(e.type==='mercy'){const [x,y]=e.who==='knight'?[522,96]:[112,150];text(e.text,x,y-(1.2-e.life)*16,1.5,'#ffff00',true);}
  else if(['cheat','instruction'].includes(e.type))text(e.text,320,Math.min(206,game.arena.y-24),1.5,'#ffff00',true);
 }}
-// The Knight's pose: a concept-sheet action pose while it attacks, otherwise its phase sprite.
-const POSES={slash:'slash',lunge:'lunge',sweep:'sweep',halo:'halo',rise:'rise'};
-function knightFrame(){const b=game.boss;if(['defend','warning'].includes(game.state)&&POSES[b.pose])return POSES[b.pose];if(!game.dr)return 'p1';return game.unifiedCount>0||game.finaleDone||game.plan?.kind==='unified'||game.plan?.kind==='finale'?'p3':'p2';}
+// The Knight's animation, from the designer's sprite sheets: its phase idle, the move it is making, hurt,
+// the roar that breaks the battle, its vanish at the end. Returns [family, frame].
+const LOOP=8;// idle loops play at 8 frames a second; moves at 12
+function knightAnim(){
+ const b=game.boss,t=game.clock;
+ if(game.state==='uibreak')return['roar_transition',Math.floor(game.breakTime*7)];
+ if(game.state==='spared'||game.ending==='spared')return['teleport_vanish',Math.floor((game.timer||0)*6)];
+ if(b.hurt>0)return['hurt_stagger_kneel',Math.floor((.55-b.hurt)*10)];
+ if(['defend','warning'].includes(game.state)&&b.pose&&b.pose!=='idle'&&art.frames(b.pose))return[b.pose,Math.min(art.frames(b.pose)-1,Math.floor((t-(b.poseStart||0))*12))];
+ const fam=!game.dr?'idle':game.unifiedCount>0||game.finaleDone||game.plan?.kind==='unified'||game.plan?.kind==='finale'?'phase3_guard':'phase2_idle';
+ return[fam,Math.floor(t*LOOP)%8];
+}
 function drawKnight(x,y,scale=1,alpha=1){
- const b=game.boss,f=knightFrame(),bob=reduceMotion?0:Math.round(Math.sin(game.clock*1.8)*3),pose=f!=='p1'&&f!=='p2'&&f!=='p3';
- const g=ctx.createRadialGradient(x,y-80,6,x,y-80,140);g.addColorStop(0,`rgba(160,200,255,${.16+(reduceMotion?0:Math.sin(game.clock*2)*.04)})`);g.addColorStop(1,'rgba(160,200,255,0)');ctx.fillStyle=g;ctx.fillRect(x-150,y-230,300,280);
- const sc=pose?scale*.82:scale;
- if(game.dr&&!reduceMotion){const j=Math.sin(game.clock*7)*1.5;art.frame(f,x-3-j,y+bob,sc,{alpha:alpha*.5,tint:'rgba(255,50,110,1)'});art.frame(f,x+3+j,y+bob,sc,{alpha:alpha*.5,tint:'rgba(60,220,255,1)'});if(Math.floor(game.clock*3.3)%7===0)art.frame(f,x+6,y+bob-2,sc,{alpha:alpha*.35,tint:'rgba(255,230,80,1)'});}
- art.frame(f,x,y+bob,sc,{alpha,tint:b.hurt>.35&&!reduceMotion?'rgba(255,255,255,.8)':null});
+ const b=game.boss,[fam,i]=knightAnim(),bob=reduceMotion?0:Math.round(Math.sin(game.clock*1.8)*2);
+ const g=ctx.createRadialGradient(x,y-70,6,x,y-70,130);g.addColorStop(0,`rgba(160,200,255,${.16+(reduceMotion?0:Math.sin(game.clock*2)*.04)})`);g.addColorStop(1,'rgba(160,200,255,0)');ctx.fillStyle=g;ctx.fillRect(x-150,y-220,300,260);
+ // The Roaring Knight's chromatic fringe, in the Deltarune half.
+ if(game.dr&&!reduceMotion){const j=Math.sin(game.clock*7)*1.5;art.anim(fam,i,x-3-j,y+bob,scale,{alpha:alpha*.45,tint:'rgba(255,50,110,1)'});art.anim(fam,i,x+3+j,y+bob,scale,{alpha:alpha*.45,tint:'rgba(60,220,255,1)'});if(Math.floor(game.clock*3.3)%7===0)art.anim(fam,i,x+6,y+bob-2,scale,{alpha:alpha*.3,tint:'rgba(255,230,80,1)'});}
+ art.anim(fam,i,x,y+bob,scale,{alpha,tint:b.hurt>.35&&!reduceMotion?'rgba(255,255,255,.8)':null});
+}
+// Seth on the Deltarune side: his own animations from the designer's pack, with his glasses and notebook effects.
+function drawSethDR(x,y,alpha=1){
+ const sp=game.sethPose,t=game.clock,active=sp&&t<sp.until,fam=active?sp.name:game.state==='spared'?'offer_hand_hug':'idle';
+ const i=active||game.state==='spared'?Math.min(7,Math.floor((t-(sp?.t||0))*8)):Math.floor(t*6);
+ // Kneeling to DEFEND holds the low frames; the hug holds its last.
+ const frame=fam==='kneel_stand'?Math.min(i,3):i;
+ if(game.invulnerability>0&&['defend','warning'].includes(game.state)&&Math.floor(t*15)%2&&!reduceMotion)alpha*=.5;
+ art.sethAnim(fam,frame,x,y,2,{alpha});
+ if(active&&fam==='cast_glasses')art.sethFx('magic_glasses_formation',Math.floor((t-sp.t)*7),x+4,y-118,1.5,{alpha});
+ if(active&&fam==='cast_notebook_page')art.sethFx('floating_pages',Math.floor((t-sp.t)*8),x+44,y-80,1.4,{alpha});
+ if(game.defending)art.sethFx('glasses_shield',Math.min(7,Math.floor((t-(sp?.t||t))*8)),x+46,y-70,1.4,{alpha:alpha*.9});
 }
 function hearts3(x,y){['blade','wild','hope'].forEach((h,k)=>battleSoul(ctx,x+k*14,y,10,HEART[h]));}
 function prose(str,n=Infinity,x=48,y=267,width=528,max=44,lines=5,lh=24,color='#fff'){typedLines(wrap(str,max,width),str,n).slice(0,lines).forEach((line,i)=>text(line,x,y+i*lh,2,color));}
@@ -189,7 +214,7 @@ function utHud({hide=false}={}){
 function renderUT({hideUI=false}={}){
  const defending=['defend','warning'].includes(game.state);
  art.backdrop(.9);
- drawKnight(320,226);speechUT();
+ drawKnight(320,226,1.15);speechUT();
  text('KNIGHT',24,26,1,game.ready?'#ffff00':'#9ac8ff');
  if(game.enemyHP<game.enemyMax||game.state==='target'){ctx.fillStyle='#222';ctx.fillRect(256,232,128,3);ctx.fillStyle='#9ac8ff';ctx.fillRect(256,232,128*game.enemyHP/game.enemyMax,3);}
  if(hideUI)return;
@@ -226,7 +251,7 @@ function renderBreak(){
   for(let k=0;k<3;k++){const u=((t+k*.25)%1.2)/1.2;ctx.save();ctx.globalAlpha=(1-u)*.7;ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(320,140,30+u*300,0,Math.PI*2);ctx.stroke();ctx.restore();}
   if(t>.6){const u=clamp((t-.6)/.9,0,1);ctx.save();ctx.strokeStyle='#fff';ctx.lineWidth=2;for(const pts of cracks){const n=Math.max(1,Math.floor(pts.length*u));ctx.beginPath();pts.slice(0,n).forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.stroke();}ctx.restore();}
  }else if(t<3.1){
-  art.backdrop(Math.max(0,1-(t-1.6)/1.2));drawKnight(320,226,1+(reduceMotion?0:.06*Math.sin(t*20)));
+  art.backdrop(Math.max(0,1-(t-1.6)/1.2));drawKnight(320,226,1.15+(reduceMotion?0:.06*Math.sin(t*20)));
   const tau=t-1.6;for(const s of shards){const x=s.x+s.vx*tau,y=s.y+s.vy*tau+260*tau*tau;if(y>520)continue;ctx.save();ctx.translate(x+s.w/2,y+s.h/2);ctx.rotate(s.vr*tau);ctx.fillStyle=s.col;ctx.fillRect(-s.w/2,-s.h/2,s.w,s.h);ctx.restore();}
  }else renderDR({assemble:clamp((t-3.1)/1.4,0,1)});
  if(t>2.5&&t<3.5){ctx.save();ctx.globalAlpha=(reduceMotion?.35:1)*Math.max(0,1-Math.abs(t-3)/.5);ctx.fillStyle='#fff';ctx.fillRect(0,0,640,480);ctx.restore();}
@@ -257,7 +282,7 @@ function tpBar(x0){
 function partyPanel(oy){
  const x=148,y=318+oy,w=344,h=62;ctx.fillStyle='#000';ctx.fillRect(x,y,w,h);ctx.fillStyle=SETHC;ctx.fillRect(x,y,w,2);ctx.fillRect(x,y,2,h);ctx.fillRect(x+w-2,y,2,h);
  // Seth's head icon, name, HP, and how far the Knight has come toward sparing him.
- art.sethFrame('down',false,0,x+22,y+30,1);text('SETH',x+40,y+8,1.5,'#fff');
+ art.sethFace(game.hp<game.maxHP*.3?'shocked':game.sethMercy>=100?'happy':'neutral',x+6,y+6,30);text('SETH',x+40,y+8,1.5,'#fff');
  text('HP',x+116,y+10,1,'#fff');bar(x+136,y+9,86,10,game.hp/game.maxHP,SETHC,'#3a1040');text(`${game.hp}/${game.maxHP}`,x+136,y+21,1,'#fff');
  text('MERCY',x+236,y+10,1,'#ffff00');bar(x+236,y+21,96,7,game.sethMercy/100,'#ffff00','#403a00');text(game.sethMercy+'%',x+332,y+9,1,'#ffff00',false);
  if(game.state==='menu'&&oy===0)drButtons().forEach((r,i)=>{const sel=game.selected===i,col=sel?'#ffff00':DR_ORANGE;ctx.strokeStyle=col;ctx.lineWidth=2;ctx.strokeRect(r.x+1,r.y+1,r.w-2,r.h-2);if(sel)battleSoul(ctx,r.x+9,r.y+13,10,SETHC);text(r.label,r.x+r.w/2+(sel?5:0),r.y+8,1,col,true);});
@@ -294,9 +319,9 @@ function renderDR({assemble=1}={}){
  const k=ease(assemble),defending=['defend','warning'].includes(game.state),t=game.clock;
  drBackdrop(t,k);
  // Seth stands on the left like a party member; he steps in when he attacks.
- const fx=game.state==='drfight'?10:0;art.sethFrame('right',false,0,112+fx-(1-k)*160,300,3,k);
+ drawSethDR(112-(1-k)*160,300,k);
  if(game.defending){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle=SETHC;ctx.lineWidth=3;ctx.beginPath();ctx.arc(150,240,40,-1,1);ctx.stroke();ctx.restore();}
- drawKnight(320+(522-320)*k,300,.86);
+ drawKnight(320+(522-320)*k,300,1.35);
  text('WHITE ROARING KNIGHT',522,24,1,game.ready?'#ffff00':'#9ac8ff',true);
  tpBar(20-(1-k)*80);
  if(defending)field(DR_GREEN);

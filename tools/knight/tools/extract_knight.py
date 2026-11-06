@@ -15,14 +15,12 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.a
 
 # Boxes on the 1536x1024 concept sheet.
 BOXES = {
-    'main': (250, 62, 632, 565),
-    'p1': (668, 348, 832, 512), 'p2': (842, 348, 1050, 512), 'p3': (1055, 348, 1322, 512), 'back': (1326, 348, 1516, 512),
-    'slash': (30, 614, 248, 756), 'sweep': (264, 614, 532, 756), 'halo': (537, 612, 803, 756), 'rise': (808, 614, 1038, 756),
-    'lunge': (1048, 610, 1343, 758), 'spikes': (1354, 610, 1513, 758),
-    'portrait': (28, 818, 203, 990), 'face': (623, 818, 750, 939), 'cloth': (768, 818, 896, 939), 'scarf': (915, 818, 1043, 939), 'blade': (1063, 818, 1188, 939),
+    # Only the dialogue portrait is still taken from the concept sheet; the battle sprites now come from the
+    # designer's sprite sheets (tools/extract_sheets.py).
+    'portrait': (28, 818, 203, 990),
 }
 # Sheet text that falls inside a box, blanked before keying (box-relative).
-BLANK = {'main': [(0, 0, 125, 80)], 'portrait': []}
+BLANK = {}
 
 
 def key(img):

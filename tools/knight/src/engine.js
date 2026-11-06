@@ -78,7 +78,7 @@ class BattleEngine{
   }
   if(this.state==='target'){this.state='fight';this.timer=0;this.attackCursor=56;this.attackDir=1;this.emit('select');return;}
   if(this.state==='fight'){this.strike(clamp(1-Math.abs(this.attackCursor-320)/264,0,1));return;}
-  if(this.state==='drtarget'){const p=this.pendingDR;this.emit('select');if(p==='fight'){this.state='drfight';this.timer=0;this.drCursor=1;}else if(p==='act'){this.state='act';this.option=0;}else this.spare();return;}
+  if(this.state==='drtarget'){const p=this.pendingDR;this.emit('select');if(p==='fight'){this.state='drfight';this.timer=0;this.drCursor=1;this.sethAct('cast_notebook_page',2.2);}else if(p==='act'){this.state='act';this.option=0;}else this.spare();return;}
   if(this.state==='drfight'){this.drStrike();return;}
   if(this.state==='act'){this.act(this.options()[this.option]);return;}
   if(this.state==='item'){const item=this.items.filter(i=>i.count)[this.option];if(!item)return;const amount=Math.min(this.maxHP-this.hp,item.heal);this.hp+=amount;item.count--;this.emit('heal');this.message([S.N(`* You ${item.name==='SEA TEA'?'drink':'eat'} the ${item.name}.\n* ${this.hp>=this.maxHP?'Your HP was maxed out.':'You recover '+amount+' HP.'}`)],'defend');return;}
@@ -99,6 +99,7 @@ class BattleEngine{
  drStrike(){const q=this.drCursor<=0?0:clamp(1-Math.abs(this.drCursor-.14)*3.2,0,1);if(q<=0){this.message([S.N('* SETH missed!')],'defend');return;}this.strike(q);}
  act(name){
   const c=this.counts[name]=(this.counts[name]||0)+1;
+  this.sethAct({CHECK:'point_lecture',WISH:'read_notebook',LISTEN:'adjust_glasses','ROAR BACK':'proud_laugh',PERSEVERE:'cast_glasses'}[name]||'idle',2);
   if(name==='CHECK'){this.message(S.CHECK,'defend');return;}
   if(name==='PERSEVERE'){if(this.tp<TP_COST){this.message(S.NO_TP,'act');return;}this.tp-=TP_COST;this.persevere=true;this.hp=Math.min(this.maxHP,this.hp+6);this.emit('spell');this.mercyKnight(KMERCY.PERSEVERE);this.message([...S.PERSEVERE,S.N('* SETH recovered 6 HP.\n* Damage is halved this turn.')],'defend');return;}
   const bank={WISH:S.WISH,LISTEN:S.LISTEN,'ROAR BACK':S.ROAR}[name];
@@ -107,12 +108,13 @@ class BattleEngine{
   this.message(bank[Math.min(c-1,bank.length-1)],'defend');
  }
  spare(){
+  this.sethAct('offer_hand_hug',this.ready?99:1.6);
   if(this.ready){this.endBattle();return;}
   this.spareSeth(SMERCY.spare);
   if(!this.dr){this.message(S.SPARE_UT,'defend');return;}
   this.message([...S.SPARE_EARLY[Math.min(this.spareTries++,S.SPARE_EARLY.length-1)],S.N(`* (The Knight's MERCY: ${this.knightMercy}%.)`)],'defend');
  }
- defend(){this.defending=true;this.tp=Math.min(100,this.tp+16);this.spareSeth(SMERCY.defend);this.emit('defend');this.message(S.DEFEND,'defend');}
+ defend(){this.sethAct('kneel_stand',1.4);this.defending=true;this.tp=Math.min(100,this.tp+16);this.spareSeth(SMERCY.defend);this.emit('defend');this.message(S.DEFEND,'defend');}
  endBattle(){this.bullets=[];this.timeline=[];this.setArena(MENU_BOX);this.ending='spared';this.message(S.SPARED,'spared');this.emit('spare');}
  // ------------------------------------------------------------ turns
  toMenu(silent=false){
@@ -150,14 +152,17 @@ class BattleEngine{
  setArena(a,spin=false){this.targetArena={...a};if(spin&&this.ui==='dr')this.boxSpin=.45;}
  at(t,fn){this.timeline.push({at:t,action:fn,done:false});}
  spawn(b){const o={age:0,vx:0,vy:0,...b};this.bullets.push(o);return o;}
- pose(p,time=.9){this.boss.pose=p;this.boss.poseTime=time;}
+ // The Knight plays one of its animations (by name in the sprite sheets) for a while.
+ pose(p,time=.9){this.boss.pose=p;this.boss.poseTime=time;this.boss.poseStart=this.clock;}
+ // Seth's own animation in the Deltarune half (reading, laughing, casting, kneeling, offering a hand...).
+ sethAct(name,time=1.4){this.sethPose={name,t:this.clock,until:this.clock+time};}
  cue(text){this.effects.push({type:'instruction',text,life:1.6});}
  spike(edge,pos,{w=18,len,warn=.75,live=.5,rise=.1}={}){const a=this.targetArena;let x,y,dx=0,dy=0;if(edge==='bottom'){x=pos;y=a.y+a.h;dy=-1;}else{x=pos;y=a.y;dy=1;}return this.spawn({kind:'spike',x,y,dx,dy,w,len:len??a.h*.5,warn:warn*this.config.warn,rise,live,fall:.15});}
  // ------------------------------------------------------------ physics
  hurt(amount=this.config.damage){
   if(this.invulnerability>0||this.settings.invincible)return;
   if(this.defending||this.persevere)amount=Math.max(1,Math.ceil(amount/2));
-  this.hp=Math.max(0,this.hp-amount);this.invulnerability=this.config.cooldown;this.shake=.18;this.effects.push({type:'vignette',color:'90,140,255',life:.35});this.emit('hurt');
+  this.hp=Math.max(0,this.hp-amount);this.sethAct('shock_frustration',.8);this.invulnerability=this.config.cooldown;this.shake=.18;this.effects.push({type:'vignette',color:'90,140,255',life:.35});this.emit('hurt');
   if(!this.hp){this.state='dead';this.deathAge=0;this.bullets=[];this.timeline=[];this.emit('dead');}
  }
  // margin > 0 asks "is the SOUL within margin of it?" (the graze test).

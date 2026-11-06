@@ -371,11 +371,10 @@ The designer revived their White Roaring Knight concept (a union of DELTARUNE's 
 - **HP:** the Knight can't be killed (HP floor 1). Below 30% it is TIRED and ACTs move its MERCY 1.5× as far.
 - **Checkpoint** with full HP and supplies every 4 waves and at the break.
 - **Measured (test bot, Normal):** spared in 17 to 18 turns (about 4.3 to 4.6 minutes of dodging) with no deaths, about 42 to 45 hits a fight. Gentle has no deaths either. A deliberately sloppy bot on Hard dies 1 to 6 times (it was 1 to 2 before the rebuild).
-- **Art and music: placeholders.**
-  - The Knight's frames are cut from the designer's concept sheet (`tools/knight/tools/extract_knight.py`), until the designer's real sprite sheets arrive.
-  - Gerson is cropped from `games/gerson.html`, and Seth's walk is Marigold's.
-  - The rooms are painted by `tools/knight/tools/paint_rooms.py`.
-  - The music is a synthesized placeholder score until themes are supplied.
+- **Art:**
+  - **The Knight:** the designer's sprite sheets. 24 eight-frame animations; each move plays its own (the orbiting-blade cast for ENCIRCLING BLADES, ground slam for the eruptions, dash, thrust, cleave, star and diamond storms, the roar during the UI break, hurt, the vanish at the spare, the finale ascend), and the arrival animation plays as it forms from the crystal. Its effect sprites draw the swords, stars, diamonds, heal hearts, reticles, the vortex in the finale and the hammer beside the GREEN SOUL box. Cut by `tools/knight/tools/extract_sheets.py`; only the dialogue portrait is still from the concept sheet.
+  - **Human Seth:** the designer's Human Seth pack. He walks with its walk cycles and talks with its portraits. On the Deltarune side he reads (WISH), adjusts his glasses (LISTEN), laughs (ROAR BACK), casts his glasses (PERSEVERE), casts a notebook page (FIGHT), kneels behind the glasses shield (DEFEND), flinches when hit, and offers his hand (SPARE).
+  - Gerson is cropped from `games/gerson.html`; rooms are painted by `tools/knight/tools/paint_rooms.py`. Music is still a synthesized placeholder until themes are supplied.
 
 ### Marigold — The Forgotten Memorial
 

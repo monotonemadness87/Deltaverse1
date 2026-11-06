@@ -6,7 +6,7 @@
 // always had a fight in it; it also tries to heal and spare Seth. It is also a glimpse into another world, which is
 // where its attacks (and, halfway through, the whole battle UI) come from.
 const N=text=>({speaker:'narrator',text});
-const SETH=text=>({speaker:'seth',text});
+const SETH=(text,face='talking')=>({speaker:'seth',text,face});
 const G=(text,face='face')=>({speaker:'gerson',text,face});
 // The Knight speaks as one, but each heart has its own voice colour: blade (cyan), wild (pink), hope (green).
 const K=(text,heart='all')=>({speaker:'boss',text,heart});
@@ -46,7 +46,7 @@ const CRYSTAL_LOOK=[N('* A crystal, taller than you. Pure enough to see straight
 const TOUCH=[
  N('* You reach out.'),
  N('* Your SOUL answers before you do.'),
- SETH('...Wait. I wasn\'t--')
+ SETH('...Wait. I wasn\'t--','shocked')
 ];
 // The manifestation: three hearts fly out of the crystal and become one knight.
 const MANIFEST=[

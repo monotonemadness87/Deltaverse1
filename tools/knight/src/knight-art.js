@@ -2,12 +2,14 @@
 // walk (Marigold's), Gerson behind his counter (from his own fight's art), and the painted rooms, plus the things in
 // them that are alive: echo flowers, ceiling gems, the crystal, the stream. Everything is drawn with whole pixels.
 const FRAMES=__KNIGHT_FRAMES__;
+// The designer's sprite sheets: name_i -> [x, y, w, h, anchorX, anchorY].
+const ANIM=__ANIM_FRAMES__;
 const SETH=__SETH_FRAMES__;
 const GERSON=__GERSON_FRAMES__;
 const ROOMS=__ROOMS__;
 const img=src=>{const i=new Image();i.src=src;return i;};
 class KnightArt{
- constructor(ctx){this.ctx=ctx;this.sheet=img("__KNIGHT_PNG__");this.seth=img("__SETH_PNG__");this.gersonSheet=img("__GERSON_PNG__");this.rooms={};for(const [k,v] of Object.entries(ROOMS))this.rooms[k]=img(v);}
+ constructor(ctx){this.ctx=ctx;this.sheet=img("__KNIGHT_PNG__");this.animSheet=img("__ANIM_PNG__");this.seth=img("__SETH_PNG__");this.gersonSheet=img("__GERSON_PNG__");this.rooms={};for(const [k,v] of Object.entries(ROOMS))this.rooms[k]=img(v);}
  ready(i){return i.complete&&i.naturalWidth;}
  has(name){return !!FRAMES[name];}
  size(name){const f=FRAMES[name];return f?{w:f[2],h:f[3]}:{w:0,h:0};}
@@ -20,9 +22,26 @@ class KnightArt{
   else c.drawImage(this.sheet,sx,sy,w,h,ox,oy,dw,dh);
   c.restore();
  }
- sethFrame(dir,moving,t,x,y,scale=2,alpha=1){
-  if(!this.ready(this.seth))return;const phase=moving?['stepA','stand','stepB','stand'][Math.floor(t*6.5)%4]:'stand';const f=SETH[dir+'_'+phase]||SETH.down_stand,c=this.ctx;
-  c.save();c.globalAlpha*=alpha;c.imageSmoothingEnabled=false;c.drawImage(this.seth,f[0],f[1],f[2],f[3],Math.round(x-f[2]*scale/2),Math.round(y-f[3]*scale),f[2]*scale,f[3]*scale);c.restore();
+ // One frame of an animation from an atlas whose entries carry their anchor; rot turns it about the anchor.
+ drawAnim(sheet,table,name,x,y,scale=1,{flip=false,alpha=1,tint=null,rot=0,smooth=false}={}){
+  const f=table[name];if(!f||!this.ready(sheet))return false;const c=this.ctx,[sx,sy,w,h,ax,ay]=f;
+  // Effect sprites drawn well below their size are smoothed, so they don't break up.
+  c.save();c.imageSmoothingEnabled=smooth||scale<.6;c.globalAlpha*=alpha;c.translate(Math.round(x),Math.round(y));if(rot)c.rotate(rot);c.scale(flip?-scale:scale,scale);
+  if(tint){const t=this.scratch??=document.createElement('canvas');t.width=w;t.height=h;const x2=t.getContext('2d');x2.clearRect(0,0,w,h);x2.drawImage(sheet,sx,sy,w,h,0,0,w,h);x2.globalCompositeOperation='source-atop';x2.fillStyle=tint;x2.fillRect(0,0,w,h);x2.globalCompositeOperation='source-over';c.drawImage(t,0,0,w,h,-ax,-ay,w,h);}
+  else c.drawImage(sheet,sx,sy,w,h,-ax,-ay,w,h);
+  c.restore();return true;
+ }
+ // The Knight's animations (and its effect sprites), frame i of the family.
+ anim(family,i,x,y,scale=1,o={}){return this.drawAnim(this.animSheet,ANIM,family+'_'+Math.max(0,Math.min(this.frames(family)-1,i)),x,y,scale,o);}
+ frames(family){let n=0;while(ANIM[family+'_'+n])n++;return n;}
+ // Human Seth (the designer's pack): body animations anchored at his feet, effects centred, eight portraits.
+ sethAnim(family,i,x,y,scale=2,o={}){return this.drawAnim(this.seth,SETH,family+'_'+(((i%8)+8)%8),x,y,scale,o);}
+ sethFx(family,i,x,y,scale=1,o={}){let n=0;while(SETH[family+'_'+n])n++;return this.drawAnim(this.seth,SETH,family+'_'+Math.max(0,Math.min(n-1,i)),x,y,scale,o);}
+ sethFace(face,x,y,size){const f=SETH['face_'+face]||SETH.face_neutral;if(!f||!this.ready(this.seth))return;const c=this.ctx;c.save();c.imageSmoothingEnabled=false;c.drawImage(this.seth,f[0],f[1],f[2],f[3],Math.round(x),Math.round(y),size,Math.round(size*f[3]/f[2]));c.restore();}
+ // The walk: front, back and left walks (right is the left walk mirrored).
+ sethFrame(dir,moving,t,x,y,scale=1.25,alpha=1){
+  const fam={down:'walk_front',up:'walk_back',left:'walk_left',right:'walk_left'}[dir]||'walk_front',i=moving?Math.floor(t*11):0;
+  this.sethAnim(!moving&&dir==='down'?'idle':fam,!moving&&dir==='down'?Math.floor(performance.now()/120):i,x,y,scale,{flip:dir==='right',alpha});
  }
  gerson(name,x,y,scale=1){const f=GERSON[name];if(!f||!this.ready(this.gersonSheet))return;const c=this.ctx;c.save();c.imageSmoothingEnabled=false;c.drawImage(this.gersonSheet,f[0],f[1],f[2],f[3],Math.round(x-f[2]*scale/2),Math.round(y-f[3]*scale),Math.round(f[2]*scale),Math.round(f[3]*scale));c.restore();}
  gersonFace(x,y,size){const f=GERSON.face;if(!f||!this.ready(this.gersonSheet))return;const c=this.ctx;c.save();c.imageSmoothingEnabled=true;c.drawImage(this.gersonSheet,f[0],f[1],f[2],f[3],Math.round(x),Math.round(y),size,Math.round(size*f[3]/f[2]));c.restore();}

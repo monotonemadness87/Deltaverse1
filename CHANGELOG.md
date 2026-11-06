@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-06 — The White Roaring Knight and Human Seth: the designer's sprites
+
+- **The Knight** is now drawn from the designer's sprite sheets: 24 animations, each move with its own (slashes, thrust, dash, cleave, star and diamond storms, orbiting blades, ground slam, the roar that breaks the battle, hurt, its arrival out of the crystal, its vanish at the spare). Its effect sprites replace the drawn swords, stars, shards, heal hearts and reticles, plus a vortex in the finale and the hammer beside the GREEN SOUL wave.
+- **Human Seth** is now the designer's Human Seth pack: new walk cycles, portraits in dialogue and the party panel, and on the Deltarune side a pose for every command (reading, glasses, laughing, casting, kneeling behind his glasses shield, offering a hand to spare).
+- Balance is unchanged (test bot, Normal: 17 turns, no deaths).
+
 ## 2026-11-06 — The White Roaring Knight, rebuilt on the Roaring Knight and Gerson fights
 
 The designer's two reference videos (the "Kaizo Roaring Knight - No-Hit" run and DELTARUNE's secret Gerson fight) were downloaded in full and studied, and the Deltarune half was rebuilt on them, all drawn new.
