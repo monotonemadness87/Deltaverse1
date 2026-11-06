@@ -59,7 +59,7 @@ The hub is currently an encounter launcher, **not a continuous campaign save**. 
 | --- | --- | --- |
 | Ruins | Encore — Count Anansi: THE SHOW (spare after the letter; he can be killed after 5 attacks) | Encore — THE LAST SHOW |
 | Snowdin | Marigold — The Forgotten Memorial: THE TRAP (pacifist only; no neutral fight) | Marigold — THE HUNT |
-| Waterfall | Mettalot — Waterfall After Dark | Gerson — What For? |
+| Waterfall | The White Roaring Knight — A New World (pacifist only), then Mettalot — Waterfall After Dark (pacifist and neutral) | Gerson — What For? |
 | Hotland | Ant Tenna + Spamson — The Next Big Thing, currently pacifist only in launcher | Spamson NEO — A Deal in the Dark, then Muffet — The Dark Nest |
 | CORE | QU5EN — Quantum 5 Engine (pacifist only), then Sans — No Promises | Sans + Alphys — Misery Likes Company |
 | New Home | Flowey — two neutral versions: FALSE PACIFIST (Inside Your Best Friend) and FALSE GENOCIDE (She Gets Her Game Back) | Aqua — Last Playmate (KILL or the R35 SPARE) |
@@ -329,6 +329,41 @@ Count Anansi replaced the old Encore in the Ruins. ENCORE is the battle's name; 
 - **False pacifist:** the Ruins replay, ENCORE! ENCORE!: his web curtain with one gap, then TEA FOR TWO (his teapot's pour and his many hands, wherever you stand). The memory page is THE STAGE ("The count's teacup. A letter he finally opened.").
 - **False genocide:** THE EMPTIED THEATRE: burning silk strands (THE HOUSE BURNS), the cross with wheels of burning spiders (ON A STRING), his cape from every wall (CURTAIN CALL). The FILE 1 cut shows his face. NO ENCORE in Flowey's last gauntlet is his web curtain.
 - Flowey borrows `anansi-art.js` live from `encore.html` via `tools/sync_borrowed_art.py`.
+
+### The White Roaring Knight — A New World (Waterfall, pacifist only)
+
+The designer revived their White Roaring Knight concept (a union of DELTARUNE's three heroes) as an Undertale-side encounter. Sources and build: `tools/knight/` (see its README). It is not Rift, which stays retired.
+
+**Who it is (designer canon):**
+- There is a big, pure crystal hidden off Waterfall's old path. For ages it has absorbed monsters' hopes and dreams: everyone who stared into it and wished, and every wish the echo flowers there repeat.
+- Gerson (retired, running his shop) tells Seth about it, including that it is a glimpse into another world. Seth goes **alone**, gets curious and wakes it by accident with his human magic SOUL.
+- It manifests as the Delta Rune's Angel, the good kind, as monsterkind dreamed it: one knight with three hearts, a human's blade (cyan), a monster's wild heart (pink) and a prince's hope (green).
+- It wants to fight Seth, because a fight was always part of monsterkind's dream. It also sends hearts and tries to spare him, and takes ACTs of its own.
+- Being a glimpse into another world is where its DELTARUNE moves come from (RUDE BUSTER, PACIFY, HEAL PRAYER, X-SLASH). Partway through, it breaks the Undertale battle UI and the battle turns into a DELTARUNE battle.
+- It knows Seth is not the Angel ("YOU ARE NOT THE ANGEL. WE ARE SORRY WE HOPED YOU WERE.") but values that he was kind to a dream.
+
+**Contract (designer choices):**
+- **Pacifist only.** It does not appear on neutral or genocide. Seth is LV 1 / 30 HP; 2 damage per hit on Normal (1 Gentle, 3 Hard).
+- **The walk:** Gerson's shop → the old path (four echo flowers, each a wish: the sky, a hero, kindness, "a new world. together.") → a crack in the rock that only opens once Gerson has told Seth → the crystal. Touching it plays the manifestation: three hearts fly out and merge into the Knight. "Skip the walk" is in options.
+- **Undertale half (4 waves):** FIGHT / ACT / ITEM / MERCY with the Torn Notebook. Its ACTs are CHECK, WISH, LISTEN and ROAR BACK. Both MERCY bars already fill, hidden.
+- **The break:** after the fourth wave the Knight roars. Rings, then cracks through the box and buttons; the UI shatters and falls; a white flash; then the DELTARUNE battle builds in (grid backdrop, Seth on the left, the Knight on the right, the TP bar, the party panel, the text box). It takes about 4.6 s, and reduced motion keeps it calm.
+- **DELTARUNE half:**
+  - The full kit: FIGHT (DELTARUNE's timing bar), ACT, ITEM, SPARE, DEFEND.
+  - TP comes from grazing: 6 TP a second while near a damaging hitbox, one aggregate amount per tick, as in Aqua's fight. DEFEND gives +16 TP and halves damage for the wave.
+  - Seth's own spell is **PERSEVERE** (40% TP): +6 HP, damage halved for the wave, and the Knight's MERCY +9.
+- **One knight, three turns:** each enemy turn, the three hearts act in order (blade, wild, hope) and the text box names what each did. Then the UNIFIED waves start (the Knight's MERCY ≥ 70%): all three hearts at once.
+- **Mutual spare:** there are two MERCY bars.
+  - The Knight's MERCY is raised by Seth's ACTs, PERSEVERE, FIGHT (hitting it is part of the dream) and each wave survived.
+  - Seth's MERCY is raised by the Knight: each wave the hope heart tries to spare him, the HEAL PRAYER hearts he catches, the PACIFY Zs he touches (harmless but sleepy), and his own SPARE and DEFEND.
+  - When both reach 100%, the finale A NEW WORLD plays. It ends in a shower of hearts, then they spare each other.
+- **HP:** the Knight can't be killed (HP floor 1). Below 30% it is TIRED and ACTs move its MERCY 1.5× as far.
+- **Checkpoint** with full HP and supplies every 4 waves and at the break.
+- **Measured (test bot, Normal):** spared in 16 to 19 turns (about 4 to 4.5 minutes of dodging) with no deaths. Gentle has no deaths either. A deliberately sloppy bot on Hard dies once or twice.
+- **Art and music: placeholders.**
+  - The Knight's frames are cut from the designer's concept sheet (`tools/knight/tools/extract_knight.py`), until the designer's real sprite sheets arrive.
+  - Gerson is cropped from `games/gerson.html`, and Seth's walk is Marigold's.
+  - The rooms are painted by `tools/knight/tools/paint_rooms.py`.
+  - The music is a synthesized placeholder score until themes are supplied.
 
 ### Marigold — The Forgotten Memorial
 

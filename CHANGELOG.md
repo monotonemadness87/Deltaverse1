@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-11-06 — The White Roaring Knight (new Waterfall pacifist fight)
+
+The designer's White Roaring Knight concept returns as a pacifist-only fight in Waterfall, before Mettalot.
+- **The walk:** Gerson, retired in his shop, tells Seth about a pure crystal off the old path that has soaked up monsters' wishes for ages, and is a glimpse of another world. Seth goes alone, past four echo flowers repeating wishes, through a crack only Gerson's tip reveals, and wakes the crystal by accident with his human magic SOUL. Three hearts fly out and become the Knight: the Delta Rune's Angel as monsterkind dreamed it.
+- **It wants a fight, and it wants to spare you.** It fights because the dream always had a fight in it, but it heals Seth with HEAL PRAYER hearts, tries to PACIFY him, and tries to spare him every turn.
+- **It breaks the battle.** After four Undertale waves it roars. The box and buttons crack and shatter, and the battle rebuilds as a DELTARUNE battle: TP from grazing, DEFEND, FIGHT / ACT / ITEM / SPARE / DEFEND, Seth's own spell PERSEVERE, and a TP bar and party panel. Each turn its three hearts act in order (blade, wild heart, hope) with moves from the other world: X-SLASH, RUDE BUSTER, PACIFY, HEAL PRAYER. Then come UNIFIED waves with all three at once.
+- **Mutual spare:** two MERCY bars, the Knight's (Seth's ACTs, PERSEVERE, FIGHT) and Seth's (the Knight's hearts, spare attempts, his SPARE and DEFEND). When both are full, the finale A NEW WORLD plays, and then they spare each other.
+- **Placeholders:** the Knight's sprites are cut from the concept sheet and the music is synthesized, until the designer's sheets and themes arrive.
+- **Measured (test bot, Normal):** 16 to 19 turns, about 4 to 4.5 minutes of dodging, no deaths.
+
 ## 2026-11-01 — QU5EN: real minigames, and she is colour blind
 
 - **Four minigames that aren't quizzes,** after Mettalot's ACT minigames, each still played in a SOUL mode under her hazards and scored for DATA:

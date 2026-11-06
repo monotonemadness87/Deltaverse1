@@ -35,6 +35,11 @@
     "sha256": "841eeddacc661ec237a5af9467d4e8f032ee822665a9e1acc647548f36984b08"
   },
   {
+    "file": "knight.html",
+    "bytes": 1911459,
+    "sha256": "cca3fff65204919db6746bdf25ad6c85bf492809fd7e943e470caa8e01402273"
+  },
+  {
     "file": "lab.html",
     "bytes": 326234,
     "sha256": "0dad8cb4940fee279aab074f646c41005b369436729a8a36aad8c6100e06a35b"
