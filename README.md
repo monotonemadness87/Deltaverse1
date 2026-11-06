@@ -8,10 +8,11 @@ Undertale-style browser boss encounters: Seth (Purple SOUL) and Aqua (Cyan SOUL)
 
 | Path | Contents |
 | --- | --- |
-| `games/` | The fifteen exact game HTMLs extracted from hub v60 (runtime code, music, sprites, fonts inline). `HUB-PAYLOADS.json` lists their sizes and hashes. |
+| `games/` | The fifteen game HTMLs (runtime code, music, sprites, fonts inline), originally extracted from hub v60 and since polished — see [CHANGELOG.md](CHANGELOG.md). `HUB-PAYLOADS.json` lists their current sizes and hashes. |
 | `hub/Purple-The-Underground.shell.html` | The launcher with its embedded game pack replaced by a `__PACK__` placeholder. |
 | `tools/build_hub.py` | Packs `games/` into the shell → `dist/Purple-The-Underground.html` (the full offline hub). |
 | `tools/extract_hub.py` | The reverse: pulls exact game HTMLs out of a built hub. |
+| `tools/sim/` | Bots that play the fights in Node (and Muffet in headless Chromium) to find crashes, soft-locks, invalid numbers and balance outliers. |
 | `docs/` | Continuity log, dialogue/lore guide, Aqua R28 verification report, Claude's dialogue rewrite ZIP. |
 | `references/` | The four Aqua design reference images (inspiration, not replacement art). |
 
@@ -24,7 +25,7 @@ python3 tools/build_hub.py                     # writes dist/Purple-The-Undergro
 python3 tools/build_hub.py --expect-original   # also asserts byte-identity with the original v60 hub
 ```
 
-With unmodified `games/`, the output is byte-identical to the original hub (`b1abed43…af9`). After editing a game, rebuild and the script reports that the digest differs, as expected.
+The first commit's `games/` rebuilds byte-identically to the original v60 hub (`b1abed43…af9`); check that commit out to use `--expect-original`. The games have been edited since, so a current build reports that its digest differs, as expected.
 
 ## Not included
 
