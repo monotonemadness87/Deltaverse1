@@ -68,6 +68,7 @@ class StageAudio{
    roar:()=>{this.burst(.1,.35,320);this.tone(110,.3,'sawtooth',.05);},
    // The roar that breaks the battle: a long low swell, then glass.
    roarBreak:()=>{this.burst(.22,1.2,240);this.tone(82,1.1,'sawtooth',.08);setTimeout(()=>{this.burst(.2,.5,4200);this.burst(.15,.7,2600);},1600);setTimeout(()=>{this.tone(523,.3,'triangle',.07);this.tone(784,.4,'triangle',.06,.12);this.tone(1046,.6,'triangle',.05,.24);},3000);},
+   laser:()=>{this.tone(1760,.08,'sawtooth',.03);this.burst(.06,.25,3200);},shine:()=>{this.tone(1318,.25,'triangle',.05);this.tone(1975,.3,'sine',.03,.05);},block:()=>this.tone(880,.05,'triangle',.06),
    drStart:()=>{},echo:()=>{this.tone(1046,.4,'sine',.04);this.tone(1568,.6,'sine',.025,.2);},
    awaken:()=>{this.tone(262,1.2,'sine',.06);this.tone(392,1.4,'sine',.05,.4);this.tone(523,1.6,'sine',.05,.8);this.burst(.08,2,1800);},
    door:()=>this.burst(.05,.2,600),encounter:()=>{this.tone(880,.06);setTimeout(()=>this.tone(440,.08),110);this.burst(.1,.3,1600);}

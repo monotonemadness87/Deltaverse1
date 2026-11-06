@@ -69,6 +69,15 @@ function worldDialogue(w){
 
 // ======================================================================= hazards (both halves)
 function star4(x,y,r,col='#fff'){ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x,y-r);ctx.lineTo(x+r*.28,y-r*.28);ctx.lineTo(x+r,y);ctx.lineTo(x+r*.28,y+r*.28);ctx.lineTo(x,y+r);ctx.lineTo(x-r*.28,y+r*.28);ctx.lineTo(x-r,y);ctx.lineTo(x-r*.28,y-r*.28);ctx.closePath();ctx.fill();}
+// A sword: white blade, pale guard, pointing along angle (centre at x,y).
+function swordShape(x,y,angle,len,col){ctx.save();ctx.translate(Math.round(x),Math.round(y));ctx.rotate(angle);ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(len/2,0);ctx.lineTo(len/2-7,-3);ctx.lineTo(-len/2+6,-3);ctx.lineTo(-len/2+6,3);ctx.lineTo(len/2-7,3);ctx.closePath();ctx.fill();ctx.fillStyle='#8aa4ff';ctx.fillRect(-len/2+3,-7,3,14);ctx.fillRect(-len/2-3,-2,6,4);ctx.restore();}
+// The Knight's six-pointed star, outlined.
+function star6(x,y,r,col){ctx.save();ctx.translate(Math.round(x),Math.round(y));ctx.rotate(game.clock*(reduceMotion?0:2));ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();for(let k=0;k<12;k++){const rr=k%2?r*.5:r,an=k*Math.PI/6;k?ctx.lineTo(Math.cos(an)*rr,Math.sin(an)*rr):ctx.moveTo(Math.cos(an)*rr,Math.sin(an)*rr);}ctx.closePath();ctx.stroke();ctx.fillStyle=col;ctx.fillRect(-1,-1,2,2);ctx.restore();}
+// The Knight's crescent: a white moon-blade with afterimages trailing behind it.
+function moon(b){const warn=b.age<b.warn;ctx.save();ctx.lineCap='round';
+ if(warn){ctx.globalAlpha=.3+.3*blink(14);ctx.strokeStyle='#ffffff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(b.x,b.y,b.R,b.facing-b.span,b.facing+b.span);ctx.stroke();ctx.restore();return;}
+ for(let k=4;k>=0;k--){ctx.globalAlpha=k?.12*(5-k):1;ctx.strokeStyle=k?'#9ab8ff':'#ffffff';ctx.lineWidth=k?b.thick-2:b.thick;ctx.beginPath();ctx.arc(b.x-Math.sign(b.vx)*k*12,b.y,b.R,b.facing-b.span,b.facing+b.span);ctx.stroke();}
+ ctx.globalAlpha=1;ctx.strokeStyle='#cfe0ff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(b.x,b.y,b.R-b.thick/2,b.facing-b.span*.9,b.facing+b.span*.9);ctx.stroke();ctx.restore();}
 function spikePath(b,len){const px=-b.dy,py=b.dx,hw=b.w/2;ctx.beginPath();ctx.moveTo(b.x+px*hw,b.y+py*hw);ctx.lineTo(b.x+b.dx*len,b.y+b.dy*len);ctx.lineTo(b.x-px*hw,b.y-py*hw);ctx.closePath();}
 function hazard(b){
  const t=game.clock;
@@ -77,7 +86,7 @@ function hazard(b){
   case 'slash':{ctx.save();if(b.age<b.warn){ctx.globalAlpha=.45+(reduceMotion?0:.2*Math.sin(b.age*28));ctx.strokeStyle=HEART.blade;ctx.lineWidth=1;ctx.setLineDash([6,4]);}else{ctx.globalAlpha=Math.max(0,1-(b.age-b.warn-b.live)/.2);ctx.strokeStyle=HEART.blade;ctx.lineWidth=b.w+4;ctx.beginPath();ctx.moveTo(b.x1,b.y1);ctx.lineTo(b.x2,b.y2);ctx.stroke();ctx.strokeStyle='#fff';ctx.lineWidth=b.w-3;}ctx.beginPath();ctx.moveTo(b.x1,b.y1);ctx.lineTo(b.x2,b.y2);ctx.stroke();ctx.restore();return;}
   case 'lance':{const cx=Math.cos(b.angle),cy=Math.sin(b.angle);if(b.age<b.warn){ctx.save();ctx.strokeStyle=HEART.blade;ctx.globalAlpha=.55;ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(b.x+cx*700,b.y+cy*700);ctx.stroke();ctx.restore();}
    const tx=b.x+cx*b.tip,ty=b.y+cy*b.tip;ctx.save();ctx.translate(tx,ty);ctx.rotate(b.angle);ctx.fillStyle='#e8f4ff';ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-b.len,-b.w/2);ctx.lineTo(-b.len,b.w/2);ctx.closePath();ctx.fill();ctx.fillStyle=HEART.blade;ctx.fillRect(-b.len,-1,b.len-6,2);ctx.fillStyle='#3a78d8';ctx.fillRect(-b.len-14,-3,14,6);ctx.restore();return;}
-  case 'buster':{ctx.save();const warn=b.age<b.warn;ctx.globalAlpha=warn?.3+(reduceMotion?0:.2*Math.sin(b.age*30)):1;ctx.lineCap='round';
+  case 'buster':{if(b.moon){moon(b);return;}ctx.save();const warn=b.age<b.warn;ctx.globalAlpha=warn?.3+(reduceMotion?0:.2*Math.sin(b.age*30)):1;ctx.lineCap='round';
    if(!warn){ctx.strokeStyle='rgba(176,58,216,.45)';ctx.lineWidth=b.thick+10;ctx.beginPath();ctx.arc(b.x-Math.sign(b.vx)*12,b.y,b.R,b.facing-b.span,b.facing+b.span);ctx.stroke();}
    ctx.strokeStyle=warn?HEART.wild:'#ff4aa8';ctx.lineWidth=warn?2:b.thick;ctx.beginPath();ctx.arc(b.x,b.y,b.R,b.facing-b.span,b.facing+b.span);ctx.stroke();
    if(!warn){ctx.strokeStyle='#ffd0ec';ctx.lineWidth=3;ctx.beginPath();ctx.arc(b.x,b.y,b.R+b.thick*.2,b.facing-b.span*.9,b.facing+b.span*.9);ctx.stroke();}ctx.restore();return;}
@@ -86,28 +95,60 @@ function hazard(b){
   case 'axe':{ctx.save();ctx.translate(b.x,b.y);ctx.rotate(reduceMotion?0:b.age*14);ctx.fillStyle='#7a3a9a';ctx.fillRect(-2,-10,4,20);ctx.fillStyle='#ff4aa8';ctx.beginPath();ctx.moveTo(2,-10);ctx.lineTo(11,-6);ctx.lineTo(11,2);ctx.lineTo(2,-2);ctx.closePath();ctx.fill();ctx.restore();return;}
   case 'orbitblade':{ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.theta+Math.PI/2);ctx.fillStyle='#e8f4ff';ctx.beginPath();ctx.moveTo(0,-9);ctx.lineTo(4,0);ctx.lineTo(0,9);ctx.lineTo(-4,0);ctx.closePath();ctx.fill();ctx.fillStyle=HEART.blade;ctx.fillRect(-1,-6,2,12);ctx.restore();return;}
   case 'star':{const r=b.fuse&&b.age>b.fuse-.3&&blink(14)?7:5;star4(b.x,b.y,r+1,HEART.blade);star4(b.x,b.y,r-1,'#fff');return;}
-  case 'shard':{star4(b.x,b.y,3,'#bfe6ff');return;}
+  case 'shard':{if(b.big){ctx.fillStyle='#dfe8ff';ctx.beginPath();ctx.moveTo(b.x,b.y-8);ctx.lineTo(b.x+5,b.y);ctx.lineTo(b.x,b.y+8);ctx.lineTo(b.x-5,b.y);ctx.closePath();ctx.fill();return;}star4(b.x,b.y,3,'#bfe6ff');return;}
   case 'gift':{battleSoul(ctx,b.x,b.y,14,blink(5)?HEART.hope:'#a8ffd0');return;}
   case 'zee':{ctx.save();ctx.globalAlpha=.85;text('Z',b.x,b.y-7,1.5,'#c8f0ff',true);ctx.restore();return;}
+  case 'orbitsword':{swordShape(b.x,b.y,b.ang??0,24,b.launched?'#ffffff':'#c8d8ff');return;}
+  case 'sword':{if(b.age<b.warn){const A=game.arena,y=b.vy>0?A.y+8:A.y+A.h-8;ctx.save();ctx.globalAlpha=.45+.55*blink(12);star4(b.x,y,6,'#fff');ctx.restore();return;}swordShape(b.x,b.y-(b.vy>0?b.len/2:-b.len/2),b.vy>0?Math.PI/2:-Math.PI/2,b.len,'#ffffff');return;}
+  case 'eruption':{const u=clamp(b.age/b.warn,0,1);ctx.save();ctx.globalAlpha=.3+.5*u;ctx.fillStyle='#c8d0ff';ctx.beginPath();ctx.ellipse(b.x,b.y-5,b.w*(.4+.4*u),4+2*u,0,0,6.283);ctx.fill();ctx.restore();return;}
+  case 'bar':{ctx.fillStyle=b.blue?'#3a6aff':'#ffffff';const x=Math.round(b.x-b.w/2);if(b.blue)ctx.fillRect(x,b.y0,b.w,b.y1-b.y0);else{ctx.fillRect(x,b.y0,b.w,Math.round(b.gapY-b.gapH/2-b.y0));ctx.fillRect(x,Math.round(b.gapY+b.gapH/2),b.w,Math.round(b.y1-b.gapY-b.gapH/2));}return;}
+  case 'star6':{if(b.delay&&b.age<b.delay)return;star6(b.x,b.y,b.r+3,b.fuse&&b.age>b.fuse-.25&&blink(14)?'#ffe8a0':'#ffffff');return;}
+  case 'dashline':{const warn=b.age<b.warn;ctx.save();if(warn){ctx.globalAlpha=.45+.3*blink(14);ctx.fillStyle='#ffffff';ctx.fillRect(0,Math.round(b.y),640,1);}else{ctx.globalAlpha=Math.max(0,1-(b.age-b.warn-b.live)/.25);ctx.fillStyle='#bfe6ff';ctx.fillRect(0,Math.round(b.y-b.w/2-3),640,b.w+6);ctx.fillStyle='#fff';ctx.fillRect(0,Math.round(b.y-b.w/2),640,b.w);}ctx.restore();return;}
+  case 'laser':{const cx=Math.cos(b.angle),cy=Math.sin(b.angle),L=1200;ctx.save();if(b.age<b.warn){ctx.globalAlpha=.5;ctx.strokeStyle=b.col;ctx.lineWidth=1;ctx.setLineDash([6,4]);}else{ctx.globalAlpha=Math.max(0,Math.min(1,(b.warn+b.live+.2-b.age)/.2));ctx.strokeStyle=b.col;ctx.lineWidth=b.w+6;ctx.beginPath();ctx.moveTo(b.ox,b.oy);ctx.lineTo(b.ox+cx*L,b.oy+cy*L);ctx.stroke();ctx.strokeStyle='#ffffff';ctx.lineWidth=Math.max(2,b.w-6);}ctx.beginPath();ctx.moveTo(b.ox,b.oy);ctx.lineTo(b.ox+cx*L,b.oy+cy*L);ctx.stroke();ctx.restore();return;}
+  case 'cone':{const live=b.age>=b.warn,a1=b.angle-b.half,a2=b.angle+b.half;ctx.save();ctx.globalAlpha=live?Math.max(0,Math.min(.75,(b.warn+b.live+.2-b.age)*2)):.12+.12*blink(10);const g=ctx.createLinearGradient(b.ox,b.oy,b.ox+Math.cos(b.angle)*b.len,b.oy+Math.sin(b.angle)*b.len);g.addColorStop(0,'#ffffff');g.addColorStop(.4,live?'#8a9cff':'#4a5aaa');g.addColorStop(1,live?'#5a6cff':'#2a3466');ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(b.ox,b.oy);ctx.lineTo(b.ox+Math.cos(a1)*b.len,b.oy+Math.sin(a1)*b.len);ctx.lineTo(b.ox+Math.cos(a2)*b.len,b.oy+Math.sin(a2)*b.len);ctx.closePath();ctx.fill();ctx.restore();return;}
   case 'scarf':{const a=game.arena;ctx.save();ctx.globalAlpha=.4;ctx.strokeStyle=HEART.hope;ctx.lineWidth=14;ctx.beginPath();for(let k=0;k<=12;k++){const x=b.x-k*12,y=b.y+Math.sin(k*.6+b.age*3)*b.amp*.4;k?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();ctx.restore();return;}
  }
 }
 function drawSoul(){
- const s=game.soul;if(game.invulnerability>0&&Math.floor(game.clock*15)%2)return;
+ const s=game.soul;
+ if(game.mode==='green'){
+  // The HAMMER OF JUSTICE: a green SOUL (purple rim kept) with a shield, and the spears coming for it.
+  const d={up:[0,-1],right:[1,0],down:[0,1],left:[-1,0]}[game.shield];ctx.save();ctx.translate(s.x+d[0]*24,s.y+d[1]*24);ctx.rotate(Math.atan2(d[1],d[0])+Math.PI/2);ctx.fillStyle='#43e750';ctx.fillRect(-17,-3,34,6);ctx.fillStyle='#b8ffc0';ctx.fillRect(-17,-3,34,2);ctx.restore();
+  ctx.save();ctx.strokeStyle='rgba(67,231,80,.35)';ctx.beginPath();ctx.arc(s.x,s.y,24,0,6.283);ctx.stroke();ctx.restore();
+  if(!(game.invulnerability>0&&Math.floor(game.clock*15)%2)){heart(s.x,s.y,20,'purple');heart(s.x,s.y,14,'green');}
+  for(const e of game.effects)if(e.type==='block'&&!e.x){ctx.save();ctx.globalAlpha=e.life*4;ctx.strokeStyle='#b8ffc0';ctx.lineWidth=2;ctx.beginPath();ctx.arc(s.x+d[0]*24,s.y+d[1]*24,8+(.25-e.life)*30,0,6.283);ctx.stroke();ctx.restore();}
+  return;
+ }
+ if(game.invulnerability>0&&Math.floor(game.clock*15)%2)return;
  heart(s.x,s.y,16,'purple');
  if(game.sleepy>0){ctx.save();ctx.globalAlpha=.7;text('z',s.x+10,s.y-20,1,'#c8f0ff');ctx.restore();}
  if(game.defending||game.persevere){ctx.save();ctx.globalAlpha=.6;ctx.strokeStyle=SETHC;ctx.lineWidth=2;ctx.beginPath();ctx.arc(s.x,s.y,13,0,Math.PI*2);ctx.stroke();ctx.restore();}
  for(const e of game.effects)if(e.type==='graze'){ctx.save();ctx.globalAlpha=e.life*4;ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(s.x,s.y,12+(.2-e.life)*30,0,Math.PI*2);ctx.stroke();ctx.restore();}
 }
+// A spear for the green SOUL: in from its side; a trick (gold) one swings round the SOUL to the far side.
+function drawArrow(b,s){
+ const ang={up:-Math.PI/2,right:0,down:Math.PI/2,left:Math.PI}[b.side];let an=ang,dist=b.dist;
+ if(b.flip!==undefined){const u=b.flip/.38;an=ang+Math.PI*u;dist=64;}
+ const x=s.x+Math.cos(an)*dist,y=s.y+Math.sin(an)*dist;ctx.save();ctx.translate(x,y);ctx.rotate(an+Math.PI);ctx.fillStyle=b.trick&&!b.flipped?'#ffd040':'#ffffff';ctx.beginPath();ctx.moveTo(9,0);ctx.lineTo(-4,-6);ctx.lineTo(-2,0);ctx.lineTo(-4,6);ctx.closePath();ctx.fill();ctx.fillRect(-14,-1,12,2);ctx.restore();
+}
+// The Knight's star void (the finale): the box is gone; colours wash through behind turning stars.
+function starVoid(){const t=game.clock,hue=(t*30)%360,g=ctx.createRadialGradient(320,166,10,320,166,360);g.addColorStop(0,`hsla(${hue},70%,55%,.55)`);g.addColorStop(.5,`hsla(${(hue+60)%360},60%,25%,.45)`);g.addColorStop(1,'rgba(0,0,0,.9)');ctx.fillStyle=g;ctx.fillRect(0,0,640,332);
+ ctx.save();ctx.globalAlpha=.25;for(let i=0;i<26;i++){const an=i*2.4+t*(reduceMotion?0:.15),r=60+(i*37)%260;star6(320+Math.cos(an)*r,166+Math.sin(an)*r*.7,9,'#ffffff');}ctx.restore();}
 function field(border='#fff'){
- const a=game.arena;box(a.x,a.y,a.w,a.h,border,game.dr?3:4);
+ const a=game.arena,dr=game.dr;
+ if(game.voidMode)starVoid();
+ else{const spin=dr&&!reduceMotion?clamp((game.boxSpin||0)/.45,0,1):0;ctx.save();if(spin>0){const cx=a.x+a.w/2,cy=a.y+a.h/2;ctx.translate(cx,cy);ctx.rotate(spin*Math.PI/2);ctx.scale(1-spin*.35,1-spin*.35);ctx.translate(-cx,-cy);}
+  if(game.split){const hw=(a.w-12)/2;box(a.x,a.y,hw,a.h,border,3);box(a.x+hw+12,a.y,hw,a.h,border,3);}else box(a.x,a.y,a.w,a.h,border,dr?3:4);ctx.restore();}
+ const outside=['lance','laser','cone','dashline','orbitsword'];
+ // The cone of light falls behind everything else.
+ ctx.save();ctx.beginPath();ctx.rect(0,0,640,dr?332:396);ctx.clip();for(const b of game.bullets)if(b.kind==='cone')hazard(b);ctx.restore();
  ctx.save();ctx.beginPath();ctx.rect(a.x+3,a.y+3,a.w-6,a.h-6);ctx.clip();
  for(const b of game.bullets)if(b.kind==='scarf')hazard(b);
- for(const b of game.bullets)if(!['lance','scarf','slash'].includes(b.kind))hazard(b);
+ for(const b of game.bullets)if(!['lance','scarf','slash','laser','cone','dashline','orbitsword','arrow'].includes(b.kind))hazard(b);
  for(const b of game.bullets)if(b.kind==='slash')hazard(b);
  drawSoul();ctx.restore();
  // Lunges come in from outside the box.
- ctx.save();ctx.beginPath();ctx.rect(0,0,640,game.dr?330:396);ctx.clip();for(const b of game.bullets)if(b.kind==='lance')hazard(b);ctx.restore();
+ ctx.save();ctx.beginPath();ctx.rect(0,0,640,game.dr?332:396);ctx.clip();for(const b of game.bullets)if(outside.includes(b.kind)&&b.kind!=='cone')hazard(b);if(game.mode==='green')for(const b of game.bullets)if(b.kind==='arrow')drawArrow(b,game.soul);ctx.restore();
  for(const e of game.effects){if(e.type==='gift'){ctx.save();ctx.globalAlpha=e.life*2;star4(e.x,e.y-(.5-e.life)*20,6,HEART.hope);ctx.restore();}if(e.type==='zee'){ctx.save();ctx.globalAlpha=e.life;text('z z',e.x,e.y-(.6-e.life)*30,1,'#c8f0ff',true);ctx.restore();}}
 }
 function effectsFX(){for(const e of game.effects){
@@ -123,7 +164,9 @@ function knightFrame(){const b=game.boss;if(['defend','warning'].includes(game.s
 function drawKnight(x,y,scale=1,alpha=1){
  const b=game.boss,f=knightFrame(),bob=reduceMotion?0:Math.round(Math.sin(game.clock*1.8)*3),pose=f!=='p1'&&f!=='p2'&&f!=='p3';
  const g=ctx.createRadialGradient(x,y-80,6,x,y-80,140);g.addColorStop(0,`rgba(160,200,255,${.16+(reduceMotion?0:Math.sin(game.clock*2)*.04)})`);g.addColorStop(1,'rgba(160,200,255,0)');ctx.fillStyle=g;ctx.fillRect(x-150,y-230,300,280);
- art.frame(f,x,y+bob,pose?scale*.82:scale,{alpha,tint:b.hurt>.35&&!reduceMotion?'rgba(255,255,255,.8)':null});
+ const sc=pose?scale*.82:scale;
+ if(game.dr&&!reduceMotion){const j=Math.sin(game.clock*7)*1.5;art.frame(f,x-3-j,y+bob,sc,{alpha:alpha*.5,tint:'rgba(255,50,110,1)'});art.frame(f,x+3+j,y+bob,sc,{alpha:alpha*.5,tint:'rgba(60,220,255,1)'});if(Math.floor(game.clock*3.3)%7===0)art.frame(f,x+6,y+bob-2,sc,{alpha:alpha*.35,tint:'rgba(255,230,80,1)'});}
+ art.frame(f,x,y+bob,sc,{alpha,tint:b.hurt>.35&&!reduceMotion?'rgba(255,255,255,.8)':null});
 }
 function hearts3(x,y){['blade','wild','hope'].forEach((h,k)=>battleSoul(ctx,x+k*14,y,10,HEART[h]));}
 function prose(str,n=Infinity,x=48,y=267,width=528,max=44,lines=5,lh=24,color='#fff'){typedLines(wrap(str,max,width),str,n).slice(0,lines).forEach((line,i)=>text(line,x,y+i*lh,2,color));}
@@ -203,11 +246,13 @@ function speechDR(){
  typedLines(lines,game.text,shown()).forEach((l,i)=>text(l,x+12,y+20+i*18,1.5,'#000'));
  if(game.displayChars>=game.text.length)text('Z',x+206,y+h-14,1,'#888');
 }
+// The TP bar, as DELTARUNE draws it: T and P stacked beside a tall bar, the percentage under them (MAX when full).
 function tpBar(x0){
- const x=x0,y=70,h=220,p=game.tp/100;text('TP',x+10,y-36,1.5,'#fff',true);text(Math.round(game.tp)+'%',x+10,y-18,1,game.tp>=100?'#ffff00':'#fff',true);
- ctx.fillStyle='#fff';ctx.fillRect(x-2,y-2,24,h+4);ctx.fillStyle='#401808';ctx.fillRect(x,y,20,h);ctx.fillStyle=game.tp>=100?'#ffd040':DR_ORANGE;ctx.fillRect(x,Math.round(y+h*(1-p)),20,Math.round(h*p));
+ const x=x0+16,y=64,h=226,p=game.tp/100,full=game.tp>=100;text('T',x-12,y+4,1.5,'#fff',true);text('P',x-12,y+24,1.5,'#fff',true);
+ if(full)['M','A','X'].forEach((c,i)=>text(c,x-12,y+50+i*18,1.5,'#ffff00',true));else{text(String(Math.floor(game.tp)),x-12,y+48,1.5,'#fff',true);text('%',x-12,y+68,1.5,'#fff',true);}
+ ctx.fillStyle='#fff';ctx.fillRect(x-2,y-2,22,h+4);ctx.fillStyle='#7a0e0e';ctx.fillRect(x,y,18,h);ctx.fillStyle=full?'#ffd040':DR_ORANGE;ctx.fillRect(x,Math.round(y+h*(1-p)),18,Math.round(h*p));
  // The spell's cost marked on the bar.
- ctx.fillStyle='#fff';ctx.fillRect(x,Math.round(y+h*(1-TP_COST/100)),20,1);
+ ctx.fillStyle='#fff';ctx.fillRect(x,Math.round(y+h*(1-TP_COST/100)),18,1);
 }
 function partyPanel(oy){
  const x=148,y=318+oy,w=344,h=62;ctx.fillStyle='#000';ctx.fillRect(x,y,w,h);ctx.fillStyle=SETHC;ctx.fillRect(x,y,w,2);ctx.fillRect(x,y,2,h);ctx.fillRect(x+w-2,y,2,h);
@@ -233,9 +278,21 @@ function drTextBox(){
  const str=st==='warning'?game.attackName:game.text;prose(str,st==='dialogue'?shown():Infinity,30,392,580,50,3,28,game.speaker==='seth'?'#d9a6ff':'#fff');
  if(st==='dialogue'&&game.displayChars>=game.text.length)text('Z',604,456,1,'#777');
 }
+// The Deltarune half's backdrop, after the Roaring Knight's: black, an arch overhead that changes colour every
+// turn, and violet fog rolling on the floor under the Knight.
+const ARCH=['#c01818','#d86a10','#c8b010','#30b030','#10a8b8','#2848d8','#8a28d0','#d02890'];
+function drBackdrop(t,k){
+ ctx.save();ctx.globalAlpha=k;ctx.fillStyle='#000';ctx.fillRect(0,0,640,332);
+ const col=ARCH[(game.turn+ARCH.length)%ARCH.length];ctx.lineWidth=34;ctx.strokeStyle=col;ctx.globalAlpha=k*.75;ctx.beginPath();ctx.ellipse(320,-30,120,96,0,0,Math.PI);ctx.stroke();
+ ctx.lineWidth=10;ctx.globalAlpha=k*.35;ctx.beginPath();ctx.ellipse(320,-30,150,118,0,0,Math.PI);ctx.stroke();
+ ctx.globalAlpha=k;ctx.fillStyle='#000';for(let i=0;i<9;i++){const x=226+i*24,hh=12+((i*7)%5)*5;ctx.fillRect(x,60,8,hh);}
+ const f=ctx.createRadialGradient(520,320,10,520,320,260);f.addColorStop(0,'rgba(120,40,160,.55)');f.addColorStop(1,'rgba(40,0,60,0)');ctx.fillStyle=f;ctx.fillRect(220,160,420,172);
+ if(!reduceMotion){ctx.globalAlpha=k*.18;ctx.fillStyle='#b070e0';for(let i=0;i<12;i++){const x=((i*83+t*12)%460)+200,y=250+((i*29)%70);ctx.fillRect(Math.round(x),Math.round(y),22,3);}}
+ ctx.restore();
+}
 function renderDR({assemble=1}={}){
  const k=ease(assemble),defending=['defend','warning'].includes(game.state),t=game.clock;
- art.drBackdrop(t,k,reduceMotion);
+ drBackdrop(t,k);
  // Seth stands on the left like a party member; he steps in when he attacks.
  const fx=game.state==='drfight'?10:0;art.sethFrame('right',false,0,112+fx-(1-k)*160,300,3,k);
  if(game.defending){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle=SETHC;ctx.lineWidth=3;ctx.beginPath();ctx.arc(150,240,40,-1,1);ctx.stroke();ctx.restore();}

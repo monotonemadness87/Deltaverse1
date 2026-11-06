@@ -23,6 +23,7 @@ const GERSON_FIRST=[
  G('All that hoping\'s gotta go SOMEWHERE, right?'),
  G('Some folks say if you stare long enough, you see somewhere else in it. Another world. Different stars. Three kids on a long walk.'),
  G('Me? I saw a knight in it, once. Big. White. Kinda... roaring. Wahaha! Probably the mushrooms.'),
+ G('Saw an old hero in there too. Carried a hammer. Handsome fella. Wahaha!'),
  G('Go on, take a look. Just don\'t touch it.'),
  G('...You\'re gonna touch it.'),
  N('* (The old path is east, past the stream.)')
@@ -71,11 +72,13 @@ const FLAVOR=[
  '* Smells like rain on a world you\'ve never been to.'
 ];
 const FLAVOR_DR=[
- '* The Knight\'s light fills the room.',
+ '* Cold light rushes past your face.',
+ '* The arch above you changes colour.\n* Somewhere, a wish changes its mind.',
  '* Somewhere, three people are walking somewhere together.',
- '* The colours here are louder than Waterfall\'s.',
- '* The wild heart is fidgeting.',
- '* The hope heart is humming.'
+ '* You feel the night sky turning around you.',
+ '* The wild heart is fidgeting.\n* The blade heart is very still.',
+ '* The hope heart is humming.',
+ '* The Knight\'s edges shimmer in colours you can\'t name.'
 ];
 const FLAVOR_READY='* The Knight is SPARING you.\n* (SPARE it back.)';
 // Between waves in the first half (the Undertale battle), the hearts take turns to talk.
@@ -100,17 +103,17 @@ const STORY_DR=[
  [K('ARE YOU THE ANGEL?'),K('...NO. WE THINK NOT.'),K('BUT YOU ARE KIND TO A DREAM. THAT COUNTS FOR SOMETHING.','hope')],
  [K('RUDE BUSTER IS NOT A REAL WORD. THE WILD HEART SAYS IT IS.','wild')]
 ];
-const UNIFIED=[K('THREE HEARTS. TOGETHER NOW.'),K('THIS IS THE LAST PART OF THE DREAM.')];
+const UNIFIED=[K('THREE HEARTS. TOGETHER NOW.'),K('AND ONE MORE. THE OLD HERO, WITH THE HAMMER. MONSTERS DREAMED OF HIM TOO.','wild'),K('THIS IS THE LAST PART OF THE DREAM.')];
 const FINALE_INTRO=[K('YOU HAVE SPARED US. WE HAVE SPARED YOU.'),K('ONE MORE THING, THEN. THE PART WE ALWAYS SKIPPED TO.'),K('A NEW WORLD.')];
 const FINALE_END=[K('...TOGETHER.'),N('* The Knight is SPARING you.\n* (SPARE it back.)')];
 // The Knight's own turn: what each heart does, Deltarune-style, before its bullets.
 const HEART_ACTS={
- xslash:'* The blade heart used X-SLASH!',lunge:'* The blade heart lunges!',spikes:'* The blade heart calls up the crystal!',
- rudebuster:'* The wild heart used RUDE BUSTER!',cloth:'* The wild heart tears loose!',axe:'* The wild heart throws its axe!',
- healprayer:'* The hope heart cast HEAL PRAYER on SETH!',pacify:'* The hope heart tried to PACIFY SETH!',scarf:'* The hope heart tried to SPARE SETH!'
+ encircle:'* The blade heart draws its swords around you.',swordrain:'* The blade heart lets its swords fall.',volley:'* The blade heart throws a volley!',dash:'* The blade heart dashes!',
+ crescent:'* The wild heart swings wide!',eruption:'* The wild heart cracks the floor open!',bars:'* The wild heart tears the light into bars!',rudebuster:'* The wild heart used RUDE BUSTER!',
+ cone:'* The hope heart raises its light.',healprayer:'* The hope heart cast HEAL PRAYER on SETH!',pacify:'* The hope heart tried to PACIFY SETH!'
 };
 const ARRIVAL_NAMES=['THE ANGEL ARRIVES','CRYSTAL TEETH','THREE HEARTS','THE HALO'];
-const UNIFIED_NAMES=['* The three hearts move as one!','* The Knight unites its hearts!','* All three hearts at once!'];
+const UNIFIED_NAMES=['* The night sky opens.\n* Stars bloom in the Knight\'s light.','* The ground cracks.\n* The light tears into bars.','* A hammer rings somewhere far away.\n* The Knight remembers an old hero.','* The box splits along a seam.\n* Blue light cuts through.'];
 const FINALE_NAME='* A NEW WORLD.';
 
 // ACTs. Undertale half: CHECK, WISH, LISTEN, ROAR BACK. Deltarune half adds the spell PERSEVERE (TP).

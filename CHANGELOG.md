@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-11-06 — The White Roaring Knight, rebuilt on the Roaring Knight and Gerson fights
+
+The designer's two reference videos (the "Kaizo Roaring Knight - No-Hit" run and DELTARUNE's secret Gerson fight) were downloaded in full and studied, and the Deltarune half was rebuilt on them, all drawn new.
+- **Look:** the Roaring Knight's battle look: black, with a colour-changing arch overhead and violet fog on the floor, and a chromatic shimmer on the Knight. The box spins into each new shape. TP is drawn DELTARUNE's way, with the Gerson fight's one-member party panel.
+- **New attacks:**
+  - Blade: ENCIRCLING BLADES, SWORD RAIN, a SWORD VOLLEY and the DASH.
+  - Wild heart: CRESCENTS in a tall, narrow box, CRYSTAL ERUPTIONS, and the BAR CURTAIN (blue bars only hurt if you move). RUDE BUSTER stays.
+  - Hope: the LIGHT CONE with stars blooming in it. HEAL PRAYER and PACIFY stay.
+- **UNIFIED waves:** the night sky, bars and eruptions, a split box with blue lasers, and the **HAMMER OF JUSTICE**: the Knight remembers the old hero, Seth's SOUL turns green with a shield, and gold trick spears curve round to the other side. Gerson's shop lines now mention the hero with the hammer.
+- **Finale:** the box falls away into a void of spiralling stars, then a web of red light, then hearts.
+- **Measured (test bot, Normal):** 17 to 18 turns, no deaths. A sloppy bot on Hard dies more often than before (1 to 6 times, from 1 to 2).
+
 ## 2026-11-06 — The White Roaring Knight (new Waterfall pacifist fight)
 
 The designer's White Roaring Knight concept returns as a pacifist-only fight in Waterfall, before Mettalot.

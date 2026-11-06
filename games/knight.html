@@ -316,6 +316,7 @@ const GERSON_FIRST=[
  G('All that hoping\'s gotta go SOMEWHERE, right?'),
  G('Some folks say if you stare long enough, you see somewhere else in it. Another world. Different stars. Three kids on a long walk.'),
  G('Me? I saw a knight in it, once. Big. White. Kinda... roaring. Wahaha! Probably the mushrooms.'),
+ G('Saw an old hero in there too. Carried a hammer. Handsome fella. Wahaha!'),
  G('Go on, take a look. Just don\'t touch it.'),
  G('...You\'re gonna touch it.'),
  N('* (The old path is east, past the stream.)')
@@ -364,11 +365,13 @@ const FLAVOR=[
  '* Smells like rain on a world you\'ve never been to.'
 ];
 const FLAVOR_DR=[
- '* The Knight\'s light fills the room.',
+ '* Cold light rushes past your face.',
+ '* The arch above you changes colour.\n* Somewhere, a wish changes its mind.',
  '* Somewhere, three people are walking somewhere together.',
- '* The colours here are louder than Waterfall\'s.',
- '* The wild heart is fidgeting.',
- '* The hope heart is humming.'
+ '* You feel the night sky turning around you.',
+ '* The wild heart is fidgeting.\n* The blade heart is very still.',
+ '* The hope heart is humming.',
+ '* The Knight\'s edges shimmer in colours you can\'t name.'
 ];
 const FLAVOR_READY='* The Knight is SPARING you.\n* (SPARE it back.)';
 // Between waves in the first half (the Undertale battle), the hearts take turns to talk.
@@ -393,17 +396,17 @@ const STORY_DR=[
  [K('ARE YOU THE ANGEL?'),K('...NO. WE THINK NOT.'),K('BUT YOU ARE KIND TO A DREAM. THAT COUNTS FOR SOMETHING.','hope')],
  [K('RUDE BUSTER IS NOT A REAL WORD. THE WILD HEART SAYS IT IS.','wild')]
 ];
-const UNIFIED=[K('THREE HEARTS. TOGETHER NOW.'),K('THIS IS THE LAST PART OF THE DREAM.')];
+const UNIFIED=[K('THREE HEARTS. TOGETHER NOW.'),K('AND ONE MORE. THE OLD HERO, WITH THE HAMMER. MONSTERS DREAMED OF HIM TOO.','wild'),K('THIS IS THE LAST PART OF THE DREAM.')];
 const FINALE_INTRO=[K('YOU HAVE SPARED US. WE HAVE SPARED YOU.'),K('ONE MORE THING, THEN. THE PART WE ALWAYS SKIPPED TO.'),K('A NEW WORLD.')];
 const FINALE_END=[K('...TOGETHER.'),N('* The Knight is SPARING you.\n* (SPARE it back.)')];
 // The Knight's own turn: what each heart does, Deltarune-style, before its bullets.
 const HEART_ACTS={
- xslash:'* The blade heart used X-SLASH!',lunge:'* The blade heart lunges!',spikes:'* The blade heart calls up the crystal!',
- rudebuster:'* The wild heart used RUDE BUSTER!',cloth:'* The wild heart tears loose!',axe:'* The wild heart throws its axe!',
- healprayer:'* The hope heart cast HEAL PRAYER on SETH!',pacify:'* The hope heart tried to PACIFY SETH!',scarf:'* The hope heart tried to SPARE SETH!'
+ encircle:'* The blade heart draws its swords around you.',swordrain:'* The blade heart lets its swords fall.',volley:'* The blade heart throws a volley!',dash:'* The blade heart dashes!',
+ crescent:'* The wild heart swings wide!',eruption:'* The wild heart cracks the floor open!',bars:'* The wild heart tears the light into bars!',rudebuster:'* The wild heart used RUDE BUSTER!',
+ cone:'* The hope heart raises its light.',healprayer:'* The hope heart cast HEAL PRAYER on SETH!',pacify:'* The hope heart tried to PACIFY SETH!'
 };
 const ARRIVAL_NAMES=['THE ANGEL ARRIVES','CRYSTAL TEETH','THREE HEARTS','THE HALO'];
-const UNIFIED_NAMES=['* The three hearts move as one!','* The Knight unites its hearts!','* All three hearts at once!'];
+const UNIFIED_NAMES=['* The night sky opens.\n* Stars bloom in the Knight\'s light.','* The ground cracks.\n* The light tears into bars.','* A hammer rings somewhere far away.\n* The Knight remembers an old hero.','* The box splits along a seam.\n* Blue light cuts through.'];
 const FINALE_NAME='* A NEW WORLD.';
 
 // ACTs. Undertale half: CHECK, WISH, LISTEN, ROAR BACK. Deltarune half adds the spell PERSEVERE (TP).
@@ -453,84 +456,109 @@ Object.assign(exports,{N,SETH,G,K,ROOMS,SHOP_ENTER,GERSON_FIRST,GERSON_AGAIN,GER
  ACTS_UT,ACTS_DR,WISH,LISTEN,ROAR,PERSEVERE,NO_TP,DEFEND,STRIKE,STRIKE_WEAK,TIRED,SPARE_EARLY,SPARE_UT,FLEE,SPARED});
 };
 modules["attacks.js"]=(exports,require)=>{
-// The Knight's attacks. Each heart has its own vocabulary, taken from the concept sheet and from the other world:
-//   blade (cyan): X-SLASH lines, lunges, crystal spikes from the floor and ceiling;
-//   wild heart (pink): RUDE BUSTER crescents, torn cloth lashing down, a boomerang axe;
-//   hope (green): HEAL PRAYER hearts (catch them: HP and its mercy for Seth), PACIFY Zs (harmless, sleepy),
-//   and the scarf that carries hearts while it tries to spare him.
-// The Undertale half has four single waves; the Deltarune half plays one move from each heart in turn (blade, wild,
-// hope), then UNIFIED waves with all three at once, then the finale, A NEW WORLD.
-const UT_BOX={x:180,y:236,w:280,h:150},DR_BOX={x:206,y:112,w:190,h:170};
-const BLADE=['xslash','lunge','spikes'],WILD=['rudebuster','cloth','axe'],HOPE=['healprayer','pacify','scarf'];
-const SEG=4.4;
+// The Knight's attacks, built on DELTARUNE's Roaring Knight fight (the designer's reference: the Kaizo Roaring Knight
+// no-hit video) and the secret Gerson fight, re-made as the White Roaring Knight's own: the dream of the Angel uses
+// the other world's moves.
+//   blade heart (cyan): ENCIRCLING BLADES (swords circle the box, then stab in one by one), SWORD RAIN, a SWORD
+//     VOLLEY from the Knight, and its DASH (a slash across the whole screen);
+//   wild heart (pink): CRESCENTS swept through a tall, narrow box, CRYSTAL ERUPTIONS (a shadow on the floor, then a
+//     crystal bursts up and flings shards), the BAR CURTAIN (white bars with a gap to slip through; blue bars only
+//     hurt if you move), and RUDE BUSTER;
+//   hope heart (green): the LIGHT CONE from its sword (leave the cone; stars bloom in it), HEAL PRAYER hearts, PACIFY.
+// UNIFIED waves combine them, and one is the HAMMER OF JUSTICE: the dream's memory of the old hero, a GREEN SOUL
+// shield wave in a turning box, with spears from four sides and trick spears that curve round to the other side.
+// The finale drops the box: a void of stars spiralling out of the Knight, then a web of red light, then hearts.
+const UT_BOX={x:180,y:236,w:280,h:150};
+const DR_BOX={x:216,y:108,w:170,h:170},TALL={x:262,y:90,w:84,h:208},WIDE={x:168,y:128,w:266,h:138},FIELD={x:64,y:16,w:512,h:300},HAMMER_BOX={x:250,y:142,w:102,h:102};
+const KX=522,KY=196;// the Knight's sword, where its light and volleys come from
+const BLADE=['encircle','swordrain','volley','dash'],WILD=['crescent','eruption','bars','rudebuster'],HOPE=['cone','healprayer','pacify'];
+const SEG=4.6;
+// Which box a move wants (the box spins into the new shape when it changes).
+const BOXES={crescent:TALL,bars:WIDE,eruption:WIDE,volley:WIDE};
 
-// ------------------------------------------------------------------ the moves (each runs from t0 for dur seconds)
 function moves(g){
  const R=()=>g.random(),a=()=>g.targetArena,sp=()=>g.config.speed,warn=()=>g.config.warn;
- const every=(t0,dur,interval,fn)=>{const step=interval*g.config.density;for(let i=0,t=t0;t<t0+dur-.25;i++,t+=step){const k=i;g.at(t,()=>fn(k));}};
- const star=(x,y,vx,vy,o={})=>g.spawn({kind:'star',x,y,vx:vx*sp(),vy:vy*sp(),r:5,life:7,...o});
+ const every=(t0,dur,interval,fn)=>{const step=interval*g.config.density;for(let i=0,t=t0;t<t0+dur-.3;i++,t+=step){const k=i;g.at(t,()=>fn(k));}};
+ // Only the Deltarune half reshapes the box (the Undertale half keeps its own).
+ const box=(t0,b)=>{if(g.ui==='dr')g.at(t0,()=>g.setArena(b,true));};
  const M={
-  // Two crossing slashes through a point near Seth: a warning line, then the cut.
-  xslash(t0,dur){every(t0,dur,1.15,k=>{const A=a(),cx=Math.max(A.x+30,Math.min(A.x+A.w-30,g.soul.x+(R()-.5)*40)),cy=Math.max(A.y+30,Math.min(A.y+A.h-30,g.soul.y+(R()-.5)*40)),L=Math.max(A.w,A.h);
-   for(const s of [1,-1])g.spawn({kind:'slash',x1:cx-L,y1:cy-L*s,x2:cx+L,y2:cy+L*s,w:9,warn:.72*warn()+(s<0?.12:0),live:.2});g.pose('slash',1);g.emit('cue');});},
-  // The blade thrusts in from the side at Seth's height.
-  lunge(t0,dur){every(t0,dur,.95,k=>{const A=a(),left=k%2===0;g.spawn({kind:'lance',x:left?A.x-30:A.x+A.w+30,y:g.soul.y,angle:left?0:Math.PI,len:110,w:10,speed:640*sp(),warn:.62*warn(),tip:0});g.pose('lunge',.8);g.emit('cue');});},
-  // A row of crystal teeth from the floor or the ceiling, with one gap.
-  spikes(t0,dur){every(t0,dur,1.35,k=>{const A=a(),edge=k%2?'top':'bottom',gap=A.x+30+R()*(A.w-60),w=18;for(let x=A.x+w/2;x<A.x+A.w;x+=w){if(Math.abs(x-gap)<30)continue;g.spike(edge,x,{w,len:A.h*.55,warn:.75});}g.pose('rise',1);g.emit('cue');});},
-  // RUDE BUSTER: a crescent of pink light sweeps across the box. One end of the box is always clear.
+  // Swords appear in a ring round the box, turn to point at Seth, and stab in one after another.
+  encircle(t0,dur){every(t0,dur,2.3,k=>{const A=a(),cx=A.x+A.w/2,cy=A.y+A.h/2,r=Math.hypot(A.w,A.h)/2+26,n=7,ph=R()*6.28;for(let i=0;i<n;i++)g.spawn({kind:'orbitsword',cx,cy,radius:r,theta:ph+i*6.283/n,spin:.9,aimAt:(1.05+i*.13)*warn(),speed:400*sp(),r:5,life:5,x:cx,y:cy});g.pose('halo',1.6);g.emit('cue');});},
+  // Swords drop point-first through the box; a glint at the edge shows where.
+  swordrain(t0,dur){every(t0,dur,.42,k=>{const A=a(),up=k%5===4,x=A.x+10+R()*(A.w-20);g.spawn({kind:'sword',x,y:up?A.y+A.h+30:A.y-30,vy:(up?-1:1)*330*sp(),len:34,w:6,warn:.5*warn(),life:4});});},
+  // A volley thrown from the Knight: a row of blades with one gap.
+  volley(t0,dur){box(t0,BOXES.volley);every(t0+.4,dur-.4,1.2,k=>{const A=a(),rows=6,gap=Math.floor(R()*rows);for(let i=0;i<rows;i++){if(i===gap)continue;const y=A.y+A.h*(i+.5)/rows;g.spawn({kind:'lance',x:A.x+A.w+30,y,angle:Math.PI,len:46,w:8,speed:520*sp(),warn:.55*warn(),tip:0});}g.pose('lunge',.9);g.emit('cue');});},
+  // The Knight's dash: a slash across the whole screen at Seth's height.
+  dash(t0,dur){every(t0,dur,1.5,k=>{g.spawn({kind:'dashline',y:g.soul.y,w:10,warn:.62*warn(),live:.16,life:2});g.pose('lunge',1);g.emit('cue');});},
+  // Crescents swept through a tall, narrow box from the right: dodge up or down.
+  crescent(t0,dur){box(t0,BOXES.crescent);every(t0+.5,dur-.5,.85,k=>{const A=TALL,y=A.y+30+R()*(A.h-60),R0=58;g.spawn({kind:'buster',moon:true,x:A.x+A.w+R0+10,y,vx:-310*sp(),R:R0,thick:13,span:.62,facing:Math.PI,warn:.35*warn(),life:3});g.pose('sweep',.9);g.emit('cue');});},
+  // A shadow on the floor, then a crystal erupts there and flings shards.
+  eruption(t0,dur){box(t0,BOXES.eruption);every(t0+.4,dur-.4,1.15,k=>{const A=a(),x=Math.max(A.x+24,Math.min(A.x+A.w-24,g.soul.x+(R()-.5)*70));g.spawn({kind:'eruption',x,y:A.y+A.h,w:34,len:A.h*.72,warn:.8*warn(),live:.45,life:3});g.pose('rise',1);});},
+  // The bar curtain: white bars with a gap that winds, then blue bars that only hurt if you're moving.
+  bars(t0,dur){box(t0,BOXES.bars);const A=WIDE,gapH=48,spacing=30,speed=170*sp(),step=spacing/speed;let gy=A.y+A.h/2;
+   for(let i=0,t=t0+.5;t<t0+dur-1.6;i++,t+=step){const k=i;g.at(t,()=>{const blue=Math.floor(k/7)%2===1;if(!blue)gy=Math.max(A.y+gapH/2+6,Math.min(A.y+A.h-gapH/2-6,gy+(R()-.5)*34));g.spawn({kind:'bar',x:A.x+A.w+12,vx:-speed,w:10,y0:A.y,y1:A.y+A.h,gapY:gy,gapH,blue,life:4});});}
+   g.at(t0+.3,()=>g.cue('BLUE: STAND STILL'));},
+  // RUDE BUSTER: a pink crescent across the box, one end always clear.
   rudebuster(t0,dur){every(t0,dur,1.45,k=>{const A=a(),left=k%2===0,high=R()<.5,cy=A.y+A.h*(high?.3:.7),R0=A.h*.62;g.spawn({kind:'buster',x:left?A.x-R0*.4:A.x+A.w+R0*.4,y:cy,vx:(left?1:-1)*250*sp(),R:R0,thick:16,span:.95,facing:left?0:Math.PI,warn:.55*warn(),life:5});g.pose('sweep',1);g.emit('cue');});},
-  // Torn cloth lashes down the box as a wave, with one tear in it to slip through.
-  cloth(t0,dur,{interval=1.5,gapW=46}={}){every(t0,dur,interval,k=>{const A=a(),gap=A.x+25+R()*(A.w-50);g.spawn({kind:'ribbon',x:A.x,wd:A.w,y:A.y-6,vy:64*sp(),amp:10,k:.06,spin:3,w:8,gap,gapW,life:6});g.emit('cue');});},
-  // The axe, thrown at Seth, comes back.
-  axe(t0,dur){every(t0,dur,1.25,k=>{const A=a(),x0=k%2?A.x-14:A.x+A.w+14,y0=A.y+16+R()*(A.h-32),dx=g.soul.x-x0,dy=g.soul.y-y0,d=Math.hypot(dx,dy)||1;g.spawn({kind:'axe',x0,y0,x:x0,y:y0,ux:dx/d,uy:dy/d,dist:d+40,dur:1.7/sp(),r:9,life:2});g.emit('swing');});},
+  // The light cone from its sword: get out of it before it shines; stars bloom inside it and burst.
+  cone(t0,dur){every(t0,dur,2.2,k=>{const ang=Math.atan2(g.soul.y-KY,g.soul.x-(KX-40))+(R()-.5)*.1,w=.85*warn();g.spawn({kind:'cone',ox:KX-40,oy:KY,angle:ang,half:.2,len:720,warn:w,live:.7,life:2.2});
+   for(let i=0;i<5;i++){const d=150+i*60;g.spawn({kind:'star6',x:KX-40+Math.cos(ang)*d,y:KY+Math.sin(ang)*d,r:7,delay:w+.15,fuse:w+.75+i*.05,burst:6,life:4});}g.pose('slash',1.4);g.emit('cue');});},
   // HEAL PRAYER: green hearts drift down (catch them), with a few slow sparkles to dodge.
-  healprayer(t0,dur,{gifts=6}={}){const A=a();for(let i=0;i<gifts;i++)g.at(t0+.2+i*(dur-.6)/gifts,()=>g.spawn({kind:'gift',x:A.x+20+R()*(A.w-40),y:A.y+4,vx:(R()-.5)*20,vy:46,r:7,life:7}));every(t0+.4,dur,.75,()=>star(A.x+10+R()*(A.w-20),A.y-6,(R()-.5)*30,70));},
-  // PACIFY: sleepy Zs float across. They don't hurt; touching one makes the SOUL drowsy (slower) and lets it spare you a little.
-  pacify(t0,dur){const A=a();every(t0,dur,.42,k=>g.spawn({kind:'zee',x:A.x+A.w+10,y:A.y+14+R()*(A.h-28),vx:-(55+R()*30),vy:-8,r:7,life:7,wob:R()*6}));every(t0+.6,dur,.9,()=>star(A.x+A.w+6,A.y+10+R()*(A.h-20),-110,(R()-.5)*30));},
-  // The scarf sweeps across carrying hearts while the hope heart tries to spare Seth.
-  scarf(t0,dur){const A=a();g.at(t0,()=>{g.spawn({kind:'scarf',x:A.x-80,y:A.y+A.h*.5,vx:120,amp:A.h*.28,life:dur+1});g.spareSeth(6,'scarf');});for(let i=0;i<3;i++)g.at(t0+.5+i*.9,()=>g.spawn({kind:'gift',x:A.x-10,y:A.y+A.h*(.3+.2*i),vx:110,vy:0,r:7,life:5}));every(t0+.5,dur,.8,()=>star(A.x+10+R()*(A.w-20),A.y-6,0,80));},
-  // The halo: blades orbit the box and close in, then fly out.
-  halo(t0,dur){g.at(t0,()=>{const A=a(),cx=A.x+A.w/2,cy=A.y+A.h/2,r=Math.min(A.w,A.h)*.62;for(let k=0;k<10;k++)g.spawn({kind:'orbitblade',cx,cy,radius:r,r0:r,theta:k*Math.PI/5,spin:1.1,close:dur*.55,life:dur+.5,r:6});g.pose('halo',dur);g.emit('cue');});},
-  stars(t0,dur){const A=a();every(t0,dur,.5,()=>star(A.x+10+R()*(A.w-20),A.y-6,(R()-.5)*40,95,{fuse:.8+R()*.8}));}
+  healprayer(t0,dur,{gifts=6}={}){for(let i=0;i<gifts;i++)g.at(t0+.2+i*(dur-.6)/gifts,()=>{const B=a();g.spawn({kind:'gift',x:B.x+20+R()*(B.w-40),y:B.y+4,vx:(R()-.5)*20,vy:46,r:7,life:7});});every(t0+.4,dur,.75,()=>{const B=a();g.spawn({kind:'star',x:B.x+10+R()*(B.w-20),y:B.y-6,vx:(R()-.5)*30*sp(),vy:70*sp(),r:5,life:7});});},
+  // PACIFY: sleepy Zs float across. Touching one makes the SOUL drowsy and lets the Knight spare you a little.
+  pacify(t0,dur){every(t0,dur,.42,k=>{const A=a();g.spawn({kind:'zee',x:A.x+A.w+10,y:A.y+14+R()*(A.h-28),vx:-(55+R()*30),vy:-8,r:7,life:7,wob:R()*6});});every(t0+.6,dur,.9,()=>{const A=a();g.spawn({kind:'star',x:A.x+A.w+6,y:A.y+10+R()*(A.h-20),vx:-110*sp(),vy:(R()-.5)*30,r:5,life:7});});g.at(t0,()=>g.spareSeth(4));},
+  // Six-pointed stars gather round the box, then dive at Seth and burst.
+  starburst(t0,dur){every(t0,dur,1.3,k=>{const A=a(),cx=A.x+A.w/2,cy=A.y+A.h/2;for(let i=0;i<5;i++){const an=R()*6.28,d=Math.hypot(A.w,A.h)/2+30;g.spawn({kind:'star6',x:cx+Math.cos(an)*d,y:cy+Math.sin(an)*d,r:7,hover:.55*warn()+i*.1,seek:210*sp(),fuse:1.9+i*.1,burst:5,life:5});}g.emit('cue');});},
+  // Blue lasers sweep through the box from outside it.
+  lasers(t0,dur){every(t0,dur,1.1,k=>{const A=a(),cx=A.x+A.w/2,cy=A.y+A.h/2,an=R()*6.28,ox=cx+Math.cos(an)*230,oy=cy+Math.sin(an)*170;g.spawn({kind:'laser',ox,oy,angle:Math.atan2(g.soul.y-oy,g.soul.x-ox),spin:(R()<.5?-1:1)*.35,w:12,warn:.75*warn(),live:.55,life:2.5,col:'#3a5aff'});g.emit('cue');});},
+  // The box splits in two along a seam; slashes run down the seam and shards fall in both halves.
+  split(t0,dur){g.at(t0,()=>{g.setArena(DR_BOX,true);g.split=true;});g.at(t0+dur-.1,()=>{g.split=false;});every(t0+.6,dur-.6,1.3,()=>{const A=DR_BOX;g.spawn({kind:'slash',x1:A.x+A.w/2,y1:A.y-40,x2:A.x+A.w/2,y2:A.y+A.h+40,w:12,warn:.6*warn(),live:.22});});every(t0+.3,dur-.3,.34,k=>{const A=DR_BOX,left=k%2===0,x=left?A.x+8+R()*(A.w/2-26):A.x+A.w/2+18+R()*(A.w/2-26);g.spawn({kind:'shard',x,y:A.y-6,vx:0,vy:120*sp(),r:4,big:true,life:4});});},
+  // HAMMER OF JUSTICE (the old hero, as the dream remembers him): the SOUL turns green and holds a shield.
+  // Spears come from four sides; gold ones are tricks that curve round and come from the opposite side.
+  hammer(t0,dur){g.at(t0,()=>{g.setArena(HAMMER_BOX,true);g.mode='green';g.shield='up';g.soul={x:HAMMER_BOX.x+HAMMER_BOX.w/2,y:HAMMER_BOX.y+HAMMER_BOX.h/2};g.cue('ARROW KEYS TURN THE SHIELD');});g.at(t0+dur-.05,()=>{g.mode='red';});
+   const sides=['up','right','down','left'];let last='up';every(t0+.9,dur-1,.5,k=>{let side;do side=sides[Math.floor(R()*4)];while(side===last&&R()<.6);last=side;const trick=k>3&&R()<.25;g.spawn({kind:'arrow',side,dist:150,speed:190*sp(),trick,life:6});});g.pose('rise',dur);},
+  stars(t0,dur){every(t0,dur,.5,()=>{const A=a();g.spawn({kind:'star',x:A.x+10+R()*(A.w-20),y:A.y-6,vx:(R()-.5)*40*sp(),vy:95*sp(),r:5,fuse:.8+R()*.8,life:6});});}
  };
  return M;
 }
 
-// ------------------------------------------------------------------ the waves
 function buildWave(g,plan){
- const M=moves(g);
+ const M=moves(g);g.split=false;g.voidMode=false;
  if(plan.kind==='arrival'){
   const d=11.5;
-  if(plan.i===0){M.stars(0,d);M.xslash(2.5,d-2.5);}
-  else if(plan.i===1){M.spikes(0,d);M.stars(4,d-4);}
-  else if(plan.i===2){M.cloth(0,d,{interval:2.1,gapW:62});M.lunge(5,d-5);M.healprayer(1,d-1,{gifts:4});}
-  else{M.halo(0,6);M.xslash(1.2,4.6);M.halo(6.2,5.2);M.stars(6.5,5);}
+  if(plan.i===0){M.stars(0,d);M.swordrain(3,d-3);}
+  else if(plan.i===1){M.eruption(0,d);}
+  else if(plan.i===2){M.encircle(0,d);M.healprayer(1,d-1,{gifts:4});}
+  else{M.encircle(0,6);M.starburst(5.5,6);}
   return d;
  }
- if(plan.kind==='triple'){const [b,w,h]=plan.picks;M[b](0,SEG);M[w](SEG,SEG);M[h](SEG*2,SEG);return SEG*3+.4;}
+ if(plan.kind==='triple'){const [b,w,h]=plan.picks;M[b](0,SEG);g.at(SEG,()=>g.setArena(BOXES[w]||DR_BOX,true));M[w](SEG,SEG);g.at(SEG*2,()=>g.setArena(DR_BOX,true));M[h](SEG*2,SEG);return SEG*3+.4;}
  if(plan.kind==='unified'){
-  const d=13;
-  if(plan.i%3===0){M.halo(0,6.5);M.xslash(.8,5.6);M.halo(6.6,6);M.rudebuster(7,6);M.healprayer(6.6,6,{gifts:3});}
-  else if(plan.i%3===1){M.rudebuster(0,6.5);M.lunge(.6,6);M.cloth(6.5,6.5);M.pacify(6.5,6.5);}
-  else{M.spikes(0,6.5);M.cloth(1,5.5);M.axe(6.5,6.5);M.healprayer(6.5,6.5,{gifts:4});}
+  const d=13,i=plan.i%4;
+  if(i===0){M.cone(0,6.6);M.starburst(.6,6);M.encircle(6.6,6.4);M.healprayer(6.6,6.4,{gifts:3});}
+  else if(i===1){M.bars(0,7);M.eruption(7,6);M.pacify(7,6);}
+  else if(i===2){M.hammer(0,d-.2);}
+  else{M.split(0,6.5);M.lasers(6.6,6.4);M.swordrain(7,6);}
   return d;
  }
- // A NEW WORLD: every piece of the dream at once, then nothing but hearts.
- M.halo(0,4.5);M.stars(0,4.5);M.rudebuster(4.5,4);M.lunge(4.8,3.7);M.spikes(8.5,4);M.cloth(9,3.5);
- M.xslash(12.5,3);M.axe(12.5,3);M.pacify(12.5,3);
- for(let i=0;i<16;i++)g.at(15.6+i*.12,()=>{const A=g.targetArena;g.spawn({kind:'gift',x:A.x+12+g.random()*(A.w-24),y:A.y+4,vx:0,vy:70,r:7,life:5,last:true});});
- g.at(15.5,()=>{g.bullets=g.bullets.filter(b=>b.kind==='gift');g.effects.push({type:'flash',life:.25,color:'#ffffff'});g.emit('heal');});
- return 18.5;
+ // A NEW WORLD: the box falls away into the void of stars; then red light; then nothing but hearts.
+ g.at(0,()=>{g.setArena(FIELD,true);g.voidMode=true;});
+ for(let t=.8;t<9;t+=.14){g.at(t,()=>{const arms=5,base=g.attackTime*1.1;for(let j=0;j<arms;j++){const an=base+j*6.283/arms;g.spawn({kind:'star6',x:320,y:166,vx:Math.cos(an)*120*g.config.speed,vy:Math.sin(an)*120*g.config.speed,r:6,life:4});}});}
+ for(let t=9.4;t<14.6;t+=.55){g.at(t,()=>{const an=g.random()*6.28,ox=320+Math.cos(an)*320,oy=166+Math.sin(an)*220;g.spawn({kind:'laser',ox,oy,angle:Math.atan2(g.soul.y-oy,g.soul.x-ox)+(g.random()-.5)*.4,spin:0,w:5,warn:.7*g.config.warn,live:1.1,life:2.4,col:'#ff2a3a'});});}
+ g.at(15.2,()=>{g.bullets=g.bullets.filter(b=>b.kind==='gift');g.effects.push({type:'flash',life:.3,color:'#ffffff'});g.emit('heal');});
+ for(let i=0;i<18;i++)g.at(15.4+i*.12,()=>{const A=g.targetArena;g.spawn({kind:'gift',x:A.x+30+g.random()*(A.w-60),y:A.y+4,vx:0,vy:80,r:7,life:5,last:true});});
+ return 18.6;
 }
 // The Knight's plan for its next turn.
 function planWave(g){
- if(g.ui!=='dr')return{kind:'arrival',i:Math.min(3,g.dodges),name:require("story.js").ARRIVAL_NAMES[Math.min(3,g.dodges)],box:UT_BOX};
- if(g.knightMercy>=100&&g.sethMercy>=100&&!g.finaleDone)return{kind:'finale',name:require("story.js").FINALE_NAME,box:DR_BOX};
- if(g.knightMercy>=70||g.finaleDone){const i=g.unifiedCount;return{kind:'unified',i,name:require("story.js").UNIFIED_NAMES[i%3],box:DR_BOX};}
- const n=g.dodges-4,pick=(list,k)=>list[(n+k+Math.floor(g.random()*3))%3];
+ const S=require("story.js");
+ if(g.ui!=='dr')return{kind:'arrival',i:Math.min(3,g.dodges),name:S.ARRIVAL_NAMES[Math.min(3,g.dodges)],box:UT_BOX};
+ if(g.knightMercy>=100&&g.sethMercy>=100&&!g.finaleDone)return{kind:'finale',name:S.FINALE_NAME,box:DR_BOX};
+ if(g.knightMercy>=70||g.finaleDone){const i=g.unifiedCount;return{kind:'unified',i,name:S.UNIFIED_NAMES[i%4],box:i%4===2?HAMMER_BOX:DR_BOX};}
+ const n=g.dodges-4,pick=(list,k)=>list[(n+k+Math.floor(g.random()*list.length))%list.length];
  return{kind:'triple',picks:[pick(BLADE,0),pick(WILD,1),pick(HOPE,2)],box:DR_BOX};
 }
-Object.assign(exports,{buildWave,planWave,UT_BOX,DR_BOX,BLADE,WILD,HOPE});
+Object.assign(exports,{buildWave,planWave,UT_BOX,DR_BOX,TALL,WIDE,FIELD,HAMMER_BOX,BLADE,WILD,HOPE,KX,KY});
 };
 modules["world.js"]=(exports,require)=>{
 const S=require("story.js");
@@ -710,11 +738,12 @@ class BattleEngine{
   if(this.selected>=this.menuLabels().length)this.selected=0;if(!silent)this.emit('turn');
  }
  config_(){const d=DIFF[this.settings?.difficulty]||DIFF.normal,u=this.unifiedCount>0||this.finaleDone?1.06:1;return{speed:d.speed*u,warn:d.warn,cooldown:d.cooldown,damage:d.damage,density:d.density};}
- startAttack(){
-  this.turn++;this.config=this.config_();const plan=planWave(this);this.plan=plan;
+ startAttack(force=null){
+  // force: a plan to play instead of the Knight's own choice (screenshots and tests).
+  this.turn++;this.config=this.config_();const plan=force||planWave(this);this.plan=plan;
   this.attackName=plan.kind==='triple'?plan.picks.map(p=>S.HEART_ACTS[p]).join('\n'):plan.name;
   this.state='warning';this.timer=0;this.attackTime=0;this.bullets=[];this.effects=this.effects.filter(e=>['damage','mercy'].includes(e.type));this.timeline=[];this.boss.pose='idle';
-  this.setArena(plan.box);this.soul={x:plan.box.x+plan.box.w/2,y:plan.box.y+plan.box.h/2};this.invulnerability=.4;this.sleepy=0;
+  this.mode='red';this.split=false;this.voidMode=false;this.prevIn={};this.setArena(plan.box,true);this.soul={x:plan.box.x+plan.box.w/2,y:plan.box.y+plan.box.h/2};this.invulnerability=.4;this.sleepy=0;
   // The arena is set before the wave is built, so the moves aim inside the right box.
   this.targetArena={...plan.box};this.duration=buildWave(this,plan);this.timeline.sort((a,b)=>a.at-b.at);this.emit('warning');
  }
@@ -734,7 +763,8 @@ class BattleEngine{
  startBreak(){this.scene='battle';this.state='uibreak';this.breakTime=0;this.bullets=[];this.effects=[];this.setArena(MENU_BOX);this.emit('roarBreak');}
  finishBreak(){this.ui='dr';this.selected=0;this.saveCheckpoint();this.hp=this.maxHP;this.message(S.AFTER_BREAK,'menu');this.emit('drStart');}
  // ------------------------------------------------------------ spawners (used by attacks.js)
- setArena(a){this.targetArena={...a};}
+ // In the Deltarune half the box spins into each new shape, as the Knight's does.
+ setArena(a,spin=false){this.targetArena={...a};if(spin&&this.ui==='dr')this.boxSpin=.45;}
  at(t,fn){this.timeline.push({at:t,action:fn,done:false});}
  spawn(b){const o={age:0,vx:0,vy:0,...b};this.bullets.push(o);return o;}
  pose(p,time=.9){this.boss.pose=p;this.boss.poseTime=time;}
@@ -749,7 +779,13 @@ class BattleEngine{
  }
  // margin > 0 asks "is the SOUL within margin of it?" (the graze test).
  hitTest(b,s,m=0){
-  if(b.kind==='gift'||b.kind==='zee'||b.kind==='scarf')return false;
+  if(b.kind==='gift'||b.kind==='zee'||b.kind==='scarf'||b.kind==='arrow'||b.kind==='eruption')return false;
+  if(b.delay&&b.age<b.delay)return false;
+  if(b.kind==='dashline'){if(b.age<b.warn||b.age>b.warn+b.live)return false;return Math.abs(s.y-b.y)<b.w/2+3+m;}
+  if(b.kind==='sword'){if(b.age<b.warn)return false;const top=b.vy>0?b.y-b.len:b.y,bot=b.vy>0?b.y:b.y+b.len;return Math.abs(s.x-b.x)<b.w/2+3+m&&s.y>top-3-m&&s.y<bot+3+m;}
+  if(b.kind==='bar'){if(Math.abs(s.x-b.x)>b.w/2+3+m)return false;if(b.blue)return !m&&this.moved;return Math.abs(s.y-b.gapY)>b.gapH/2-3-m;}
+  if(b.kind==='laser'){if(b.age<b.warn||b.age>b.warn+b.live)return false;const cx=Math.cos(b.angle),cy=Math.sin(b.angle),rx=s.x-b.ox,ry=s.y-b.oy;return rx*cx+ry*cy>0&&Math.abs(rx*cy-ry*cx)<b.w/2+3+m;}
+  if(b.kind==='cone'){if(b.age<b.warn||b.age>b.warn+b.live)return false;const d=Math.hypot(s.x-b.ox,s.y-b.oy);return d<b.len&&Math.abs(angleDiff(Math.atan2(s.y-b.oy,s.x-b.ox),b.angle))<b.half+(m?.04:0);}
   if(b.kind==='spike'){if(b.age<b.warn)return false;const L=b.cur||0;if(L<4)return false;const rx=s.x-b.x,ry=s.y-b.y,t=rx*b.dx+ry*b.dy,perp=Math.abs(rx*b.dy-ry*b.dx);if(t<-3-m||t>L+2+m)return false;return perp<(b.w*.32)*(1-t/L*.7)+4+m;}
   if(b.kind==='slash'){if(b.age<b.warn||b.age>b.warn+b.live)return false;return segDist(s.x,s.y,b.x1,b.y1,b.x2,b.y2)<b.w/2+3+m;}
   if(b.kind==='lance'){if(b.age<b.warn)return false;const cx=Math.cos(b.angle),cy=Math.sin(b.angle),rx=s.x-b.tx,ry=s.y-b.ty,t=-(rx*cx+ry*cy),perp=Math.abs(rx*cy-ry*cx);return t>-6-m&&t<b.len+m&&perp<b.w/2+3+m;}
@@ -774,8 +810,18 @@ class BattleEngine{
   this.attackTime+=dt;this.invulnerability=Math.max(0,this.invulnerability-dt);this.sleepy=Math.max(0,this.sleepy-dt);
   for(const e of this.timeline)if(!e.done&&this.attackTime>=e.at){e.done=true;e.action();}
   const s=this.soul,a=this.arena,sx=Number(!!input.right)-Number(!!input.left),sy=Number(!!input.down)-Number(!!input.up),n=Math.hypot(sx,sy)||1,speed=190*(input.slow?.5:1)*(this.sleepy>0?.55:1);
-  s.x+=sx/n*speed*dt;s.y+=sy/n*speed*dt;if(input.touch){const tx=input.touch.x-s.x,ty=input.touch.y-s.y,m=Math.hypot(tx,ty),step=Math.min(m,250*dt);if(m){s.x+=tx/m*step;s.y+=ty/m*step;}}
-  s.x=clamp(s.x,a.x+10,a.x+a.w-10);s.y=clamp(s.y,a.y+10,a.y+a.h-10);
+  const ox=s.x,oy=s.y;
+  if(this.mode==='green'){
+   // GREEN (the HAMMER OF JUSTICE wave): the SOUL holds still at the centre; the shield faces the arrow pressed last.
+   const pr=this.prevIn||{},SIDES=['up','right','down','left'];const fresh=SIDES.find(k=>input[k]&&!pr[k]);if(fresh)this.shield=fresh;else if(!input[this.shield]){const held=SIDES.find(k=>input[k]);if(held)this.shield=held;}
+   if(input.touch){const dx=input.touch.x-(a.x+a.w/2),dy=input.touch.y-(a.y+a.h/2);if(Math.hypot(dx,dy)>18)this.shield=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');}
+   this.prevIn={up:!!input.up,down:!!input.down,left:!!input.left,right:!!input.right};s.x=a.x+a.w/2;s.y=a.y+a.h/2;
+  }else{
+   s.x+=sx/n*speed*dt;s.y+=sy/n*speed*dt;if(input.touch){const tx=input.touch.x-s.x,ty=input.touch.y-s.y,m=Math.hypot(tx,ty),step=Math.min(m,250*dt);if(m){s.x+=tx/m*step;s.y+=ty/m*step;}}
+   s.x=clamp(s.x,a.x+10,a.x+a.w-10);s.y=clamp(s.y,a.y+10,a.y+a.h-10);
+  }
+  // Blue bars hurt only a SOUL that is moving.
+  this.moved=Math.hypot(s.x-ox,s.y-oy)>.2;this.boxSpin=Math.max(0,(this.boxSpin||0)-dt);
   const born=[];let grazing=false;
   for(const b of this.bullets){
    b.age+=dt;
@@ -788,6 +834,22 @@ class BattleEngine{
    else if(b.kind==='orbitblade'){const u=b.age/b.close;b.radius=u<1?b.r0*(1-.65*u):b.r0*.35+(b.age-b.close)*160*this.config.speed;b.theta+=b.spin*dt*(u<1?1:.3);b.x=b.cx+Math.cos(b.theta)*b.radius;b.y=b.cy+Math.sin(b.theta)*b.radius;}
    else if(b.kind==='star'){b.x+=b.vx*dt;b.y+=b.vy*dt;if(b.fuse&&b.age>=b.fuse){b.gone=true;for(let k=0;k<4;k++){const an=k*Math.PI/2+Math.PI/4;born.push({kind:'shard',x:b.x,y:b.y,vx:Math.cos(an)*90*this.config.speed,vy:Math.sin(an)*90*this.config.speed,r:3,age:0,life:3});}this.emit('pop');}}
    else if(b.kind==='zee'){b.x+=b.vx*dt;b.y+=b.vy*dt+Math.sin(b.age*3+b.wob)*12*dt;}
+   else if(b.kind==='orbitsword'){if(b.age<b.aimAt){b.theta+=b.spin*dt;b.x=b.cx+Math.cos(b.theta)*b.radius;b.y=b.cy+Math.sin(b.theta)*b.radius;b.ang=Math.atan2(s.y-b.y,s.x-b.x);}else{if(!b.launched){b.launched=true;b.vx=Math.cos(b.ang)*b.speed;b.vy=Math.sin(b.ang)*b.speed;this.emit('lunge');}b.x+=b.vx*dt;b.y+=b.vy*dt;}}
+   else if(b.kind==='sword'){if(b.age>=b.warn)b.y+=b.vy*dt;}
+   else if(b.kind==='dashline'){if(b.age>=b.warn&&!b.sounded){b.sounded=true;this.emit('slash');this.shake=Math.max(this.shake,.1);}if(b.age>b.warn+b.live+.25)b.gone=true;}
+   else if(b.kind==='eruption'){if(b.age>=b.warn){b.gone=true;born.push({kind:'spike',x:b.x,y:b.y,dx:0,dy:-1,w:b.w,len:b.len,warn:0,rise:.08,live:b.live,fall:.15,age:0,vx:0,vy:0});for(let k=0;k<6;k++){const an=-Math.PI/2+(k-2.5)*.42;born.push({kind:'shard',x:b.x,y:b.y-10,vx:Math.cos(an)*150*this.config.speed,vy:Math.sin(an)*190*this.config.speed,g:300,r:4,age:0,life:3});}this.emit('spike');this.shake=Math.max(this.shake,.08);}}
+   else if(b.kind==='bar'){b.x+=b.vx*dt;if(b.x<this.arena.x-20)b.gone=true;}
+   else if(b.kind==='laser'){if(b.age>=b.warn){if(!b.sounded){b.sounded=true;this.emit('laser');}b.angle+=b.spin*dt;}if(b.age>b.warn+b.live+.2)b.gone=true;}
+   else if(b.kind==='cone'){if(b.age>=b.warn&&!b.sounded){b.sounded=true;this.emit('shine');}if(b.age>b.warn+b.live+.2)b.gone=true;}
+   else if(b.kind==='star6'){if(b.delay&&b.age<b.delay)continue;if(b.hover!==undefined&&!b.sought){if(b.age>=b.hover){b.sought=true;const d=Math.hypot(s.x-b.x,s.y-b.y)||1;b.vx=(s.x-b.x)/d*b.seek;b.vy=(s.y-b.y)/d*b.seek;}}else{b.x+=(b.vx||0)*dt;b.y+=(b.vy||0)*dt;}if(b.fuse&&b.age>=b.fuse){b.gone=true;for(let k=0;k<(b.burst||5);k++){const an=k*6.283/(b.burst||5)+b.age;born.push({kind:'shard',x:b.x,y:b.y,vx:Math.cos(an)*110*this.config.speed,vy:Math.sin(an)*110*this.config.speed,r:3,age:0,life:3});}this.emit('pop');}}
+   else if(b.kind==='arrow'){
+    // A trick spear swings round the SOUL and comes in from the opposite side.
+    if(b.flip!==undefined){b.flip+=dt;if(b.flip>=.38){b.side={up:'down',down:'up',left:'right',right:'left'}[b.side];b.flip=undefined;b.flipped=true;}}
+    else{b.dist-=b.speed*dt;if(b.trick&&!b.flipped&&b.dist<=64){b.flip=0;b.dist=64;}
+     else if(b.dist<30&&this.shield===b.side){b.gone=true;this.effects.push({type:'block',life:.25});this.emit('block');continue;}
+     else if(b.dist<10){b.gone=true;this.hurt();if(this.state==='dead')return;continue;}}
+   }
+   else if(b.kind==='shard'&&b.g){b.vy+=b.g*dt;b.x+=b.vx*dt;b.y+=b.vy*dt;}
    else if(b.kind==='scarf'){b.x+=b.vx*dt;}
    else{b.x+=(b.vx||0)*dt;b.y+=(b.vy||0)*dt;}
    if(b.gone)continue;
@@ -801,7 +863,7 @@ class BattleEngine{
   this.grazeBlock=Math.max(0,(this.grazeBlock||0)-dt);
   if(grazing&&this.grazeBlock<=0){this.tp=Math.min(100,this.tp+GRAZE_RATE*dt);this.grazeFx=(this.grazeFx||0)-dt;if(this.grazeFx<=0){this.grazeFx=.18;this.effects.push({type:'graze',life:.2});this.emit('graze');}}
   this.bullets.push(...born);
-  this.bullets=this.bullets.filter(b=>{if(b.gone)return false;if(['spike','slash','lance','buster','ribbon','axe','orbitblade','scarf'].includes(b.kind))return b.age<(b.life??30);return b.age<(b.life??6)&&b.x>-80&&b.x<720&&b.y>-80&&b.y<560;});
+  this.bullets=this.bullets.filter(b=>{if(b.gone)return false;if(['spike','slash','lance','buster','ribbon','axe','orbitblade','scarf','dashline','eruption','laser','cone','arrow','bar','sword'].includes(b.kind))return b.age<(b.life??30);return b.age<(b.life??6)&&b.x>-80&&b.x<720&&b.y>-80&&b.y<560;});
   if(this.attackTime>=this.duration)this.finishWave();
  }
  snapshot(){return{scene:this.scene,state:this.state,ui:this.ui,room:this.world.room,hp:this.hp,maxHP:this.maxHP,enemyHP:this.enemyHP,turn:this.turn,waves:this.dodges,knightMercy:this.knightMercy,sethMercy:this.sethMercy,tp:Math.round(this.tp),ready:this.ready,finaleDone:this.finaleDone,ending:this.ending,plan:this.plan?.kind};}
@@ -880,6 +942,7 @@ class StageAudio{
    roar:()=>{this.burst(.1,.35,320);this.tone(110,.3,'sawtooth',.05);},
    // The roar that breaks the battle: a long low swell, then glass.
    roarBreak:()=>{this.burst(.22,1.2,240);this.tone(82,1.1,'sawtooth',.08);setTimeout(()=>{this.burst(.2,.5,4200);this.burst(.15,.7,2600);},1600);setTimeout(()=>{this.tone(523,.3,'triangle',.07);this.tone(784,.4,'triangle',.06,.12);this.tone(1046,.6,'triangle',.05,.24);},3000);},
+   laser:()=>{this.tone(1760,.08,'sawtooth',.03);this.burst(.06,.25,3200);},shine:()=>{this.tone(1318,.25,'triangle',.05);this.tone(1975,.3,'sine',.03,.05);},block:()=>this.tone(880,.05,'triangle',.06),
    drStart:()=>{},echo:()=>{this.tone(1046,.4,'sine',.04);this.tone(1568,.6,'sine',.025,.2);},
    awaken:()=>{this.tone(262,1.2,'sine',.06);this.tone(392,1.4,'sine',.05,.4);this.tone(523,1.6,'sine',.05,.8);this.burst(.08,2,1800);},
    door:()=>this.burst(.05,.2,600),encounter:()=>{this.tone(880,.06);setTimeout(()=>this.tone(440,.08),110);this.burst(.1,.3,1600);}
@@ -1018,6 +1081,15 @@ function worldDialogue(w){
 
 // ======================================================================= hazards (both halves)
 function star4(x,y,r,col='#fff'){ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x,y-r);ctx.lineTo(x+r*.28,y-r*.28);ctx.lineTo(x+r,y);ctx.lineTo(x+r*.28,y+r*.28);ctx.lineTo(x,y+r);ctx.lineTo(x-r*.28,y+r*.28);ctx.lineTo(x-r,y);ctx.lineTo(x-r*.28,y-r*.28);ctx.closePath();ctx.fill();}
+// A sword: white blade, pale guard, pointing along angle (centre at x,y).
+function swordShape(x,y,angle,len,col){ctx.save();ctx.translate(Math.round(x),Math.round(y));ctx.rotate(angle);ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(len/2,0);ctx.lineTo(len/2-7,-3);ctx.lineTo(-len/2+6,-3);ctx.lineTo(-len/2+6,3);ctx.lineTo(len/2-7,3);ctx.closePath();ctx.fill();ctx.fillStyle='#8aa4ff';ctx.fillRect(-len/2+3,-7,3,14);ctx.fillRect(-len/2-3,-2,6,4);ctx.restore();}
+// The Knight's six-pointed star, outlined.
+function star6(x,y,r,col){ctx.save();ctx.translate(Math.round(x),Math.round(y));ctx.rotate(game.clock*(reduceMotion?0:2));ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();for(let k=0;k<12;k++){const rr=k%2?r*.5:r,an=k*Math.PI/6;k?ctx.lineTo(Math.cos(an)*rr,Math.sin(an)*rr):ctx.moveTo(Math.cos(an)*rr,Math.sin(an)*rr);}ctx.closePath();ctx.stroke();ctx.fillStyle=col;ctx.fillRect(-1,-1,2,2);ctx.restore();}
+// The Knight's crescent: a white moon-blade with afterimages trailing behind it.
+function moon(b){const warn=b.age<b.warn;ctx.save();ctx.lineCap='round';
+ if(warn){ctx.globalAlpha=.3+.3*blink(14);ctx.strokeStyle='#ffffff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(b.x,b.y,b.R,b.facing-b.span,b.facing+b.span);ctx.stroke();ctx.restore();return;}
+ for(let k=4;k>=0;k--){ctx.globalAlpha=k?.12*(5-k):1;ctx.strokeStyle=k?'#9ab8ff':'#ffffff';ctx.lineWidth=k?b.thick-2:b.thick;ctx.beginPath();ctx.arc(b.x-Math.sign(b.vx)*k*12,b.y,b.R,b.facing-b.span,b.facing+b.span);ctx.stroke();}
+ ctx.globalAlpha=1;ctx.strokeStyle='#cfe0ff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(b.x,b.y,b.R-b.thick/2,b.facing-b.span*.9,b.facing+b.span*.9);ctx.stroke();ctx.restore();}
 function spikePath(b,len){const px=-b.dy,py=b.dx,hw=b.w/2;ctx.beginPath();ctx.moveTo(b.x+px*hw,b.y+py*hw);ctx.lineTo(b.x+b.dx*len,b.y+b.dy*len);ctx.lineTo(b.x-px*hw,b.y-py*hw);ctx.closePath();}
 function hazard(b){
  const t=game.clock;
@@ -1026,7 +1098,7 @@ function hazard(b){
   case 'slash':{ctx.save();if(b.age<b.warn){ctx.globalAlpha=.45+(reduceMotion?0:.2*Math.sin(b.age*28));ctx.strokeStyle=HEART.blade;ctx.lineWidth=1;ctx.setLineDash([6,4]);}else{ctx.globalAlpha=Math.max(0,1-(b.age-b.warn-b.live)/.2);ctx.strokeStyle=HEART.blade;ctx.lineWidth=b.w+4;ctx.beginPath();ctx.moveTo(b.x1,b.y1);ctx.lineTo(b.x2,b.y2);ctx.stroke();ctx.strokeStyle='#fff';ctx.lineWidth=b.w-3;}ctx.beginPath();ctx.moveTo(b.x1,b.y1);ctx.lineTo(b.x2,b.y2);ctx.stroke();ctx.restore();return;}
   case 'lance':{const cx=Math.cos(b.angle),cy=Math.sin(b.angle);if(b.age<b.warn){ctx.save();ctx.strokeStyle=HEART.blade;ctx.globalAlpha=.55;ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(b.x+cx*700,b.y+cy*700);ctx.stroke();ctx.restore();}
    const tx=b.x+cx*b.tip,ty=b.y+cy*b.tip;ctx.save();ctx.translate(tx,ty);ctx.rotate(b.angle);ctx.fillStyle='#e8f4ff';ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-b.len,-b.w/2);ctx.lineTo(-b.len,b.w/2);ctx.closePath();ctx.fill();ctx.fillStyle=HEART.blade;ctx.fillRect(-b.len,-1,b.len-6,2);ctx.fillStyle='#3a78d8';ctx.fillRect(-b.len-14,-3,14,6);ctx.restore();return;}
-  case 'buster':{ctx.save();const warn=b.age<b.warn;ctx.globalAlpha=warn?.3+(reduceMotion?0:.2*Math.sin(b.age*30)):1;ctx.lineCap='round';
+  case 'buster':{if(b.moon){moon(b);return;}ctx.save();const warn=b.age<b.warn;ctx.globalAlpha=warn?.3+(reduceMotion?0:.2*Math.sin(b.age*30)):1;ctx.lineCap='round';
    if(!warn){ctx.strokeStyle='rgba(176,58,216,.45)';ctx.lineWidth=b.thick+10;ctx.beginPath();ctx.arc(b.x-Math.sign(b.vx)*12,b.y,b.R,b.facing-b.span,b.facing+b.span);ctx.stroke();}
    ctx.strokeStyle=warn?HEART.wild:'#ff4aa8';ctx.lineWidth=warn?2:b.thick;ctx.beginPath();ctx.arc(b.x,b.y,b.R,b.facing-b.span,b.facing+b.span);ctx.stroke();
    if(!warn){ctx.strokeStyle='#ffd0ec';ctx.lineWidth=3;ctx.beginPath();ctx.arc(b.x,b.y,b.R+b.thick*.2,b.facing-b.span*.9,b.facing+b.span*.9);ctx.stroke();}ctx.restore();return;}
@@ -1035,28 +1107,60 @@ function hazard(b){
   case 'axe':{ctx.save();ctx.translate(b.x,b.y);ctx.rotate(reduceMotion?0:b.age*14);ctx.fillStyle='#7a3a9a';ctx.fillRect(-2,-10,4,20);ctx.fillStyle='#ff4aa8';ctx.beginPath();ctx.moveTo(2,-10);ctx.lineTo(11,-6);ctx.lineTo(11,2);ctx.lineTo(2,-2);ctx.closePath();ctx.fill();ctx.restore();return;}
   case 'orbitblade':{ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.theta+Math.PI/2);ctx.fillStyle='#e8f4ff';ctx.beginPath();ctx.moveTo(0,-9);ctx.lineTo(4,0);ctx.lineTo(0,9);ctx.lineTo(-4,0);ctx.closePath();ctx.fill();ctx.fillStyle=HEART.blade;ctx.fillRect(-1,-6,2,12);ctx.restore();return;}
   case 'star':{const r=b.fuse&&b.age>b.fuse-.3&&blink(14)?7:5;star4(b.x,b.y,r+1,HEART.blade);star4(b.x,b.y,r-1,'#fff');return;}
-  case 'shard':{star4(b.x,b.y,3,'#bfe6ff');return;}
+  case 'shard':{if(b.big){ctx.fillStyle='#dfe8ff';ctx.beginPath();ctx.moveTo(b.x,b.y-8);ctx.lineTo(b.x+5,b.y);ctx.lineTo(b.x,b.y+8);ctx.lineTo(b.x-5,b.y);ctx.closePath();ctx.fill();return;}star4(b.x,b.y,3,'#bfe6ff');return;}
   case 'gift':{battleSoul(ctx,b.x,b.y,14,blink(5)?HEART.hope:'#a8ffd0');return;}
   case 'zee':{ctx.save();ctx.globalAlpha=.85;text('Z',b.x,b.y-7,1.5,'#c8f0ff',true);ctx.restore();return;}
+  case 'orbitsword':{swordShape(b.x,b.y,b.ang??0,24,b.launched?'#ffffff':'#c8d8ff');return;}
+  case 'sword':{if(b.age<b.warn){const A=game.arena,y=b.vy>0?A.y+8:A.y+A.h-8;ctx.save();ctx.globalAlpha=.45+.55*blink(12);star4(b.x,y,6,'#fff');ctx.restore();return;}swordShape(b.x,b.y-(b.vy>0?b.len/2:-b.len/2),b.vy>0?Math.PI/2:-Math.PI/2,b.len,'#ffffff');return;}
+  case 'eruption':{const u=clamp(b.age/b.warn,0,1);ctx.save();ctx.globalAlpha=.3+.5*u;ctx.fillStyle='#c8d0ff';ctx.beginPath();ctx.ellipse(b.x,b.y-5,b.w*(.4+.4*u),4+2*u,0,0,6.283);ctx.fill();ctx.restore();return;}
+  case 'bar':{ctx.fillStyle=b.blue?'#3a6aff':'#ffffff';const x=Math.round(b.x-b.w/2);if(b.blue)ctx.fillRect(x,b.y0,b.w,b.y1-b.y0);else{ctx.fillRect(x,b.y0,b.w,Math.round(b.gapY-b.gapH/2-b.y0));ctx.fillRect(x,Math.round(b.gapY+b.gapH/2),b.w,Math.round(b.y1-b.gapY-b.gapH/2));}return;}
+  case 'star6':{if(b.delay&&b.age<b.delay)return;star6(b.x,b.y,b.r+3,b.fuse&&b.age>b.fuse-.25&&blink(14)?'#ffe8a0':'#ffffff');return;}
+  case 'dashline':{const warn=b.age<b.warn;ctx.save();if(warn){ctx.globalAlpha=.45+.3*blink(14);ctx.fillStyle='#ffffff';ctx.fillRect(0,Math.round(b.y),640,1);}else{ctx.globalAlpha=Math.max(0,1-(b.age-b.warn-b.live)/.25);ctx.fillStyle='#bfe6ff';ctx.fillRect(0,Math.round(b.y-b.w/2-3),640,b.w+6);ctx.fillStyle='#fff';ctx.fillRect(0,Math.round(b.y-b.w/2),640,b.w);}ctx.restore();return;}
+  case 'laser':{const cx=Math.cos(b.angle),cy=Math.sin(b.angle),L=1200;ctx.save();if(b.age<b.warn){ctx.globalAlpha=.5;ctx.strokeStyle=b.col;ctx.lineWidth=1;ctx.setLineDash([6,4]);}else{ctx.globalAlpha=Math.max(0,Math.min(1,(b.warn+b.live+.2-b.age)/.2));ctx.strokeStyle=b.col;ctx.lineWidth=b.w+6;ctx.beginPath();ctx.moveTo(b.ox,b.oy);ctx.lineTo(b.ox+cx*L,b.oy+cy*L);ctx.stroke();ctx.strokeStyle='#ffffff';ctx.lineWidth=Math.max(2,b.w-6);}ctx.beginPath();ctx.moveTo(b.ox,b.oy);ctx.lineTo(b.ox+cx*L,b.oy+cy*L);ctx.stroke();ctx.restore();return;}
+  case 'cone':{const live=b.age>=b.warn,a1=b.angle-b.half,a2=b.angle+b.half;ctx.save();ctx.globalAlpha=live?Math.max(0,Math.min(.75,(b.warn+b.live+.2-b.age)*2)):.12+.12*blink(10);const g=ctx.createLinearGradient(b.ox,b.oy,b.ox+Math.cos(b.angle)*b.len,b.oy+Math.sin(b.angle)*b.len);g.addColorStop(0,'#ffffff');g.addColorStop(.4,live?'#8a9cff':'#4a5aaa');g.addColorStop(1,live?'#5a6cff':'#2a3466');ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(b.ox,b.oy);ctx.lineTo(b.ox+Math.cos(a1)*b.len,b.oy+Math.sin(a1)*b.len);ctx.lineTo(b.ox+Math.cos(a2)*b.len,b.oy+Math.sin(a2)*b.len);ctx.closePath();ctx.fill();ctx.restore();return;}
   case 'scarf':{const a=game.arena;ctx.save();ctx.globalAlpha=.4;ctx.strokeStyle=HEART.hope;ctx.lineWidth=14;ctx.beginPath();for(let k=0;k<=12;k++){const x=b.x-k*12,y=b.y+Math.sin(k*.6+b.age*3)*b.amp*.4;k?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();ctx.restore();return;}
  }
 }
 function drawSoul(){
- const s=game.soul;if(game.invulnerability>0&&Math.floor(game.clock*15)%2)return;
+ const s=game.soul;
+ if(game.mode==='green'){
+  // The HAMMER OF JUSTICE: a green SOUL (purple rim kept) with a shield, and the spears coming for it.
+  const d={up:[0,-1],right:[1,0],down:[0,1],left:[-1,0]}[game.shield];ctx.save();ctx.translate(s.x+d[0]*24,s.y+d[1]*24);ctx.rotate(Math.atan2(d[1],d[0])+Math.PI/2);ctx.fillStyle='#43e750';ctx.fillRect(-17,-3,34,6);ctx.fillStyle='#b8ffc0';ctx.fillRect(-17,-3,34,2);ctx.restore();
+  ctx.save();ctx.strokeStyle='rgba(67,231,80,.35)';ctx.beginPath();ctx.arc(s.x,s.y,24,0,6.283);ctx.stroke();ctx.restore();
+  if(!(game.invulnerability>0&&Math.floor(game.clock*15)%2)){heart(s.x,s.y,20,'purple');heart(s.x,s.y,14,'green');}
+  for(const e of game.effects)if(e.type==='block'&&!e.x){ctx.save();ctx.globalAlpha=e.life*4;ctx.strokeStyle='#b8ffc0';ctx.lineWidth=2;ctx.beginPath();ctx.arc(s.x+d[0]*24,s.y+d[1]*24,8+(.25-e.life)*30,0,6.283);ctx.stroke();ctx.restore();}
+  return;
+ }
+ if(game.invulnerability>0&&Math.floor(game.clock*15)%2)return;
  heart(s.x,s.y,16,'purple');
  if(game.sleepy>0){ctx.save();ctx.globalAlpha=.7;text('z',s.x+10,s.y-20,1,'#c8f0ff');ctx.restore();}
  if(game.defending||game.persevere){ctx.save();ctx.globalAlpha=.6;ctx.strokeStyle=SETHC;ctx.lineWidth=2;ctx.beginPath();ctx.arc(s.x,s.y,13,0,Math.PI*2);ctx.stroke();ctx.restore();}
  for(const e of game.effects)if(e.type==='graze'){ctx.save();ctx.globalAlpha=e.life*4;ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(s.x,s.y,12+(.2-e.life)*30,0,Math.PI*2);ctx.stroke();ctx.restore();}
 }
+// A spear for the green SOUL: in from its side; a trick (gold) one swings round the SOUL to the far side.
+function drawArrow(b,s){
+ const ang={up:-Math.PI/2,right:0,down:Math.PI/2,left:Math.PI}[b.side];let an=ang,dist=b.dist;
+ if(b.flip!==undefined){const u=b.flip/.38;an=ang+Math.PI*u;dist=64;}
+ const x=s.x+Math.cos(an)*dist,y=s.y+Math.sin(an)*dist;ctx.save();ctx.translate(x,y);ctx.rotate(an+Math.PI);ctx.fillStyle=b.trick&&!b.flipped?'#ffd040':'#ffffff';ctx.beginPath();ctx.moveTo(9,0);ctx.lineTo(-4,-6);ctx.lineTo(-2,0);ctx.lineTo(-4,6);ctx.closePath();ctx.fill();ctx.fillRect(-14,-1,12,2);ctx.restore();
+}
+// The Knight's star void (the finale): the box is gone; colours wash through behind turning stars.
+function starVoid(){const t=game.clock,hue=(t*30)%360,g=ctx.createRadialGradient(320,166,10,320,166,360);g.addColorStop(0,`hsla(${hue},70%,55%,.55)`);g.addColorStop(.5,`hsla(${(hue+60)%360},60%,25%,.45)`);g.addColorStop(1,'rgba(0,0,0,.9)');ctx.fillStyle=g;ctx.fillRect(0,0,640,332);
+ ctx.save();ctx.globalAlpha=.25;for(let i=0;i<26;i++){const an=i*2.4+t*(reduceMotion?0:.15),r=60+(i*37)%260;star6(320+Math.cos(an)*r,166+Math.sin(an)*r*.7,9,'#ffffff');}ctx.restore();}
 function field(border='#fff'){
- const a=game.arena;box(a.x,a.y,a.w,a.h,border,game.dr?3:4);
+ const a=game.arena,dr=game.dr;
+ if(game.voidMode)starVoid();
+ else{const spin=dr&&!reduceMotion?clamp((game.boxSpin||0)/.45,0,1):0;ctx.save();if(spin>0){const cx=a.x+a.w/2,cy=a.y+a.h/2;ctx.translate(cx,cy);ctx.rotate(spin*Math.PI/2);ctx.scale(1-spin*.35,1-spin*.35);ctx.translate(-cx,-cy);}
+  if(game.split){const hw=(a.w-12)/2;box(a.x,a.y,hw,a.h,border,3);box(a.x+hw+12,a.y,hw,a.h,border,3);}else box(a.x,a.y,a.w,a.h,border,dr?3:4);ctx.restore();}
+ const outside=['lance','laser','cone','dashline','orbitsword'];
+ // The cone of light falls behind everything else.
+ ctx.save();ctx.beginPath();ctx.rect(0,0,640,dr?332:396);ctx.clip();for(const b of game.bullets)if(b.kind==='cone')hazard(b);ctx.restore();
  ctx.save();ctx.beginPath();ctx.rect(a.x+3,a.y+3,a.w-6,a.h-6);ctx.clip();
  for(const b of game.bullets)if(b.kind==='scarf')hazard(b);
- for(const b of game.bullets)if(!['lance','scarf','slash'].includes(b.kind))hazard(b);
+ for(const b of game.bullets)if(!['lance','scarf','slash','laser','cone','dashline','orbitsword','arrow'].includes(b.kind))hazard(b);
  for(const b of game.bullets)if(b.kind==='slash')hazard(b);
  drawSoul();ctx.restore();
  // Lunges come in from outside the box.
- ctx.save();ctx.beginPath();ctx.rect(0,0,640,game.dr?330:396);ctx.clip();for(const b of game.bullets)if(b.kind==='lance')hazard(b);ctx.restore();
+ ctx.save();ctx.beginPath();ctx.rect(0,0,640,game.dr?332:396);ctx.clip();for(const b of game.bullets)if(outside.includes(b.kind)&&b.kind!=='cone')hazard(b);if(game.mode==='green')for(const b of game.bullets)if(b.kind==='arrow')drawArrow(b,game.soul);ctx.restore();
  for(const e of game.effects){if(e.type==='gift'){ctx.save();ctx.globalAlpha=e.life*2;star4(e.x,e.y-(.5-e.life)*20,6,HEART.hope);ctx.restore();}if(e.type==='zee'){ctx.save();ctx.globalAlpha=e.life;text('z z',e.x,e.y-(.6-e.life)*30,1,'#c8f0ff',true);ctx.restore();}}
 }
 function effectsFX(){for(const e of game.effects){
@@ -1072,7 +1176,9 @@ function knightFrame(){const b=game.boss;if(['defend','warning'].includes(game.s
 function drawKnight(x,y,scale=1,alpha=1){
  const b=game.boss,f=knightFrame(),bob=reduceMotion?0:Math.round(Math.sin(game.clock*1.8)*3),pose=f!=='p1'&&f!=='p2'&&f!=='p3';
  const g=ctx.createRadialGradient(x,y-80,6,x,y-80,140);g.addColorStop(0,`rgba(160,200,255,${.16+(reduceMotion?0:Math.sin(game.clock*2)*.04)})`);g.addColorStop(1,'rgba(160,200,255,0)');ctx.fillStyle=g;ctx.fillRect(x-150,y-230,300,280);
- art.frame(f,x,y+bob,pose?scale*.82:scale,{alpha,tint:b.hurt>.35&&!reduceMotion?'rgba(255,255,255,.8)':null});
+ const sc=pose?scale*.82:scale;
+ if(game.dr&&!reduceMotion){const j=Math.sin(game.clock*7)*1.5;art.frame(f,x-3-j,y+bob,sc,{alpha:alpha*.5,tint:'rgba(255,50,110,1)'});art.frame(f,x+3+j,y+bob,sc,{alpha:alpha*.5,tint:'rgba(60,220,255,1)'});if(Math.floor(game.clock*3.3)%7===0)art.frame(f,x+6,y+bob-2,sc,{alpha:alpha*.35,tint:'rgba(255,230,80,1)'});}
+ art.frame(f,x,y+bob,sc,{alpha,tint:b.hurt>.35&&!reduceMotion?'rgba(255,255,255,.8)':null});
 }
 function hearts3(x,y){['blade','wild','hope'].forEach((h,k)=>battleSoul(ctx,x+k*14,y,10,HEART[h]));}
 function prose(str,n=Infinity,x=48,y=267,width=528,max=44,lines=5,lh=24,color='#fff'){typedLines(wrap(str,max,width),str,n).slice(0,lines).forEach((line,i)=>text(line,x,y+i*lh,2,color));}
@@ -1152,11 +1258,13 @@ function speechDR(){
  typedLines(lines,game.text,shown()).forEach((l,i)=>text(l,x+12,y+20+i*18,1.5,'#000'));
  if(game.displayChars>=game.text.length)text('Z',x+206,y+h-14,1,'#888');
 }
+// The TP bar, as DELTARUNE draws it: T and P stacked beside a tall bar, the percentage under them (MAX when full).
 function tpBar(x0){
- const x=x0,y=70,h=220,p=game.tp/100;text('TP',x+10,y-36,1.5,'#fff',true);text(Math.round(game.tp)+'%',x+10,y-18,1,game.tp>=100?'#ffff00':'#fff',true);
- ctx.fillStyle='#fff';ctx.fillRect(x-2,y-2,24,h+4);ctx.fillStyle='#401808';ctx.fillRect(x,y,20,h);ctx.fillStyle=game.tp>=100?'#ffd040':DR_ORANGE;ctx.fillRect(x,Math.round(y+h*(1-p)),20,Math.round(h*p));
+ const x=x0+16,y=64,h=226,p=game.tp/100,full=game.tp>=100;text('T',x-12,y+4,1.5,'#fff',true);text('P',x-12,y+24,1.5,'#fff',true);
+ if(full)['M','A','X'].forEach((c,i)=>text(c,x-12,y+50+i*18,1.5,'#ffff00',true));else{text(String(Math.floor(game.tp)),x-12,y+48,1.5,'#fff',true);text('%',x-12,y+68,1.5,'#fff',true);}
+ ctx.fillStyle='#fff';ctx.fillRect(x-2,y-2,22,h+4);ctx.fillStyle='#7a0e0e';ctx.fillRect(x,y,18,h);ctx.fillStyle=full?'#ffd040':DR_ORANGE;ctx.fillRect(x,Math.round(y+h*(1-p)),18,Math.round(h*p));
  // The spell's cost marked on the bar.
- ctx.fillStyle='#fff';ctx.fillRect(x,Math.round(y+h*(1-TP_COST/100)),20,1);
+ ctx.fillStyle='#fff';ctx.fillRect(x,Math.round(y+h*(1-TP_COST/100)),18,1);
 }
 function partyPanel(oy){
  const x=148,y=318+oy,w=344,h=62;ctx.fillStyle='#000';ctx.fillRect(x,y,w,h);ctx.fillStyle=SETHC;ctx.fillRect(x,y,w,2);ctx.fillRect(x,y,2,h);ctx.fillRect(x+w-2,y,2,h);
@@ -1182,9 +1290,21 @@ function drTextBox(){
  const str=st==='warning'?game.attackName:game.text;prose(str,st==='dialogue'?shown():Infinity,30,392,580,50,3,28,game.speaker==='seth'?'#d9a6ff':'#fff');
  if(st==='dialogue'&&game.displayChars>=game.text.length)text('Z',604,456,1,'#777');
 }
+// The Deltarune half's backdrop, after the Roaring Knight's: black, an arch overhead that changes colour every
+// turn, and violet fog rolling on the floor under the Knight.
+const ARCH=['#c01818','#d86a10','#c8b010','#30b030','#10a8b8','#2848d8','#8a28d0','#d02890'];
+function drBackdrop(t,k){
+ ctx.save();ctx.globalAlpha=k;ctx.fillStyle='#000';ctx.fillRect(0,0,640,332);
+ const col=ARCH[(game.turn+ARCH.length)%ARCH.length];ctx.lineWidth=34;ctx.strokeStyle=col;ctx.globalAlpha=k*.75;ctx.beginPath();ctx.ellipse(320,-30,120,96,0,0,Math.PI);ctx.stroke();
+ ctx.lineWidth=10;ctx.globalAlpha=k*.35;ctx.beginPath();ctx.ellipse(320,-30,150,118,0,0,Math.PI);ctx.stroke();
+ ctx.globalAlpha=k;ctx.fillStyle='#000';for(let i=0;i<9;i++){const x=226+i*24,hh=12+((i*7)%5)*5;ctx.fillRect(x,60,8,hh);}
+ const f=ctx.createRadialGradient(520,320,10,520,320,260);f.addColorStop(0,'rgba(120,40,160,.55)');f.addColorStop(1,'rgba(40,0,60,0)');ctx.fillStyle=f;ctx.fillRect(220,160,420,172);
+ if(!reduceMotion){ctx.globalAlpha=k*.18;ctx.fillStyle='#b070e0';for(let i=0;i<12;i++){const x=((i*83+t*12)%460)+200,y=250+((i*29)%70);ctx.fillRect(Math.round(x),Math.round(y),22,3);}}
+ ctx.restore();
+}
 function renderDR({assemble=1}={}){
  const k=ease(assemble),defending=['defend','warning'].includes(game.state),t=game.clock;
- art.drBackdrop(t,k,reduceMotion);
+ drBackdrop(t,k);
  // Seth stands on the left like a party member; he steps in when he attacks.
  const fx=game.state==='drfight'?10:0;art.sethFrame('right',false,0,112+fx-(1-k)*160,300,3,k);
  if(game.defending){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle=SETHC;ctx.lineWidth=3;ctx.beginPath();ctx.arc(150,240,40,-1,1);ctx.stroke();ctx.restore();}

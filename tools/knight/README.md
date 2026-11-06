@@ -13,10 +13,10 @@ python3 -I tools/knight/build.py
   - FIGHT as Deltarune's timing bar;
   - FIGHT / ACT / ITEM / SPARE / DEFEND;
   - two MERCY bars, the Knight's (raised by Seth) and Seth's (raised by the Knight), and the mutual spare.
-- `src/attacks.js`: the hearts' moves, the four Undertale waves, the Deltarune turns (one move from each heart in order), the UNIFIED waves and the finale, A NEW WORLD.
-- `src/knight-art.js`: draws the Knight's frames, Seth, Gerson and the painted rooms, plus the live parts (echo flowers, ceiling gems, the crystal, the stream) and the Deltarune grid backdrop.
+- `src/attacks.js`: the hearts' moves (after DELTARUNE's Roaring Knight fight and the secret Gerson fight, the designer's references), the four Undertale waves, the Deltarune turns (one move from each heart in order), the UNIFIED waves (including the green-shield HAMMER OF JUSTICE) and the finale, A NEW WORLD. `startAttack(plan)` takes a plan to play a chosen wave (screenshots, tests).
+- `src/knight-art.js`: draws the Knight's frames, Seth, Gerson and the painted rooms, plus the live parts (echo flowers, ceiling gems, the crystal, the stream).
 - `src/audio.js`: a synthesized placeholder score (walk, Undertale half, Deltarune half, finale), UNDERTALE's own effects, synthesized graze/shatter/roar, and the designer's snd_txt1.
-- `src/page.js`: rendering (both UIs and the break), input and touch targets.
+- `src/page.js`: rendering (both UIs, the break, the Roaring-Knight-style backdrop with its colour arch and fog, the star void), input and touch targets.
 - `art/knight.png` and `.json`: **placeholders** cut from the designer's concept sheet by `tools/extract_knight.py` (phase 1 to 3 sprites, back, five action poses, crystal spikes, portrait, detail close-ups). Replace them when the designer's real sprite sheets arrive. The concept sheet itself is not committed.
 - `art/gerson.png` and `.json`: Gerson's shopkeeper portrait (and his armoured pose), cropped from the art in `games/gerson.html` by the same tool.
 - `art/seth.png` and `.json`: human Seth's walk, copied from `tools/marigold/art`.

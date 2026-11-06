@@ -351,14 +351,26 @@ The designer revived their White Roaring Knight concept (a union of DELTARUNE's 
   - The full kit: FIGHT (DELTARUNE's timing bar), ACT, ITEM, SPARE, DEFEND.
   - TP comes from grazing: 6 TP a second while near a damaging hitbox, one aggregate amount per tick, as in Aqua's fight. DEFEND gives +16 TP and halves damage for the wave.
   - Seth's own spell is **PERSEVERE** (40% TP): +6 HP, damage halved for the wave, and the Knight's MERCY +9.
-- **One knight, three turns:** each enemy turn, the three hearts act in order (blade, wild, hope) and the text box names what each did. Then the UNIFIED waves start (the Knight's MERCY ≥ 70%): all three hearts at once.
+- **Built on the designer's references:** DELTARUNE's Roaring Knight fight (the designer's "Kaizo Roaring Knight - No-Hit" video) and the secret Gerson fight (DELTARUNE Chapter 4, "Hammer of Justice"), both downloaded and studied in full. Their sprites are reference only; everything is drawn new.
+  - **Look of the Deltarune half:** black, with an arch overhead that changes colour every turn, and violet fog on the floor under the Knight. The Knight has a red, cyan and gold chromatic fringe.
+  - **Layout:** a one-member party panel, as in the Gerson fight (Susie alone). TP is drawn the DELTARUNE way: T and P stacked, the percentage, MAX. The green box spins into each new shape.
+- **One knight, three turns:** each enemy turn, the three hearts act in order and the text box names what each did. The moves follow the Roaring Knight's:
+  - **Blade:** ENCIRCLING BLADES (swords circle the box, then stab in one by one), SWORD RAIN, a SWORD VOLLEY with one gap, and the DASH (a slash across the whole screen at Seth's height).
+  - **Wild heart:** CRESCENTS swept through a tall, narrow box, CRYSTAL ERUPTIONS (a shadow on the floor, then a crystal and its shards), the BAR CURTAIN (white bars with a winding gap; blue bars only hurt if you move), and RUDE BUSTER.
+  - **Hope:** the LIGHT CONE from its sword (leave it before it shines; stars bloom in it and burst), HEAL PRAYER hearts and PACIFY Zs.
+- **UNIFIED waves** start once the Knight's MERCY reaches 70%, cycling through four:
+  - the night sky (cone, then star bursts, then encircling blades);
+  - bars, then eruptions;
+  - the **HAMMER OF JUSTICE**: the dream's memory of the old hero Gerson. Seth's SOUL turns green (purple rim kept) in a small box, with a shield facing the arrow pressed last. Spears come from four sides, and gold trick spears swing round and come in from the opposite side. Gerson's shop lines set it up ("Saw an old hero in there too. Carried a hammer.");
+  - a split box with a seam slash, blue lasers and sword rain.
+- **Finale, A NEW WORLD:** the box falls away into the Knight's star void (Seth moves freely across the whole field while stars spiral out of the Knight), then a web of red light, then a shower of hearts.
 - **Mutual spare:** there are two MERCY bars.
   - The Knight's MERCY is raised by Seth's ACTs, PERSEVERE, FIGHT (hitting it is part of the dream) and each wave survived.
   - Seth's MERCY is raised by the Knight: each wave the hope heart tries to spare him, the HEAL PRAYER hearts he catches, the PACIFY Zs he touches (harmless but sleepy), and his own SPARE and DEFEND.
   - When both reach 100%, the finale A NEW WORLD plays. It ends in a shower of hearts, then they spare each other.
 - **HP:** the Knight can't be killed (HP floor 1). Below 30% it is TIRED and ACTs move its MERCY 1.5× as far.
 - **Checkpoint** with full HP and supplies every 4 waves and at the break.
-- **Measured (test bot, Normal):** spared in 16 to 19 turns (about 4 to 4.5 minutes of dodging) with no deaths. Gentle has no deaths either. A deliberately sloppy bot on Hard dies once or twice.
+- **Measured (test bot, Normal):** spared in 17 to 18 turns (about 4.3 to 4.6 minutes of dodging) with no deaths, about 42 to 45 hits a fight. Gentle has no deaths either. A deliberately sloppy bot on Hard dies 1 to 6 times (it was 1 to 2 before the rebuild).
 - **Art and music: placeholders.**
   - The Knight's frames are cut from the designer's concept sheet (`tools/knight/tools/extract_knight.py`), until the designer's real sprite sheets arrive.
   - Gerson is cropped from `games/gerson.html`, and Seth's walk is Marigold's.
