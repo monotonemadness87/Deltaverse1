@@ -101,7 +101,7 @@ def shrink(im, factor):
 
 # The size each effect is drawn at (the page draws these at scale 1 after the shrink).
 FX_SCALE = {'sword_projectile': .3, 'star_projectile': .2, 'diamond_shard': .16, 'heal_heart': .17, 'twinkle': .3, 'warning_reticle': .32,
-            'ring_pulse': .35, 'hammer': .5}
+            'ring_pulse': .35, 'hammer': .5, 'impact_star': .35}
 
 
 def cells(sheet, n=8):

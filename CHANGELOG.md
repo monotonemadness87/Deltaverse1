@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-11-07 — The White Roaring Knight: attacks re-studied frame by frame, the real RUDE BUSTER
+
+Every enemy turn of the Kaizo Roaring Knight video was re-watched as 4 fps filmstrips, and the attacks that had been misread were rebuilt:
+- **The light cone doesn't hurt:** a white line runs from the sword, the cone of light opens over the box, stars bloom and drift inside it, then flash white and shatter.
+- **Crystal eruptions** come from shadows across the whole floor and the ceiling, burst right through the box, and spray shards through the room.
+- **Crescents** come in pairs around a wandering gap, with swords stabbing in vertically.
+- **Thrown swords** are thrown one at a time, spin in place, then fly straight at Seth trailing afterimages.
+- **The split box** splits side by side and stacked, shutting Seth in one half, with diamonds bursting out of the gap.
+- **Lasers** tint the box blue while their lines show; huge white crescents sweep across between them.
+- **RUDE BUSTER is the real one,** cut frame by frame from the Gerson fight (projectile and impact), mirrored to fly at Seth.
+- Balance is about the same (test bot, Normal: 16–17 turns, no deaths).
+
 ## 2026-11-07 — The White Roaring Knight: side-on sprites, clean pixels, Seth facing the Knight
 
 - **Seth is Deltarune party size:** drawn at 1x on the Deltarune side (about 68 px tall), not 2x.

@@ -41,6 +41,8 @@ class KnightArt{
  ui(name,x,y,{tint=null,alpha=1}={}){const f=DRUI[name];if(!f||!this.ready(this.uiSheet))return;const c=this.ctx,[sx,sy,w,h]=f;c.save();c.imageSmoothingEnabled=false;c.globalAlpha*=alpha;
   if(tint){const t=this.uiScratch??=document.createElement('canvas');t.width=w;t.height=h;const x2=t.getContext('2d');x2.clearRect(0,0,w,h);x2.drawImage(this.uiSheet,sx,sy,w,h,0,0,w,h);x2.globalCompositeOperation='source-in';x2.fillStyle=tint;x2.fillRect(0,0,w,h);x2.globalCompositeOperation='source-over';c.drawImage(t,Math.round(x),Math.round(y));}
   else c.drawImage(this.uiSheet,sx,sy,w,h,Math.round(x),Math.round(y),w,h);c.restore();}
+ // The same, mirrored left to right (left edge still at x).
+ uiFlip(name,x,y,{alpha=1}={}){const f=DRUI[name];if(!f||!this.ready(this.uiSheet))return;const c=this.ctx,[sx,sy,w,h]=f;c.save();c.imageSmoothingEnabled=false;c.globalAlpha*=alpha;c.translate(Math.round(x)+w,Math.round(y));c.scale(-1,1);c.drawImage(this.uiSheet,sx,sy,w,h,0,0,w,h);c.restore();}
  uiSize(name){const f=DRUI[name];return f?[f[2],f[3]]:[0,0];}
  // The Knight's animations (and its effect sprites), frame i of the family.
  anim(family,i,x,y,scale=1,o={}){return this.drawAnim(this.animSheet,ANIM,family+'_'+Math.max(0,Math.min(this.frames(family)-1,i)),x,y,scale,o);}

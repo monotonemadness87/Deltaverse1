@@ -173,7 +173,12 @@ class BattleEngine{
   if(b.kind==='sword'){if(b.age<b.warn)return false;const top=b.vy>0?b.y-b.len:b.y,bot=b.vy>0?b.y:b.y+b.len;return Math.abs(s.x-b.x)<b.w/2+3+m&&s.y>top-3-m&&s.y<bot+3+m;}
   if(b.kind==='bar'){if(Math.abs(s.x-b.x)>b.w/2+3+m)return false;if(b.blue)return !m&&this.moved;return Math.abs(s.y-b.gapY)>b.gapH/2-3-m;}
   if(b.kind==='laser'){if(b.age<b.warn||b.age>b.warn+b.live)return false;const cx=Math.cos(b.angle),cy=Math.sin(b.angle),rx=s.x-b.ox,ry=s.y-b.oy;return rx*cx+ry*cy>0&&Math.abs(rx*cy-ry*cx)<b.w/2+3+m;}
-  if(b.kind==='cone'){if(b.age<b.warn||b.age>b.warn+b.live)return false;const d=Math.hypot(s.x-b.ox,s.y-b.oy);return d<b.len&&Math.abs(angleDiff(Math.atan2(s.y-b.oy,s.x-b.ox),b.angle))<b.half+(m?.04:0);}
+  // The cone of light never hurts (in the reference the SOUL sits inside it): the stars that bloom in it do.
+  if(b.kind==='cone')return false;
+  // A thrown sword: a short blade along its flight line.
+  if(b.kind==='thrown'){const L=Math.hypot(b.vx,b.vy)||1;return segDist(s.x,s.y,b.x,b.y,b.x-b.vx/L*22,b.y-b.vy/L*22)<5+m;}
+  // RUDE BUSTER: the chevron's bright head (the trail behind it is harmless). tip = its leading point, heading left.
+  if(b.kind==='rb'){if(b.age<b.warn)return false;const dx=s.x-b.tip,dy=Math.abs(s.y-b.y);if(dy>b.half+3+m)return false;const front=dy*b.k;return dx>front-4-m&&dx<front+b.thick+m;}
   if(b.kind==='spike'){if(b.age<b.warn)return false;const L=b.cur||0;if(L<4)return false;const rx=s.x-b.x,ry=s.y-b.y,t=rx*b.dx+ry*b.dy,perp=Math.abs(rx*b.dy-ry*b.dx);if(t<-3-m||t>L+2+m)return false;return perp<(b.w*.32)*(1-t/L*.7)+4+m;}
   if(b.kind==='slash'){if(b.age<b.warn||b.age>b.warn+b.live)return false;return segDist(s.x,s.y,b.x1,b.y1,b.x2,b.y2)<b.w/2+3+m;}
   if(b.kind==='lance'){if(b.age<b.warn)return false;const cx=Math.cos(b.angle),cy=Math.sin(b.angle),rx=s.x-b.tx,ry=s.y-b.ty,t=-(rx*cx+ry*cy),perp=Math.abs(rx*cy-ry*cx);return t>-6-m&&t<b.len+m&&perp<b.w/2+3+m;}
@@ -207,6 +212,8 @@ class BattleEngine{
   }else{
    s.x+=sx/n*speed*dt;s.y+=sy/n*speed*dt;if(input.touch){const tx=input.touch.x-s.x,ty=input.touch.y-s.y,m=Math.hypot(tx,ty),step=Math.min(m,250*dt);if(m){s.x+=tx/m*step;s.y+=ty/m*step;}}
    s.x=clamp(s.x,a.x+10,a.x+a.w-10);s.y=clamp(s.y,a.y+10,a.y+a.h-10);
+   // A split box: two halves with a gap between them that the SOUL can't cross.
+   if(this.split){const G=(this.splitGap||24)/2+9;if(this.split==='h'){const cy=a.y+a.h/2;if(Math.abs(s.y-cy)<G)s.y=oy<cy?cy-G:cy+G;}else{const cx=a.x+a.w/2;if(Math.abs(s.x-cx)<G)s.x=ox<cx?cx-G:cx+G;}}
   }
   // Blue bars hurt only a SOUL that is moving.
   this.moved=Math.hypot(s.x-ox,s.y-oy)>.2;this.boxSpin=Math.max(0,(this.boxSpin||0)-dt);
@@ -225,11 +232,16 @@ class BattleEngine{
    else if(b.kind==='orbitsword'){if(b.age<b.aimAt){b.theta+=b.spin*dt;b.x=b.cx+Math.cos(b.theta)*b.radius;b.y=b.cy+Math.sin(b.theta)*b.radius;b.ang=Math.atan2(s.y-b.y,s.x-b.x);}else{if(!b.launched){b.launched=true;b.vx=Math.cos(b.ang)*b.speed;b.vy=Math.sin(b.ang)*b.speed;this.emit('lunge');}b.x+=b.vx*dt;b.y+=b.vy*dt;}}
    else if(b.kind==='sword'){if(b.age>=b.warn)b.y+=b.vy*dt;}
    else if(b.kind==='dashline'){if(b.age>=b.warn&&!b.sounded){b.sounded=true;this.emit('slash');this.shake=Math.max(this.shake,.1);}if(b.age>b.warn+b.live+.25)b.gone=true;}
-   else if(b.kind==='eruption'){if(b.age>=b.warn){b.gone=true;born.push({kind:'spike',x:b.x,y:b.y,dx:0,dy:-1,w:b.w,len:b.len,warn:0,rise:.08,live:b.live,fall:.15,age:0,vx:0,vy:0});for(let k=0;k<6;k++){const an=-Math.PI/2+(k-2.5)*.42;born.push({kind:'shard',x:b.x,y:b.y-10,vx:Math.cos(an)*150*this.config.speed,vy:Math.sin(an)*190*this.config.speed,g:300,r:4,age:0,life:3});}this.emit('spike');this.shake=Math.max(this.shake,.08);}}
+   else if(b.kind==='eruption'){if(b.age>=b.warn){b.gone=true;const d=b.down?1:-1;born.push({kind:'spike',out:true,x:b.x,y:b.y,dx:0,dy:d,w:b.w,len:b.len,warn:0,rise:.08,live:b.live,fall:.15,age:0,vx:0,vy:0});
+    // The crystal bursts and sprays diamond shards that tumble down (or up, from the ceiling) through the room.
+    for(let k=0;k<9;k++){const an=(b.down?Math.PI/2:-Math.PI/2)+(k-4)*.32,v=(110+this.random()*90)*this.config.speed;born.push({kind:'shard',out:true,big:true,x:b.x,y:b.y+d*b.len*(.3+.5*this.random()),vx:Math.cos(an)*v,vy:Math.sin(an)*v*.8,g:b.down?60:200,r:4,age:0,life:4});}
+    this.emit('spike');this.shake=Math.max(this.shake,.08);}}
+   else if(b.kind==='thrown'){if(b.age<b.spin){b.x+=b.vx*.15*dt;b.y+=b.vy*.15*dt;}else{if(!b.sounded){b.sounded=true;this.emit('lunge');}b.x+=b.vx*dt;b.y+=b.vy*dt;}b.trail=(b.trail||[]);if(b.age>=b.spin&&Math.floor(b.age*30)!==b.lastT){b.lastT=Math.floor(b.age*30);b.trail.push([b.x,b.y]);if(b.trail.length>9)b.trail.shift();}}
+   else if(b.kind==='rb'){if(b.age>=b.warn){if(!b.sounded){b.sounded=true;this.emit('buster');}b.tip+=b.vx*dt;if(!b.hitFx&&b.tip<this.arena.x){b.hitFx=true;this.effects.push({type:'rbhit',x:this.arena.x,y:b.y,life:.45});this.emit('spike');}if(b.tip<-60)b.gone=true;}}
    else if(b.kind==='bar'){b.x+=b.vx*dt;if(b.x<this.arena.x-20)b.gone=true;}
    else if(b.kind==='laser'){if(b.age>=b.warn){if(!b.sounded){b.sounded=true;this.emit('laser');}b.angle+=b.spin*dt;}if(b.age>b.warn+b.live+.2)b.gone=true;}
    else if(b.kind==='cone'){if(b.age>=b.warn&&!b.sounded){b.sounded=true;this.emit('shine');}if(b.age>b.warn+b.live+.2)b.gone=true;}
-   else if(b.kind==='star6'){if(b.delay&&b.age<b.delay)continue;if(b.hover!==undefined&&!b.sought){if(b.age>=b.hover){b.sought=true;const d=Math.hypot(s.x-b.x,s.y-b.y)||1;b.vx=(s.x-b.x)/d*b.seek;b.vy=(s.y-b.y)/d*b.seek;}}else{b.x+=(b.vx||0)*dt;b.y+=(b.vy||0)*dt;}if(b.fuse&&b.age>=b.fuse){b.gone=true;for(let k=0;k<(b.burst||5);k++){const an=k*6.283/(b.burst||5)+b.age;born.push({kind:'shard',x:b.x,y:b.y,vx:Math.cos(an)*110*this.config.speed,vy:Math.sin(an)*110*this.config.speed,r:3,age:0,life:3});}this.emit('pop');}}
+   else if(b.kind==='star6'){if(b.delay&&b.age<b.delay)continue;if(b.hover!==undefined&&!b.sought){if(b.age>=b.hover){b.sought=true;const d=Math.hypot(s.x-b.x,s.y-b.y)||1;b.vx=(s.x-b.x)/d*b.seek;b.vy=(s.y-b.y)/d*b.seek;}}else{b.x+=(b.vx||0)*dt;b.y+=(b.vy||0)*dt;}if(b.fuse&&b.age>=b.fuse){b.gone=true;this.effects.push({type:'starflash',x:b.x,y:b.y,life:.3});for(let k=0;k<(b.burst||5);k++){const an=k*6.283/(b.burst||5)+b.age;born.push({kind:'shard',x:b.x,y:b.y,vx:Math.cos(an)*110*this.config.speed,vy:Math.sin(an)*110*this.config.speed,r:3,age:0,life:3});}this.emit('pop');}}
    else if(b.kind==='arrow'){
     // A trick spear swings round the SOUL and comes in from the opposite side.
     if(b.flip!==undefined){b.flip+=dt;if(b.flip>=.38){b.side={up:'down',down:'up',left:'right',right:'left'}[b.side];b.flip=undefined;b.flipped=true;}}
@@ -251,7 +263,7 @@ class BattleEngine{
   this.grazeBlock=Math.max(0,(this.grazeBlock||0)-dt);
   if(grazing&&this.grazeBlock<=0){this.tp=Math.min(100,this.tp+GRAZE_RATE*dt);this.grazeFx=(this.grazeFx||0)-dt;if(this.grazeFx<=0){this.grazeFx=.18;this.effects.push({type:'graze',life:.2});this.emit('graze');}}
   this.bullets.push(...born);
-  this.bullets=this.bullets.filter(b=>{if(b.gone)return false;if(['spike','slash','lance','buster','ribbon','axe','orbitblade','scarf','dashline','eruption','laser','cone','arrow','bar','sword'].includes(b.kind))return b.age<(b.life??30);return b.age<(b.life??6)&&b.x>-80&&b.x<720&&b.y>-80&&b.y<560;});
+  this.bullets=this.bullets.filter(b=>{if(b.gone)return false;if(['spike','slash','lance','buster','ribbon','axe','orbitblade','scarf','rb','thrown','dashline','eruption','laser','cone','arrow','bar','sword'].includes(b.kind))return b.age<(b.life??30);return b.age<(b.life??6)&&b.x>-80&&b.x<720&&b.y>-80&&b.y<560;});
   if(this.attackTime>=this.duration)this.finishWave();
  }
  snapshot(){return{scene:this.scene,state:this.state,ui:this.ui,room:this.world.room,hp:this.hp,maxHP:this.maxHP,enemyHP:this.enemyHP,turn:this.turn,waves:this.dodges,knightMercy:this.knightMercy,sethMercy:this.sethMercy,tp:Math.round(this.tp),ready:this.ready,finaleDone:this.finaleDone,ending:this.ending,plan:this.plan?.kind};}

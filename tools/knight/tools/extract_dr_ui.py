@@ -9,6 +9,9 @@ fight), each cropped to the 960 x 720 game area (x 160) and scaled to 640 x 480:
   enemy_row.png        enemy select: HP / MERCY labels                  (Gerson fight)
   press.png            the FIGHT timing bar ("PRESS")                   (Gerson fight)
 Seth's own party head icons come from the designer's Human Seth pack (supplied sheet cells r02 c28-c31).
+<frames-dir>/rudebuster/ holds Susie's RUDE BUSTER from the Gerson fight at full rate (r016-r024: the projectile in
+flight, r025-r028: its impact), cropped to the 960 x 720 game area. It is keyed out by its own colours (bright purple,
+magenta, lavender), shrunk to native scale by block majority, and stored as rb_0.. and rbhit_0.. (pointing right).
 
 Writes dr-ui.png and dr-ui.json: name -> [x, y, w, h]. Near-black is keyed out; white labels stay white (the page
 tints them); the command icons keep their orange, and the SPARE / DEFEND selected states (never selected in the
@@ -79,15 +82,65 @@ def main():
         im = Image.open(os.path.join(cells, c)).convert('RGBA')
         parts[f'seth_head{k}'] = im.crop(im.getchannel('A').getbbox())
 
+    rb = os.path.join(frames, 'rudebuster')
+    if os.path.isdir(rb):
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from extract_sheets import shrink, despeckle
+        def big_parts(mask, keep):
+            h, w = mask.shape
+            seen = np.zeros_like(mask)
+            out = np.zeros_like(mask)
+            comps = []
+            for y0 in range(h):
+                for x0 in range(w):
+                    if mask[y0, x0] and not seen[y0, x0]:
+                        stack, pix = [(y0, x0)], []
+                        seen[y0, x0] = True
+                        while stack:
+                            y, x = stack.pop()
+                            pix.append((y, x))
+                            for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (-1, -1), (1, -1), (-1, 1)):
+                                yy, xx = y + dy, x + dx
+                                if 0 <= yy < h and 0 <= xx < w and mask[yy, xx] and not seen[yy, xx]:
+                                    seen[yy, xx] = True
+                                    stack.append((yy, xx))
+                        comps.append(pix)
+            comps.sort(key=len, reverse=True)
+            for pix in comps[:keep]:
+                if len(pix) >= 30:
+                    for y, x in pix:
+                        out[y, x] = True
+            return out
+        def buster(path, box, pieces=1):
+            a = load(path)[box[1]:box[3], box[0]:box[2]]
+            r, g, b = a[..., 0], a[..., 1], a[..., 2]
+            keep = (b >= 150) & (np.maximum(r, b) >= 160) & (g < b - 10) | ((r > 225) & (g > 200) & (b > 225))
+            out = np.dstack([a, np.where(keep, 255, 0)]).astype(np.uint8)
+            out[~keep] = 0
+            im = shrink(Image.fromarray(out, 'RGBA'), 2 / 3)
+            q = im.convert('RGB').quantize(colors=12, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE).convert('RGB')
+            al = np.array(im)[..., 3]
+            arr = np.dstack([np.array(q), al]).astype(np.uint8)
+            arr[al == 0] = 0
+            arr = despeckle(arr)
+            # Only the projectile itself: drop small detached pieces (Susie's hair, Gerson's trim).
+            arr[~big_parts(arr[..., 3] > 0, pieces)] = 0
+            im = Image.fromarray(arr, 'RGBA')
+            return im.crop(im.getchannel('A').getbbox())
+        for k, n in enumerate(range(16, 25)):
+            parts[f'rb_{k}'] = buster(os.path.join(rb, f'r{n:03d}.png'), (230, 140, 700, 400), 1)
+        for k, n in enumerate(range(25, 29)):
+            parts[f'rbhit_{k}'] = buster(os.path.join(rb, f'r{n:03d}.png'), (520, 140, 660, 485), 3)
+
     x = y = row = 0
     place = {}
     for name, im in parts.items():
-        if x + im.width > 300:
+        if x + im.width > 400:
             x, y, row = 0, y + row + 1, 0
         place[name] = [x, y, im.width, im.height]
         x += im.width + 1
         row = max(row, im.height)
-    sheet = Image.new('RGBA', (300, y + row + 1), (0, 0, 0, 0))
+    sheet = Image.new('RGBA', (400, y + row + 1), (0, 0, 0, 0))
     for name, im in parts.items():
         sheet.paste(im, tuple(place[name][:2]))
     sheet.save(os.path.join(out, 'dr-ui.png'), optimize=True)

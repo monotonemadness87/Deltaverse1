@@ -29,22 +29,43 @@ function moves(g){
   // Swords drop point-first through the box; a glint at the edge shows where.
   swordrain(t0,dur){g.at(t0,()=>g.pose('cast_star_storm',1.2));every(t0,dur,.42,k=>{const A=a(),up=k%5===4,x=A.x+10+R()*(A.w-20);g.spawn({kind:'sword',x,y:up?A.y+A.h+30:A.y-30,vy:(up?-1:1)*330*sp(),len:34,w:6,warn:.5*warn(),life:4});});},
   // A volley thrown from the Knight: a row of blades with one gap.
-  volley(t0,dur){box(t0,BOXES.volley);every(t0+.4,dur-.4,1.2,k=>{const A=a(),rows=6,gap=Math.floor(R()*rows);for(let i=0;i<rows;i++){if(i===gap)continue;const y=A.y+A.h*(i+.5)/rows;g.spawn({kind:'lance',x:A.x+A.w+30,y,angle:Math.PI,len:46,w:8,speed:520*sp(),warn:.55*warn(),tip:0});}g.pose('thrust_left',.9);g.emit('cue');});},
+  volley(t0,dur){box(t0,BOXES.volley);every(t0+.3,dur-.3,.5,k=>{
+   // Thrown one at a time from the Knight: a sword spins in place for a moment, then flies straight at where Seth is,
+   // trailing afterimages. Every fourth throw is a big blade straight across at Seth's height.
+   if(k%4===3){const A=a();g.spawn({kind:'lance',x:A.x+A.w+40,y:g.soul.y,angle:Math.PI,len:70,w:10,speed:700*sp(),warn:.5*warn(),tip:0});g.pose('thrust_left',.7);g.emit('cue');return;}
+   const x=KX-30-R()*40,y=60+R()*220,d=Math.hypot(g.soul.x-x,g.soul.y-y)||1,v=330*sp();g.spawn({kind:'thrown',x,y,vx:(g.soul.x-x)/d*v,vy:(g.soul.y-y)/d*v,spin:.38*warn(),life:4});g.pose('thrust_left',.6);});},
   // The Knight's dash: a slash across the whole screen at Seth's height.
   dash(t0,dur){every(t0,dur,1.5,k=>{g.spawn({kind:'dashline',y:g.soul.y,w:10,warn:.62*warn(),live:.16,life:2});g.pose('dash_left',1);g.emit('cue');});},
   // Crescents swept through a tall, narrow box from the right: dodge up or down.
-  crescent(t0,dur){box(t0,BOXES.crescent);every(t0+.5,dur-.5,.85,k=>{const A=TALL,y=A.y+30+R()*(A.h-60),R0=58;g.spawn({kind:'buster',moon:true,x:A.x+A.w+R0+10,y,vx:-310*sp(),R:R0,thick:13,span:.62,facing:Math.PI,warn:.35*warn(),life:3});g.pose('slash_horizontal',.9);g.emit('cue');});},
+  crescent(t0,dur){box(t0,BOXES.crescent);
+   // Pairs of huge white crescents sweep through the tall box from the right, one above and one below a gap that
+   // wanders; meanwhile swords appear over and under the box and stab straight in at Seth.
+   let gy=TALL.y+TALL.h/2;every(t0+.5,dur-.5,.9,k=>{const A=TALL,R0=60,gap=46,half=R0*Math.sin(.62);gy=Math.max(A.y+half*2+gap/2-30,Math.min(A.y+A.h-half*2-gap/2+30,gy+(R()-.5)*90));
+    for(const s of [-1,1])g.spawn({kind:'buster',moon:true,x:A.x+A.w+R0+10,y:gy+s*(gap/2+half),vx:-300*sp(),R:R0,thick:13,span:.62,facing:Math.PI,warn:.35*warn(),life:3});g.pose('slash_horizontal',.9);g.emit('cue');});
+   every(t0+1.2,dur-1.2,1.4,k=>{const A=TALL,up=k%2===1;g.spawn({kind:'sword',x:g.soul.x,y:up?A.y+A.h+30:A.y-30,vy:(up?-1:1)*380*sp(),len:34,w:6,warn:.6*warn(),life:4});});},
   // A shadow on the floor, then a crystal erupts there and flings shards.
-  eruption(t0,dur){box(t0,BOXES.eruption);every(t0+.4,dur-.4,1.15,k=>{const A=a(),x=Math.max(A.x+24,Math.min(A.x+A.w-24,g.soul.x+(R()-.5)*70));g.spawn({kind:'eruption',x,y:A.y+A.h,w:34,len:A.h*.72,warn:.8*warn(),live:.45,life:3});g.pose('ground_slam',1);});},
+  eruption(t0,dur){box(t0,BOXES.eruption);
+   // Shadows appear on the floor across the whole room (and some on the ceiling); a moment later huge crystals burst
+   // out of them, right through the box, and spray diamond shards everywhere.
+   every(t0+.3,dur-.3,.55,k=>{const A=a(),down=k%4===3,x=k%2?Math.max(70,Math.min(570,g.soul.x+(R()-.5)*120)):60+R()*520,floor=Math.max(A.y+A.h+26,316),ceil=Math.min(A.y-26,30);
+    g.spawn({kind:'eruption',out:true,down,x,y:down?ceil:floor,w:38,len:(down?A.y+A.h*.7-ceil:floor-(A.y+A.h*.3)),warn:.85*warn(),live:.4,life:3});if(k%2===0)g.pose('ground_slam',1);});},
   // The bar curtain: white bars with a gap that winds, then blue bars that only hurt if you're moving.
   bars(t0,dur){box(t0,BOXES.bars);const A=WIDE,gapH=48,spacing=30,speed=170*sp(),step=spacing/speed;let gy=A.y+A.h/2;
    for(let i=0,t=t0+.5;t<t0+dur-1.6;i++,t+=step){const k=i;g.at(t,()=>{const blue=Math.floor(k/7)%2===1;if(!blue)gy=Math.max(A.y+gapH/2+6,Math.min(A.y+A.h-gapH/2-6,gy+(R()-.5)*34));g.spawn({kind:'bar',x:A.x+A.w+12,vx:-speed,w:10,y0:A.y,y1:A.y+A.h,gapY:gy,gapH,blue,life:4});});}
    g.at(t0+.3,()=>{g.cue('BLUE: STAND STILL');g.pose('spin_multislash',1.6);});},
   // RUDE BUSTER: a pink crescent across the box, one end always clear.
-  rudebuster(t0,dur){every(t0,dur,1.45,k=>{const A=a(),left=k%2===0,high=R()<.5,cy=A.y+A.h*(high?.3:.7),R0=A.h*.62;g.spawn({kind:'buster',x:left?A.x-R0*.4:A.x+A.w+R0*.4,y:cy,vx:(left?1:-1)*250*sp(),R:R0,thick:16,span:.95,facing:left?0:Math.PI,warn:.55*warn(),life:5});g.pose('overhead_cleave',1);g.emit('cue');});},
+  rudebuster(t0,dur){
+   // RUDE BUSTER, the real one (cut from the Gerson fight): the purple chevron flies across the box from the Knight.
+   // A band flickers along its row first; its head is the only part that hurts; one edge of the box is always clear.
+   every(t0,dur,1.35,k=>{const A=a(),half=50,high=R()<.5,y=high?A.y+half-6:A.y+A.h-half+6;g.spawn({kind:'rb',tip:A.x+A.w+30,y,vx:-330*sp(),half,k:.9,thick:30,warn:.55*warn(),life:4});g.pose('overhead_cleave',1);g.emit('cue');});},
   // The light cone from its sword: get out of it before it shines; stars bloom inside it and burst.
-  cone(t0,dur){every(t0,dur,2.2,k=>{const ang=Math.atan2(g.soul.y-KY,g.soul.x-(KX-40))+(R()-.5)*.1,w=.85*warn();g.spawn({kind:'cone',ox:KX-40,oy:KY,angle:ang,half:.2,len:720,warn:w,live:.7,life:2.2});
-   for(let i=0;i<5;i++){const d=150+i*60;g.spawn({kind:'star6',x:KX-40+Math.cos(ang)*d,y:KY+Math.sin(ang)*d,r:7,delay:w+.15,fuse:w+.75+i*.05,burst:6,life:4});}g.pose('sword_windup',1.4);g.emit('cue');});},
+  cone(t0,dur){
+   // The Knight's light: a white line runs from its sword through Seth's row, then a vast cone of light opens over
+   // the box (the light itself is harmless). Stars bloom inside it and drift; when the light fades they flash white and
+   // shatter into shards.
+   g.at(t0,()=>{g.spawn({kind:'dashline',y:g.soul.y,w:2,warn:99,live:0,life:.9,harmless:true});g.pose('sword_windup',1.2);g.emit('cue');});
+   g.at(t0+.9*warn(),()=>{const ang=Math.PI,L=g.config.warn;g.spawn({kind:'cone',ox:KX-40,oy:KY,angle:ang,half:.34,len:760,warn:0,live:dur-1.6,life:dur});g.emit('shine');
+    const A=a();for(let i=0;i<14;i++)g.at(g.attackTime+.1+i*.16,()=>{const B=a();g.spawn({kind:'star6',x:B.x-30+R()*(B.w+60),y:B.y-20+R()*(B.h+40),vx:(-14-R()*26)*sp(),vy:(R()-.5)*20,r:6,delay:0,fuse:(dur-1.2*warn())-(g.attackTime-t0)+R()*.25,burst:6,life:8});});});},
   // HEAL PRAYER: green hearts drift down (catch them), with a few slow sparkles to dodge.
   healprayer(t0,dur,{gifts=6}={}){for(let i=0;i<gifts;i++)g.at(t0+.2+i*(dur-.6)/gifts,()=>{const B=a();g.spawn({kind:'gift',x:B.x+20+R()*(B.w-40),y:B.y+4,vx:(R()-.5)*20,vy:46,r:7,life:7});});every(t0+.4,dur,.75,()=>{const B=a();g.spawn({kind:'star',x:B.x+10+R()*(B.w-20),y:B.y-6,vx:(R()-.5)*30*sp(),vy:70*sp(),r:5,life:7});});},
   // PACIFY: sleepy Zs float across. Touching one makes the SOUL drowsy and lets the Knight spare you a little.
@@ -52,9 +73,24 @@ function moves(g){
   // Six-pointed stars gather round the box, then dive at Seth and burst.
   starburst(t0,dur){every(t0,dur,1.3,k=>{const A=a(),cx=A.x+A.w/2,cy=A.y+A.h/2;for(let i=0;i<5;i++){const an=R()*6.28,d=Math.hypot(A.w,A.h)/2+30;g.spawn({kind:'star6',x:cx+Math.cos(an)*d,y:cy+Math.sin(an)*d,r:7,hover:.55*warn()+i*.1,seek:210*sp(),fuse:1.9+i*.1,burst:5,life:5});}g.emit('cue');g.pose('cast_star_storm',1);});},
   // Blue lasers sweep through the box from outside it.
-  lasers(t0,dur){every(t0,dur,1.1,k=>{g.pose('slash_diagonal',.9);const A=a(),cx=A.x+A.w/2,cy=A.y+A.h/2,an=R()*6.28,ox=cx+Math.cos(an)*230,oy=cy+Math.sin(an)*170;g.spawn({kind:'laser',ox,oy,angle:Math.atan2(g.soul.y-oy,g.soul.x-ox),spin:(R()<.5?-1:1)*.35,w:12,warn:.75*warn(),live:.55,life:2.5,col:'#3a5aff'});g.emit('cue');});},
+  lasers(t0,dur){every(t0,dur,1.1,k=>{g.pose('slash_diagonal',.9);const A=a(),cx=A.x+A.w/2,cy=A.y+A.h/2,an=R()*6.28,ox=cx+Math.cos(an)*230,oy=cy+Math.sin(an)*170;
+   // The box tints blue and thin lines show the beams before they fire wide; now and then a huge white crescent sweeps
+   // across from the Knight.
+   g.spawn({kind:'laser',ox,oy,angle:Math.atan2(g.soul.y-oy,g.soul.x-ox),spin:(R()<.5?-1:1)*.35,w:14,warn:.75*warn(),live:.55,life:2.5,col:'#3a5aff'});
+   if(k%3===2){const R0=110;g.spawn({kind:'buster',moon:true,x:A.x+A.w+R0+30,y:cy+(R()<.5?-1:1)*A.h*.3,vx:-360*sp(),R:R0,thick:20,span:.55,facing:Math.PI,warn:.45*warn(),life:3});}
+   g.emit('cue');});},
   // The box splits in two along a seam; slashes run down the seam and shards fall in both halves.
-  split(t0,dur){g.at(t0,()=>{g.setArena(DR_BOX,true);g.split=true;g.pose('cast_diamond_storm',1.4);});g.at(t0+dur-.1,()=>{g.split=false;});every(t0+.6,dur-.6,1.3,()=>{const A=DR_BOX;g.spawn({kind:'slash',x1:A.x+A.w/2,y1:A.y-40,x2:A.x+A.w/2,y2:A.y+A.h+40,w:12,warn:.6*warn(),live:.22});});every(t0+.3,dur-.3,.34,k=>{const A=DR_BOX,left=k%2===0,x=left?A.x+8+R()*(A.w/2-26):A.x+A.w/2+18+R()*(A.w/2-26);g.spawn({kind:'shard',x,y:A.y-6,vx:0,vy:120*sp(),r:4,big:true,life:4});});},
+  split(t0,dur){
+   // The box splits in two: side by side, then stacked, then side by side. Seth is shut in one half. Diamonds stream
+   // down the gap and burst out of it sideways into both halves; a pale beam sweeps the box; the Knight's slash runs
+   // down the gap each time it reopens.
+   const seq=['v','h','v'],part=dur/seq.length;
+   seq.forEach((o,i)=>g.at(t0+i*part,()=>{g.setArena(DR_BOX,true);g.split=o;g.splitGap=24;g.pose('cast_diamond_storm',1.2);const A=DR_BOX,cx=A.x+A.w/2,cy=A.y+A.h/2;
+    g.spawn(o==='v'?{kind:'slash',x1:cx,y1:A.y-40,x2:cx,y2:A.y+A.h+40,w:10,warn:.25,live:.2}:{kind:'slash',x1:A.x-40,y1:cy,x2:A.x+A.w+40,y2:cy,w:10,warn:.25,live:.2});g.emit('cue');}));
+   g.at(t0+dur-.1,()=>{g.split=false;});
+   every(t0+.6,dur-.6,.8,k=>{const A=DR_BOX,cx=A.x+A.w/2,cy=A.y+A.h/2,o=g.split||'v',at=(k%2?.25:.6)+R()*.25;
+    for(const sd of [-1,1])for(let j=0;j<3;j++){const p=at+j*.12;g.spawn(o==='v'?{kind:'shard',big:true,x:cx,y:A.y+A.h*p,vx:sd*(120+j*10)*sp(),vy:0,r:4,life:3}:{kind:'shard',big:true,x:A.x+A.w*p,y:cy,vx:0,vy:sd*(120+j*10)*sp(),r:4,life:3});}});
+   every(t0+1.2,dur-1.2,1.7,()=>{const A=DR_BOX,cx=A.x+A.w/2,cy=A.y+A.h/2,an=R()*3.14;g.spawn({kind:'laser',ox:cx-Math.cos(an)*240,oy:cy-Math.sin(an)*240,angle:an,spin:0,w:16,warn:.6*warn(),live:.35,life:1.5,col:'#9aa8ff'});});},
   // HAMMER OF JUSTICE (the old hero, as the dream remembers him): the SOUL turns green and holds a shield.
   // Spears come from four sides; gold ones are tricks that curve round and come from the opposite side.
   hammer(t0,dur){g.at(t0,()=>{g.setArena(HAMMER_BOX,true);g.mode='green';g.shield='up';g.soul={x:HAMMER_BOX.x+HAMMER_BOX.w/2,y:HAMMER_BOX.y+HAMMER_BOX.h/2};g.cue('ARROW KEYS TURN THE SHIELD');});g.at(t0+dur-.05,()=>{g.mode='red';});
