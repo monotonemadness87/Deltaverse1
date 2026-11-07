@@ -11,13 +11,13 @@ const G=(text,face='face')=>({speaker:'gerson',text,face});
 // The Knight speaks as one, but each heart has its own voice colour: blade (cyan), wild (pink), hope (green).
 const K=(text,heart='all')=>({speaker:'boss',text,heart});
 
-const ROOMS={shop:'GERSON\'S SHOP',path:'THE OLD PATH',cavern:'THE CRYSTAL'};
+const ROOMS={cavern:'THE CRYSTAL'};
 
-// ------------------------------------------------------------------ the walk
-const SHOP_ENTER=[N('* Gerson\'s shop.\n* Junk from the dump, sorted with love.')];
-const GERSON_FIRST=[
- G('Wahaha! A human, in MY shop! Relax, kid. I\'m retired.'),
- G('You\'ve got that look. Curious. Sticking your nose where it doesn\'t belong. I like it.'),
+// ------------------------------------------------------------------ the crystal room
+// Seth arrives at the crystal and remembers what Gerson told him about it in his shop: the lore, delivered here.
+const ARRIVE=[
+ N('* A hidden cave off the old path.\n* A crystal, glowing like it\'s breathing.'),
+ N('* You remember the old turtle at the shop.'),
  G('Tell ya a secret? Past the stream, off the old path, there\'s a crystal. Pure as they come.'),
  G('Monsters\'ve been staring into it since before the Barrier. Making wishes. The echo flowers down there repeat every last one.'),
  G('All that hoping\'s gotta go SOMEWHERE, right?'),
@@ -26,22 +26,15 @@ const GERSON_FIRST=[
  G('Saw an old hero in there too. Carried a hammer. Handsome fella. Wahaha!'),
  G('Go on, take a look. Just don\'t touch it.'),
  G('...You\'re gonna touch it.'),
- N('* (The old path is east, past the stream.)')
+ N('* The echo flowers are whispering.')
 ];
-const GERSON_AGAIN=[G('Old path\'s east, past the stream. Mind the echo flowers. They gossip.')];
-const GERSON_AFTER=[G('Back already? Wahaha. You touched it, didn\'t ya.')];
-const SHELF=[N('* Salvaged junk. Everything is labelled "PRICELESS".\n* Nothing has a price.')];
-const LANTERN=[N('* A lantern. The flame is a little crystal.\n* It hums when you get close.')];
-const EXIT_WEST=[N('* Waterfall goes on without you.\n* The old path is the other way.')];
-// The echo flowers on the old path: the wishes the crystal has been listening to.
+// The echo flowers round the crystal: the wishes it has been listening to.
 const ECHO=[
  [N('* An echo flower.'),N('* "i wish i could see the sky. just once. is it really blue?"')],
  [N('* An echo flower.'),N('* "i wish for a hero. somebody strong. somebody who\'d fight for all of us."')],
  [N('* An echo flower.'),N('* "i wish whoever comes is kind. kind enough to spare everyone. even the bad ones."')],
  [N('* An echo flower.'),N('* "i wish... for a new world. together."'),N('* It sounds like more than one voice.')]
 ];
-const CRACK_HIDDEN=[N('* Just rock.\n* ...Isn\'t it?')];
-const CRACK=[N('* A crack in the rock, just wide enough.\n* Light is coming out of it.')];
 const CRYSTAL_LOOK=[N('* A crystal, taller than you. Pure enough to see straight through.'),N('* Inside it, something is looking back.'),N('* (Touch it?)')];
 const TOUCH=[
  N('* You reach out.'),
@@ -158,6 +151,6 @@ const SPARED=[
  N('* Somewhere on the old path, an echo flower whispers:\n* "a new world. together."')
 ];
 
-Object.assign(exports,{N,SETH,G,K,ROOMS,SHOP_ENTER,GERSON_FIRST,GERSON_AGAIN,GERSON_AFTER,SHELF,LANTERN,EXIT_WEST,ECHO,CRACK_HIDDEN,CRACK,CRYSTAL_LOOK,TOUCH,MANIFEST,
+Object.assign(exports,{N,SETH,G,K,ROOMS,ARRIVE,ECHO,CRYSTAL_LOOK,TOUCH,MANIFEST,
  CHECK,FLAVOR,FLAVOR_DR,FLAVOR_READY,STORY,BREAK,AFTER_BREAK,STORY_DR,UNIFIED,FINALE_INTRO,FINALE_END,HEART_ACTS,ARRIVAL_NAMES,UNIFIED_NAMES,FINALE_NAME,
  ACTS_UT,ACTS_DR,WISH,LISTEN,ROAR,PERSEVERE,NO_TP,DEFEND,STRIKE,STRIKE_WEAK,TIRED,SPARE_EARLY,SPARE_UT,FLEE,SPARED});

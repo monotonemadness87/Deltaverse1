@@ -1,5 +1,4 @@
-# Paint the walk's rooms as pixel art at 1x (shown at 2x): Gerson's shop, the hidden echo-flower path, the crystal
-# cavern, and the battle backdrop. Living things (echo flowers, ceiling gems, the crystal itself, water shimmer) are
+# Paint the rooms as pixel art at 1x (shown at 2x): the crystal cavern (the whole walk) and the battle backdrop. Living things (echo flowers, ceiling gems, the crystal itself, water shimmer) are
 # drawn live by the page on top of these.
 #   python3 -I tools/knight/tools/paint_rooms.py tools/knight/art/rooms
 import sys, os, random
@@ -170,8 +169,6 @@ def battle():
     c.save('battle')
 
 
-shop()
-path()
 cavern()
 battle()
 print('rooms ->', OUT)

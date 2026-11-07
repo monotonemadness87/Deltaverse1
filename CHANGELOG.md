@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-07 — The White Roaring Knight: DELTARUNE's real UI, supplied sounds only, the crystal room
+
+- **The Deltarune half uses DELTARUNE's own UI,** cut from the designer's reference videos at native scale and laid out where the game puts it: Kris's command icons, the TP glyphs and slanted bar, the HP and MERCY labels, PRESS, and Seth's own party head icons from his pack. His party row rises into his panel on his turn and stays open while picking a target or an ACT; ACT and ITEM are two-column lists with the description and TP cost on the right; text is the game's size; the Knight's turn is narrated one heart at a time.
+- **No synthesized sounds:** every effect is a recording the designer supplied (UNDERTALE's, Seth's notebook slash, the Sans fights' teleport, encounter, blaster and vine, Omega Flowey's yowl for the roar).
+- **"Quiet Water"** plays in the crystal room before the battle.
+- **The walk is just the crystal room:** the shop and the old path are gone. Seth remembers Gerson's words as he arrives, and the echo flowers are round the crystal.
+
 ## 2026-11-06 — The White Roaring Knight's theme
 
 - The designer's "Your Humble Service" (a DELTARUNE fan track) is now the battle theme, replacing the synthesized placeholder. It plays through the Undertale half, the Deltarune half and the finale, falls silent for the roar that breaks the battle, then picks up where it left off. Its 2.3 s silent tail is trimmed so it loops cleanly.

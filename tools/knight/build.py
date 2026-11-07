@@ -50,9 +50,9 @@ def main():
     for name in OWN:
         body = read(os.path.join(HERE, 'src', name))
         if name == 'knight-art.js':
-            for token, fname in (('__KNIGHT_FRAMES__', 'knight.json'), ('__ANIM_FRAMES__', 'knight-anim.json'), ('__SETH_FRAMES__', 'seth2.json'), ('__GERSON_FRAMES__', 'gerson.json')):
+            for token, fname in (('__KNIGHT_FRAMES__', 'knight.json'), ('__ANIM_FRAMES__', 'knight-anim.json'), ('__DRUI_FRAMES__', 'dr-ui.json'), ('__SETH_FRAMES__', 'seth2.json'), ('__GERSON_FRAMES__', 'gerson.json')):
                 body = body.replace(token, json.dumps(json.load(open(os.path.join(art, fname))), separators=(',', ':')))
-            for token, fname in (('__KNIGHT_PNG__', 'knight.png'), ('__ANIM_PNG__', 'knight-anim.png'), ('__SETH_PNG__', 'seth2.png'), ('__GERSON_PNG__', 'gerson.png')):
+            for token, fname in (('__KNIGHT_PNG__', 'knight.png'), ('__ANIM_PNG__', 'knight-anim.png'), ('__DRUI_PNG__', 'dr-ui.png'), ('__SETH_PNG__', 'seth2.png'), ('__GERSON_PNG__', 'gerson.png')):
                 body = body.replace(token, data_uri(os.path.join(art, fname), 'image/png'))
             body = body.replace('__ROOMS__', json.dumps({n[:-4]: data_uri(os.path.join(art, 'rooms', n), 'image/png') for n in sorted(os.listdir(os.path.join(art, 'rooms')))}, separators=(',', ':')))
         if name == 'audio.js':
@@ -63,7 +63,7 @@ def main():
     assert page.startswith(ANCHOR)
     parts.append(page[1:])
     html = ''.join(parts)
-    for token in ('__FONT_TTF__', '__LICENSE_TXT__', '__SOUL_PNG__', '__KNIGHT_PNG__', '__ANIM_PNG__', '__ANIM_FRAMES__', '__SETH_PNG__', '__GERSON_PNG__', '__KNIGHT_FRAMES__', '__SETH_FRAMES__', '__GERSON_FRAMES__', '__ROOMS__', '__SOUNDS__'):
+    for token in ('__FONT_TTF__', '__LICENSE_TXT__', '__SOUL_PNG__', '__KNIGHT_PNG__', '__ANIM_PNG__', '__ANIM_FRAMES__', '__DRUI_PNG__', '__DRUI_FRAMES__', '__SETH_PNG__', '__GERSON_PNG__', '__KNIGHT_FRAMES__', '__SETH_FRAMES__', '__GERSON_FRAMES__', '__ROOMS__', '__SOUNDS__'):
         assert token not in html, token
     out = sys.argv[1] if len(sys.argv) > 1 else OUT
     with open(out, 'w') as f:

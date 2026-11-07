@@ -31,21 +31,13 @@ const ease=u=>1-(1-clamp(u,0,1))**3;
 function renderWorld(){
  const w=game.world,cam=w.camera(),t=game.clock;
  art.room(w.room,cam);
- if(w.room==='shop'){
-  art.gems(t,cam,640,3);const g=ctx.createRadialGradient(242,120,2,242,120,70);g.addColorStop(0,'rgba(255,210,120,.28)');g.addColorStop(1,'rgba(255,210,120,0)');ctx.fillStyle=g;ctx.fillRect(170,50,144,144);
-  // Gerson behind his counter (the counter is redrawn over him).
-  art.gerson('keeper',464-cam,262+(reduceMotion?0:Math.round(Math.sin(t*1.6))),1.15);
-  ctx.fillStyle='#3a2a20';ctx.fillRect(340-cam,236,248,60);ctx.fillStyle='#6a5040';ctx.fillRect(340-cam,236,248,6);ctx.fillStyle='#2a1e18';for(let x=352;x<588;x+=28)ctx.fillRect(x-cam,248,2,44);
- }
- if(w.room==='path'){
-  art.gems(t,cam,1440,9);art.stream(t,cam);
-  for(let i=0;i<4;i++){const le=w.flags.lastEcho,lit=le&&le.i===i?Math.max(0,1-(t-le.t)/2.5):w.flags['echo'+i]?.12:0;art.echoFlower(260+i*290-cam,330,t,lit);}
-  if(w.flags.gerson){const x=1386-cam,g=ctx.createRadialGradient(x,256,2,x,256,60);g.addColorStop(0,`rgba(180,220,255,${.3+.1*Math.sin(t*2)})`);g.addColorStop(1,'rgba(180,220,255,0)');ctx.fillStyle=g;ctx.fillRect(x-60,190,120,140);}
- }
- if(w.room==='cavern'){art.gems(t,0,640,5);const m=w.manifest;art.crystal(320,346,t,m?Math.min(1,m.t/1.6):0);}
+ // The crystal room: ceiling gems, the echo flowers round the edge (bright after they speak), the crystal.
+ art.gems(t,0,640,5);
+ for(const o of w.data.objects){if(!o.id.startsWith('echo'))continue;const i=Number(o.id.slice(4)),le=w.flags.lastEcho,lit=le&&le.i===i?Math.max(0,1-(t-le.t)/2.5):w.flags['echo'+i]?.12:0;art.echoFlower(o.x,o.y,t,lit);}
+ const m=w.manifest;art.crystal(320,346,t,m?Math.min(1,m.t/1.6):0);
  if(w.room==='cavern'&&w.manifest)manifestation(w.manifest.t);
  art.sethFrame(w.seth.dir,w.seth.moving,w.seth.step,w.seth.x-cam,w.seth.y);
- if(game.state==='world'&&!w.fadeTo){const o=w.nearest();if(o){const bob=reduceMotion?0:Math.round(Math.sin(t*5)*2);text('Z',o.x-cam,o.y-(o.id==='gerson'?150:o.id==='crystal'?250:110)+bob,1,'#ffff00',true);}}
+ if(game.state==='world'&&!w.fadeTo){const o=w.nearest();if(o){const bob=reduceMotion?0:Math.round(Math.sin(t*5)*2);text('Z',o.x-cam,o.y-(o.id==='crystal'?250:70)+bob,1,'#ffff00',true);}}
  if(w.title>0){ctx.save();ctx.globalAlpha=Math.min(1,w.title);text(require("story.js").ROOMS[w.room],320,452,1.5,'#fff',true);ctx.restore();}
  if(game.state==='dialogue')worldDialogue(w);
  if(w.fadeTo){ctx.fillStyle=`rgba(0,0,0,${Math.min(1,w.fade<.32?w.fade/.32:1-(w.fade-.32)/.32)})`;ctx.fillRect(0,0,640,480);}
@@ -194,7 +186,7 @@ function drawSethDR(x,y,alpha=1){
  if(game.defending)art.sethFx('glasses_shield',Math.min(7,Math.floor((t-(sp?.t||t))*8)),x+46,y-70,1.4,{alpha:alpha*.9});
 }
 function hearts3(x,y){['blade','wild','hope'].forEach((h,k)=>battleSoul(ctx,x+k*14,y,10,HEART[h]));}
-function prose(str,n=Infinity,x=48,y=267,width=528,max=44,lines=5,lh=24,color='#fff'){typedLines(wrap(str,max,width),str,n).slice(0,lines).forEach((line,i)=>text(line,x,y+i*lh,2,color));}
+function prose(str,n=Infinity,x=48,y=267,width=528,max=44,lines=5,lh=24,color='#fff',size=2){typedLines(wrap(str,max,width,size),str,n).slice(0,lines).forEach((line,i)=>text(line,x,y+i*lh,size,color));}
 
 // ======================================================================= the Undertale half
 function speechUT(){
@@ -259,48 +251,69 @@ function renderBreak(){
 }
 
 // ======================================================================= the Deltarune half
-const DR_BTN=['FIGHT','ACT','ITEM','SPARE','DEFEND'];
-function drButtons(){return DR_BTN.map((label,i)=>({x:156+i*66,y:350,w:62,h:26,label,index:i}));}
-function drListRects(n){return Array.from({length:n},(_,i)=>({x:36+(i%2)*292,y:390+Math.floor(i/2)*28,w:284,h:26}));}
-function bar(x,y,w,h,frac,col,bg='#330808'){ctx.fillStyle=bg;ctx.fillRect(x,y,w,h);ctx.fillStyle=col;ctx.fillRect(x,y,Math.round(w*clamp(frac,0,1)),h);}
+// DELTARUNE's battle UI, laid out as the game lays it out at native 640 x 480 (measured from the designer's reference
+// videos; the icons, TP glyphs, labels and PRESS are cut from those frames, Seth's head icon is from his pack).
+const DR_BTN=['FIGHT','ACT','ITEM','SPARE','DEFEND'],DR_ICON=['fight','act','item','spare','defend'];
+const DR_DARKRED='#800000',TP_RED='#7b0000',TP_ORANGE='#fd9f3d',MERCY_BG='#f95023',HP_GREEN='#00ff00';
+// The command row inside Seth's open panel.
+function drButtons(){return DR_BTN.map((label,i)=>({x:230+i*35,y:333,w:34,h:27,label,index:i}));}
+// ACT / ITEM lists: two columns, as DELTARUNE's.
+function drListRects(n){return Array.from({length:n},(_,i)=>({x:30+(i%2)*230,y:374+Math.floor(i/2)*34,w:220,h:32}));}
+function bar(x,y,w,h,frac,col,bg=DR_DARKRED){ctx.fillStyle=bg;ctx.fillRect(x,y,w,h);ctx.fillStyle=col;ctx.fillRect(x,y,Math.round(w*clamp(frac,0,1)),h);}
 function speechDR(){
  if(game.state!=='dialogue'||game.speaker!=='boss')return;
- const lines=wrap(game.text,20,190,1.5),h=Math.max(52,20+lines.length*18),x=212,y=20;
+ const lines=wrap(game.text,20,190,1.5),h=Math.max(52,20+lines.length*18),x=262,y=40;
  ctx.fillStyle='#fff';ctx.fillRect(x,y,220,h);ctx.beginPath();ctx.moveTo(x+220,y+20);ctx.lineTo(x+240,y+28);ctx.lineTo(x+220,y+36);ctx.fill();
  if(game.heart==='all')hearts3(x+12,y+12);else battleSoul(ctx,x+12,y+12,10,HEART[game.heart]);
  typedLines(lines,game.text,shown()).forEach((l,i)=>text(l,x+12,y+20+i*18,1.5,'#000'));
  if(game.displayChars>=game.text.length)text('Z',x+206,y+h-14,1,'#888');
 }
-// The TP bar, as DELTARUNE draws it: T and P stacked beside a tall bar, the percentage under them (MAX when full).
-function tpBar(x0){
- const x=x0+16,y=64,h=226,p=game.tp/100,full=game.tp>=100;text('T',x-12,y+4,1.5,'#fff',true);text('P',x-12,y+24,1.5,'#fff',true);
- if(full)['M','A','X'].forEach((c,i)=>text(c,x-12,y+50+i*18,1.5,'#ffff00',true));else{text(String(Math.floor(game.tp)),x-12,y+48,1.5,'#fff',true);text('%',x-12,y+68,1.5,'#fff',true);}
- ctx.fillStyle='#fff';ctx.fillRect(x-2,y-2,22,h+4);ctx.fillStyle='#7a0e0e';ctx.fillRect(x,y,18,h);ctx.fillStyle=full?'#ffd040':DR_ORANGE;ctx.fillRect(x,Math.round(y+h*(1-p)),18,Math.round(h*p));
- // The spell's cost marked on the bar.
- ctx.fillStyle='#fff';ctx.fillRect(x,Math.round(y+h*(1-TP_COST/100)),18,1);
+// The TP bar: DELTARUNE's T P glyphs and slanted bar (dark red, filling orange from the bottom, a white line on top).
+function tpBar(dx){
+ const x=39+dx,y=47,[w,h]=art.uiSize('tp_shape'),p=clamp(game.tp/100,0,1),full=game.tp>=100;
+ art.ui('tp_letters',8+dx,77);
+ if(full)['M','A','X'].forEach((c,i)=>text(c,22+dx,112+i*16,1.5,'#ffff00',true));else{text(String(Math.floor(game.tp)),22+dx,114,2,'#fff',true);text('%',22+dx,136,1.5,'#fff',true);}
+ art.ui('tp_shape',x,y,{tint:TP_RED});
+ const fill=Math.round(h*p);if(fill>0){ctx.save();ctx.beginPath();ctx.rect(x,y+h-fill,w,fill);ctx.clip();art.ui('tp_shape',x,y,{tint:full?'#ffd040':TP_ORANGE});ctx.restore();if(!full){ctx.save();ctx.beginPath();ctx.rect(x,y+h-fill,w,2);ctx.clip();art.ui('tp_shape',x,y,{tint:'#ffffff'});ctx.restore();}}
 }
+// Seth's party row. Collapsed (between the two grey lines) while the Knight acts; on his turn it rises 32 px into his
+// purple-bordered panel with the five command icons.
 function partyPanel(oy){
- const x=148,y=318+oy,w=344,h=62;ctx.fillStyle='#000';ctx.fillRect(x,y,w,h);ctx.fillStyle=SETHC;ctx.fillRect(x,y,w,2);ctx.fillRect(x,y,2,h);ctx.fillRect(x+w-2,y,2,h);
- // Seth's head icon, name, HP, and how far the Knight has come toward sparing him.
- art.sethFace(game.hp<game.maxHP*.3?'shocked':game.sethMercy>=100?'happy':'neutral',x+6,y+6,30);text('SETH',x+40,y+8,1.5,'#fff');
- text('HP',x+116,y+10,1,'#fff');bar(x+136,y+9,86,10,game.hp/game.maxHP,SETHC,'#3a1040');text(`${game.hp}/${game.maxHP}`,x+136,y+21,1,'#fff');
- text('MERCY',x+236,y+10,1,'#ffff00');bar(x+236,y+21,96,7,game.sethMercy/100,'#ffff00','#403a00');text(game.sethMercy+'%',x+332,y+9,1,'#ffff00',false);
- if(game.state==='menu'&&oy===0)drButtons().forEach((r,i)=>{const sel=game.selected===i,col=sel?'#ffff00':DR_ORANGE;ctx.strokeStyle=col;ctx.lineWidth=2;ctx.strokeRect(r.x+1,r.y+1,r.w-2,r.h-2);if(sel)battleSoul(ctx,r.x+9,r.y+13,10,SETHC);text(r.label,r.x+r.w/2+(sel?5:0),r.y+8,1,col,true);});
- else if(game.defending&&oy===0)text('DEFENDING',x+w/2,y+40,1.5,'#9ac8ff',true);
- else if(game.persevere&&oy===0)text('PERSEVERING',x+w/2,y+40,1.5,SETHC,true);
+ const open=['menu','drtarget','act','item'].includes(game.state)&&oy===0,up=open?32:0,y0=oy;
+ ctx.fillStyle='#000';ctx.fillRect(0,325+y0,640,40);ctx.fillStyle='#222';ctx.fillRect(0,325+y0,640,2);ctx.fillStyle='#262626';ctx.fillRect(0,362+y0,640,2);
+ if(open){ctx.fillStyle='#000';ctx.fillRect(214,293,212,73);ctx.fillStyle=SETHC;ctx.fillRect(214,293,212,2);ctx.fillRect(214,293,2,73);ctx.fillRect(424,293,2,73);ctx.fillRect(214,327,212,2);ctx.fillRect(220,329,2,37);ctx.fillRect(418,329,2,37);}
+ const y=y0-up,head=game.hp<game.maxHP*.3||game.sethPose?.name==='shock_frustration'&&game.clock<game.sethPose.until?'seth_head2':game.sethMercy>=100?'seth_head1':'seth_head0';
+ art.ui(head,228,331+y);text('SETH',264,337+y,2,'#fff');art.ui('hp_small',322,346+y);
+ const nums=`${game.hp}/ ${game.maxHP}`;text(nums,416-text.measure(nums,1.25),333+y,1.25,'#fff');
+ bar(342,347+y,74,9,game.hp/game.maxHP,SETHC);
+ // The Knight's mercy toward Seth (it is sparing him too), beside his row.
+ art.ui('label_mercy',442,336+y,{alpha:.95});bar(442,348+y,72,8,game.sethMercy/100,'#ffff00',MERCY_BG);text(game.sethMercy+'%',520,345+y,1,'#ffff00');
+ if(open)drButtons().forEach((r,i)=>art.ui('icon_'+DR_ICON[i]+(game.selected===i?'_sel':''),r.x,r.y));
+ // While a target or an ACT is being picked the chosen command stays lit, as in the game.
+ else if(oy===0&&game.defending)text('DEFENDING',320,370-up,1,'#9ac8ff',true);
 }
+// The text area under the panel: narration, the enemy select row, ACT / ITEM lists, the PRESS bar.
 function drTextBox(){
- ctx.fillStyle='#000';ctx.fillRect(0,382,640,98);ctx.fillStyle='#fff';ctx.fillRect(0,382,640,2);
  const st=game.state;
- if(st==='drtarget'){text('HP',384,388,1,'#fff');text('MERCY',492,388,1,'#ffff00');heart(28,408,14,'purple');text('WHITE ROARING KNIGHT',44,400,1.5,game.ready?'#ffff00':'#fff');
-  bar(384,402,96,12,game.enemyHP/game.enemyMax,'#43e750','#7a1010');text(Math.round(100*game.enemyHP/game.enemyMax)+'%',432,404,1,'#000',true);bar(492,402,110,12,game.knightMercy/100,'#ffff00','#5a2a00');text(game.knightMercy+'%',547,404,1,'#000',true);return;}
- if(st==='act'||st==='item'){const opts=game.options();drListRects(opts.length).forEach((r,i)=>{const label=opts[i],sel=game.option===i,spell=label==='PERSEVERE';if(sel)heart(r.x-6,r.y+12,14,'purple');text(label,r.x+12,r.y+4,1.5,spell?(game.tp>=TP_COST?DR_ORANGE:'#7a4a2a'):sel?'#fff':'#bbb');if(spell)text(TP_COST+'% TP',r.x+r.w-12,r.y+6,1,DR_ORANGE,false);});return;}
- if(st==='drfight'){const x=60,y=402,w=520;ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.strokeRect(x,y,w,40);ctx.strokeStyle=SETHC;ctx.strokeRect(x+w*.14-8,y+3,16,34);text('SETH',x-6,y+12,1,SETHC,false);const cx=x+w*clamp(game.drCursor,0,1);ctx.fillStyle='#fff';ctx.fillRect(Math.round(cx)-2,y+2,4,36);text('Z!',x+w*.14,y+44,1,'#ffff00',true);return;}
+ if(st==='drtarget'){heart(66,391,16,'purple');text('White Roaring Knight',80,378,3,game.ready?'#ffff00':'#fff');
+  art.ui('label_hp',424,368);art.ui('label_mercy',524,368);
+  bar(420,380,80,16,game.enemyHP/game.enemyMax,HP_GREEN);text(Math.round(100*game.enemyHP/game.enemyMax)+'%',423,383,1.25,'#004000');
+  bar(520,380,80,16,game.knightMercy/100,'#ffff00',MERCY_BG);text(game.knightMercy+'%',523,383,1.25,'#5a1000');return;}
+ if(st==='act'||st==='item'){const opts=game.options();drListRects(opts.length).forEach((r,i)=>{const label=opts[i],sel=game.option===i,spell=label==='PERSEVERE';if(sel)heart(r.x-14,r.y+14,16,'purple');text(label,r.x,r.y+2,3,spell&&game.tp<TP_COST?'#808080':'#fff');});
+  const cur=opts[game.option];if(cur==='PERSEVERE'){text('Heal,',500,376,3,'#808080');text('brace',500,406,3,'#808080');text(TP_COST+'% TP',500,438,3,TP_ORANGE);}
+  else if(st==='item'){const item=game.items.filter(i=>i.count)[game.option];if(item)text('+'+item.heal+' HP',500,376,3,'#808080');}return;}
+ if(st==='drfight'){
+  // Seth's head, PRESS, his box with the target at its left edge, and the cursor sliding in from the right.
+  art.ui('seth_head0',8,368);art.ui('press',46,370);ctx.fillStyle=SETHC;ctx.fillRect(80,365,124,2);ctx.fillRect(80,400,124,2);ctx.fillRect(80,365,2,37);ctx.fillRect(202,365,2,37);
+  ctx.strokeStyle='#d8a8ff';ctx.lineWidth=2;ctx.strokeRect(83,367,9,33);ctx.fillStyle='#0000a8';ctx.fillRect(80,403,224,2);ctx.fillRect(80,441,224,2);
+  const cx=86+(clamp(game.drCursor,-.1,1)-.14)*260;if(cx<310){ctx.fillStyle='#fff';ctx.fillRect(Math.round(cx)-2,367,5,33);}return;}
  if(st==='dialogue'&&game.speaker==='boss'){if(game.displayChars>=game.text.length)text('Z',604,456,1,'#777');return;}
  if(st==='spared')return;
  // The Knight's turn: what each heart is doing, dimmed while its bullets fly.
- if(st==='defend'){prose(game.attackName,Infinity,30,392,580,50,3,28,'#666');return;}
- const str=st==='warning'?game.attackName:game.text;prose(str,st==='dialogue'?shown():Infinity,30,392,580,50,3,28,game.speaker==='seth'?'#d9a6ff':'#fff');
+ // One heart at a time: the line for whichever heart is acting now (each holds the stage for 4.6 s).
+ const turnLine=()=>{const L=game.attackName.split('\n');return game.plan?.kind==='triple'?L[Math.min(L.length-1,Math.floor(game.attackTime/4.6))]:L[0];};
+ if(st==='defend'){prose(turnLine(),Infinity,26,374,600,40,3,34,'#777',3);return;}
+ const str=st==='warning'?turnLine():game.text;prose(str,st==='dialogue'?shown():Infinity,26,374,600,40,3,34,game.speaker==='seth'?'#d9a6ff':'#fff',3);
  if(st==='dialogue'&&game.displayChars>=game.text.length)text('Z',604,456,1,'#777');
 }
 // The Deltarune half's backdrop, after the Roaring Knight's: black, an arch overhead that changes colour every
@@ -323,7 +336,7 @@ function renderDR({assemble=1}={}){
  if(game.defending){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle=SETHC;ctx.lineWidth=3;ctx.beginPath();ctx.arc(150,240,40,-1,1);ctx.stroke();ctx.restore();}
  drawKnight(320+(522-320)*k,300,1.35);
  text('WHITE ROARING KNIGHT',522,24,1,game.ready?'#ffff00':'#9ac8ff',true);
- tpBar(20-(1-k)*80);
+ tpBar(-(1-k)*80);
  if(defending)field(DR_GREEN);
  partyPanel(Math.round((1-k)*170));
  if(k>=1){drTextBox();speechDR();}

@@ -5,11 +5,13 @@ const FRAMES=__KNIGHT_FRAMES__;
 // The designer's sprite sheets: name_i -> [x, y, w, h, anchorX, anchorY].
 const ANIM=__ANIM_FRAMES__;
 const SETH=__SETH_FRAMES__;
+// DELTARUNE's battle UI, cut from the designer's reference videos at native scale (tools/extract_dr_ui.py).
+const DRUI=__DRUI_FRAMES__;
 const GERSON=__GERSON_FRAMES__;
 const ROOMS=__ROOMS__;
 const img=src=>{const i=new Image();i.src=src;return i;};
 class KnightArt{
- constructor(ctx){this.ctx=ctx;this.sheet=img("__KNIGHT_PNG__");this.animSheet=img("__ANIM_PNG__");this.seth=img("__SETH_PNG__");this.gersonSheet=img("__GERSON_PNG__");this.rooms={};for(const [k,v] of Object.entries(ROOMS))this.rooms[k]=img(v);}
+ constructor(ctx){this.ctx=ctx;this.sheet=img("__KNIGHT_PNG__");this.animSheet=img("__ANIM_PNG__");this.uiSheet=img("__DRUI_PNG__");this.seth=img("__SETH_PNG__");this.gersonSheet=img("__GERSON_PNG__");this.rooms={};for(const [k,v] of Object.entries(ROOMS))this.rooms[k]=img(v);}
  ready(i){return i.complete&&i.naturalWidth;}
  has(name){return !!FRAMES[name];}
  size(name){const f=FRAMES[name];return f?{w:f[2],h:f[3]}:{w:0,h:0};}
@@ -31,6 +33,11 @@ class KnightArt{
   else c.drawImage(sheet,sx,sy,w,h,-ax,-ay,w,h);
   c.restore();return true;
  }
+ // A piece of the Deltarune UI at native scale, top-left at (x, y); tint recolours its pixels (white labels, the TP bar).
+ ui(name,x,y,{tint=null,alpha=1}={}){const f=DRUI[name];if(!f||!this.ready(this.uiSheet))return;const c=this.ctx,[sx,sy,w,h]=f;c.save();c.imageSmoothingEnabled=false;c.globalAlpha*=alpha;
+  if(tint){const t=this.uiScratch??=document.createElement('canvas');t.width=w;t.height=h;const x2=t.getContext('2d');x2.clearRect(0,0,w,h);x2.drawImage(this.uiSheet,sx,sy,w,h,0,0,w,h);x2.globalCompositeOperation='source-in';x2.fillStyle=tint;x2.fillRect(0,0,w,h);x2.globalCompositeOperation='source-over';c.drawImage(t,Math.round(x),Math.round(y));}
+  else c.drawImage(this.uiSheet,sx,sy,w,h,Math.round(x),Math.round(y),w,h);c.restore();}
+ uiSize(name){const f=DRUI[name];return f?[f[2],f[3]]:[0,0];}
  // The Knight's animations (and its effect sprites), frame i of the family.
  anim(family,i,x,y,scale=1,o={}){return this.drawAnim(this.animSheet,ANIM,family+'_'+Math.max(0,Math.min(this.frames(family)-1,i)),x,y,scale,o);}
  frames(family){let n=0;while(ANIM[family+'_'+n])n++;return n;}
