@@ -2,6 +2,8 @@
 
 ## 2026-11-07 — The White Roaring Knight: side-on sprites, clean pixels, Seth facing the Knight
 
+- **Seth is Deltarune party size:** drawn at 1x on the Deltarune side (about 68 px tall), not 2x.
+
 - **Side-on Knight:** the Deltarune half uses the designer's new side-on battle set (16 animations), facing Seth.
 - **Seth faces the Knight** on the Deltarune side (his pack's poses are mirrored).
 - **Clean pixels:** no sprite is resampled any more. Everything is drawn at a whole-number scale; the front Knight sheets and Seth's pack are snapped to flat palettes (the side set's own 28 colours for the Knight) with stray speckle pixels removed, and effects are pre-shrunk to the size they're drawn at. Portraits are drawn at 1x.

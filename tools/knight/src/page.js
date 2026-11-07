@@ -185,10 +185,11 @@ function drawSethDR(x,y,alpha=1){
  // Kneeling to DEFEND holds the low frames; the hug holds its last.
  const frame=fam==='kneel_stand'?Math.min(i,3):i;
  if(game.invulnerability>0&&['defend','warning'].includes(game.state)&&Math.floor(t*15)%2&&!reduceMotion)alpha*=.5;
- art.sethAnim(fam,frame,x,y,2,{alpha,flip:true});
- if(active&&fam==='cast_glasses')art.sethFx('magic_glasses_formation',Math.floor((t-sp.t)*7),x-4,y-118,1,{alpha});
- if(active&&fam==='cast_notebook_page')art.sethFx('floating_pages',Math.floor((t-sp.t)*8),x+44,y-80,1,{alpha});
- if(game.defending)art.sethFx('glasses_shield',Math.min(7,Math.floor((t-(sp?.t||t))*8)),x+46,y-70,1,{alpha:alpha*.9});
+ // 1x: his pack is drawn at Deltarune party size already (about 68 px tall).
+ art.sethAnim(fam,frame,x,y,1,{alpha,flip:true});
+ if(active&&fam==='cast_glasses')art.sethFx('magic_glasses_formation',Math.floor((t-sp.t)*7),x+2,y-58,1,{alpha});
+ if(active&&fam==='cast_notebook_page')art.sethFx('floating_pages',Math.floor((t-sp.t)*8),x+26,y-40,1,{alpha});
+ if(game.defending)art.sethFx('glasses_shield',Math.min(7,Math.floor((t-(sp?.t||t))*8)),x+28,y-34,1,{alpha:alpha*.9});
 }
 function hearts3(x,y){['blade','wild','hope'].forEach((h,k)=>battleSoul(ctx,x+k*14,y,10,HEART[h]));}
 function prose(str,n=Infinity,x=48,y=267,width=528,max=44,lines=5,lh=24,color='#fff',size=2){typedLines(wrap(str,max,width,size),str,n).slice(0,lines).forEach((line,i)=>text(line,x,y+i*lh,size,color));}
@@ -336,7 +337,7 @@ function renderDR({assemble=1}={}){
  const k=ease(assemble),defending=['defend','warning'].includes(game.state),t=game.clock;
  drBackdrop(t,k);
  // Seth stands on the left like a party member; he steps in when he attacks.
- drawSethDR(112-(1-k)*160,300,k);
+ drawSethDR(Math.round(130-(1-k)*160),296,k);
  if(game.defending){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle=SETHC;ctx.lineWidth=3;ctx.beginPath();ctx.arc(150,240,40,-1,1);ctx.stroke();ctx.restore();}
  drawKnight(Math.round(320+(522-320)*k),300,1);
  text('WHITE ROARING KNIGHT',522,24,1,game.ready?'#ffff00':'#9ac8ff',true);
