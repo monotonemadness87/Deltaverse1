@@ -47,15 +47,15 @@ function manifestation(t){
  const cx=320,cy=226;
  if(t>1.1){const u=clamp((t-1.1)/1.4,0,1);['blade','wild','hope'].forEach((h,k)=>{const an=k*Math.PI*2/3+t*(reduceMotion?0:2.6),r=(1-u)*120*Math.sin(Math.min(1,u*3)*Math.PI/2)+(u>=1?0:10);battleSoul(ctx,cx+Math.cos(an)*r,cy+Math.sin(an)*r*.6,18,HEART[h]);});}
  // The Knight arrives out of the light (its arrival animation), then idles in front of the crystal.
- if(t>2.4){const k=Math.floor((t-2.4)*8);if(k<8)art.anim('arrival',k,320,346,1.2);else art.anim('idle',Math.floor(game.clock*LOOP)%8,320,346,1.2);}
+ if(t>2.4){const k=Math.floor((t-2.4)*8);if(k<8)art.anim('arrival',k,320,346,1);else art.anim('idle',Math.floor(game.clock*LOOP)%8,320,346,1);}
  if(t>2.3&&t<3.1){ctx.save();ctx.globalAlpha=(reduceMotion?.4:1)*Math.max(0,1-Math.abs(t-2.55)/.4);ctx.fillStyle='#fff';ctx.fillRect(0,0,640,480);ctx.restore();}
 }
 function worldDialogue(w){
  const top=w.seth.y>250,y=top?16:318;box(32,y,576,146,'#fff',6);
  let tx=56,width=520,max=40,col='#fff';const sp=game.speaker;
- if(sp==='gerson'){art.gersonFace(52,y+20,96);tx=168;width=420;max=31;}
- else if(sp==='boss'){art.portrait(50,y+18,104);tx=170;width=416;max=30;col=HEART[game.heart]||'#fff';}
- else if(sp==='seth'){art.sethFace(game.face&&game.face!=='face'?game.face:'talking',56,y+22,96);tx=168;width=420;max=31;col='#d9a6ff';}
+ if(sp==='gerson'){art.gersonFace(62,y+20,76);tx=168;width=420;max=31;}
+ else if(sp==='boss'){art.portrait(56,y+28,87);tx=170;width=416;max=30;col=HEART[game.heart]||'#fff';}
+ else if(sp==='seth'){art.sethFace(game.face&&game.face!=='face'?game.face:'talking',56,y+22,85);tx=168;width=420;max=31;col='#d9a6ff';}
  typedLines(wrap(game.text,max,width),game.text,shown()).slice(0,4).forEach((l,i)=>text(l,tx,y+20+i*30,2,col));
  if(game.displayChars>=game.text.length)text('Z',590,y+118,1,'#777');
 }
@@ -132,7 +132,7 @@ function starVoid(){const t=game.clock,hue=(t*30)%360,g=ctx.createRadialGradient
 function field(border='#fff'){
  const a=game.arena,dr=game.dr;
  if(game.mode==='green'&&!reduceMotion)art.anim('hammer',Math.floor(game.clock*5)%4,a.x+a.w+46,a.y+a.h/2,.5);
- if(game.voidMode){starVoid();art.anim('vortex_ring',Math.floor(game.clock*6)%4,320,166,1.4,{alpha:.55});}
+ if(game.voidMode){starVoid();art.anim('vortex_ring',Math.floor(game.clock*6)%4,320,166,1,{alpha:.55});}
  else{const spin=dr&&!reduceMotion?clamp((game.boxSpin||0)/.45,0,1):0;ctx.save();if(spin>0){const cx=a.x+a.w/2,cy=a.y+a.h/2;ctx.translate(cx,cy);ctx.rotate(spin*Math.PI/2);ctx.scale(1-spin*.35,1-spin*.35);ctx.translate(-cx,-cy);}
   if(game.split){const hw=(a.w-12)/2;box(a.x,a.y,hw,a.h,border,3);box(a.x+hw+12,a.y,hw,a.h,border,3);}else box(a.x,a.y,a.w,a.h,border,dr?3:4);ctx.restore();}
  const outside=['lance','laser','cone','dashline','orbitsword'];
@@ -166,12 +166,17 @@ function knightAnim(){
  const fam=!game.dr?'idle':game.unifiedCount>0||game.finaleDone||game.plan?.kind==='unified'||game.plan?.kind==='finale'?'phase3_guard':'phase2_idle';
  return[fam,Math.floor(t*LOOP)%8];
 }
+// In the Deltarune half the Knight is the designer's side-on set (facing left, toward Seth) at 2x; moves the side set
+// doesn't have (the roar, the finale's ascent, its vanish) use the front sprites.
+const SIDE_OF={phase3_guard:'phase3_idle',spin_multislash:'slash_diagonal',hurt_stagger_kneel:'hurt_stagger'};
 function drawKnight(x,y,scale=1,alpha=1){
- const b=game.boss,[fam,i]=knightAnim(),bob=reduceMotion?0:Math.round(Math.sin(game.clock*1.8)*2);
+ const b=game.boss,[fam0,i]=knightAnim(),bob=reduceMotion?0:Math.round(Math.sin(game.clock*1.8)*2),fam=game.dr?(SIDE_OF[fam0]||fam0):fam0,side=game.dr&&art.hasSide(fam);
  const g=ctx.createRadialGradient(x,y-70,6,x,y-70,130);g.addColorStop(0,`rgba(160,200,255,${.16+(reduceMotion?0:Math.sin(game.clock*2)*.04)})`);g.addColorStop(1,'rgba(160,200,255,0)');ctx.fillStyle=g;ctx.fillRect(x-150,y-220,300,260);
+ // Side frames are anchored at the pack's origin (58 px above the feet at 2x); front frames at their feet.
+ const draw=(dx,o)=>side?art.side(fam,i,x+dx,y+bob-58,2,o):art.anim(fam,i,x+dx,y+bob,scale,o);
  // The Roaring Knight's chromatic fringe, in the Deltarune half.
- if(game.dr&&!reduceMotion){const j=Math.sin(game.clock*7)*1.5;art.anim(fam,i,x-3-j,y+bob,scale,{alpha:alpha*.45,tint:'rgba(255,50,110,1)'});art.anim(fam,i,x+3+j,y+bob,scale,{alpha:alpha*.45,tint:'rgba(60,220,255,1)'});if(Math.floor(game.clock*3.3)%7===0)art.anim(fam,i,x+6,y+bob-2,scale,{alpha:alpha*.3,tint:'rgba(255,230,80,1)'});}
- art.anim(fam,i,x,y+bob,scale,{alpha,tint:b.hurt>.35&&!reduceMotion?'rgba(255,255,255,.8)':null});
+ if(game.dr&&!reduceMotion){const j=Math.round(Math.sin(game.clock*7)*1.5);draw(-3-j,{alpha:alpha*.45,tint:'rgba(255,50,110,1)'});draw(3+j,{alpha:alpha*.45,tint:'rgba(60,220,255,1)'});if(Math.floor(game.clock*3.3)%7===0)draw(6,{alpha:alpha*.3,tint:'rgba(255,230,80,1)'});}
+ draw(0,{alpha,tint:b.hurt>.35&&!reduceMotion?'rgba(255,255,255,.8)':null});
 }
 // Seth on the Deltarune side: his own animations from the designer's pack, with his glasses and notebook effects.
 function drawSethDR(x,y,alpha=1){
@@ -180,10 +185,10 @@ function drawSethDR(x,y,alpha=1){
  // Kneeling to DEFEND holds the low frames; the hug holds its last.
  const frame=fam==='kneel_stand'?Math.min(i,3):i;
  if(game.invulnerability>0&&['defend','warning'].includes(game.state)&&Math.floor(t*15)%2&&!reduceMotion)alpha*=.5;
- art.sethAnim(fam,frame,x,y,2,{alpha});
- if(active&&fam==='cast_glasses')art.sethFx('magic_glasses_formation',Math.floor((t-sp.t)*7),x+4,y-118,1.5,{alpha});
- if(active&&fam==='cast_notebook_page')art.sethFx('floating_pages',Math.floor((t-sp.t)*8),x+44,y-80,1.4,{alpha});
- if(game.defending)art.sethFx('glasses_shield',Math.min(7,Math.floor((t-(sp?.t||t))*8)),x+46,y-70,1.4,{alpha:alpha*.9});
+ art.sethAnim(fam,frame,x,y,2,{alpha,flip:true});
+ if(active&&fam==='cast_glasses')art.sethFx('magic_glasses_formation',Math.floor((t-sp.t)*7),x-4,y-118,1,{alpha});
+ if(active&&fam==='cast_notebook_page')art.sethFx('floating_pages',Math.floor((t-sp.t)*8),x+44,y-80,1,{alpha});
+ if(game.defending)art.sethFx('glasses_shield',Math.min(7,Math.floor((t-(sp?.t||t))*8)),x+46,y-70,1,{alpha:alpha*.9});
 }
 function hearts3(x,y){['blade','wild','hope'].forEach((h,k)=>battleSoul(ctx,x+k*14,y,10,HEART[h]));}
 function prose(str,n=Infinity,x=48,y=267,width=528,max=44,lines=5,lh=24,color='#fff',size=2){typedLines(wrap(str,max,width,size),str,n).slice(0,lines).forEach((line,i)=>text(line,x,y+i*lh,size,color));}
@@ -206,7 +211,7 @@ function utHud({hide=false}={}){
 function renderUT({hideUI=false}={}){
  const defending=['defend','warning'].includes(game.state);
  art.backdrop(.9);
- drawKnight(320,226,1.15);speechUT();
+ drawKnight(320,226,1);speechUT();
  text('KNIGHT',24,26,1,game.ready?'#ffff00':'#9ac8ff');
  if(game.enemyHP<game.enemyMax||game.state==='target'){ctx.fillStyle='#222';ctx.fillRect(256,232,128,3);ctx.fillStyle='#9ac8ff';ctx.fillRect(256,232,128*game.enemyHP/game.enemyMax,3);}
  if(hideUI)return;
@@ -243,7 +248,7 @@ function renderBreak(){
   for(let k=0;k<3;k++){const u=((t+k*.25)%1.2)/1.2;ctx.save();ctx.globalAlpha=(1-u)*.7;ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(320,140,30+u*300,0,Math.PI*2);ctx.stroke();ctx.restore();}
   if(t>.6){const u=clamp((t-.6)/.9,0,1);ctx.save();ctx.strokeStyle='#fff';ctx.lineWidth=2;for(const pts of cracks){const n=Math.max(1,Math.floor(pts.length*u));ctx.beginPath();pts.slice(0,n).forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.stroke();}ctx.restore();}
  }else if(t<3.1){
-  art.backdrop(Math.max(0,1-(t-1.6)/1.2));drawKnight(320,226,1.15+(reduceMotion?0:.06*Math.sin(t*20)));
+  art.backdrop(Math.max(0,1-(t-1.6)/1.2));drawKnight(320+(reduceMotion?0:Math.round(Math.sin(t*40)*2)),226,1);
   const tau=t-1.6;for(const s of shards){const x=s.x+s.vx*tau,y=s.y+s.vy*tau+260*tau*tau;if(y>520)continue;ctx.save();ctx.translate(x+s.w/2,y+s.h/2);ctx.rotate(s.vr*tau);ctx.fillStyle=s.col;ctx.fillRect(-s.w/2,-s.h/2,s.w,s.h);ctx.restore();}
  }else renderDR({assemble:clamp((t-3.1)/1.4,0,1)});
  if(t>2.5&&t<3.5){ctx.save();ctx.globalAlpha=(reduceMotion?.35:1)*Math.max(0,1-Math.abs(t-3)/.5);ctx.fillStyle='#fff';ctx.fillRect(0,0,640,480);ctx.restore();}
@@ -290,7 +295,6 @@ function partyPanel(oy){
  art.ui('label_mercy',442,336+y,{alpha:.95});bar(442,348+y,72,8,game.sethMercy/100,'#ffff00',MERCY_BG);text(game.sethMercy+'%',520,345+y,1,'#ffff00');
  if(open)drButtons().forEach((r,i)=>art.ui('icon_'+DR_ICON[i]+(game.selected===i?'_sel':''),r.x,r.y));
  // While a target or an ACT is being picked the chosen command stays lit, as in the game.
- else if(oy===0&&game.defending)text('DEFENDING',320,370-up,1,'#9ac8ff',true);
 }
 // The text area under the panel: narration, the enemy select row, ACT / ITEM lists, the PRESS bar.
 function drTextBox(){
@@ -334,7 +338,7 @@ function renderDR({assemble=1}={}){
  // Seth stands on the left like a party member; he steps in when he attacks.
  drawSethDR(112-(1-k)*160,300,k);
  if(game.defending){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle=SETHC;ctx.lineWidth=3;ctx.beginPath();ctx.arc(150,240,40,-1,1);ctx.stroke();ctx.restore();}
- drawKnight(320+(522-320)*k,300,1.35);
+ drawKnight(Math.round(320+(522-320)*k),300,1);
  text('WHITE ROARING KNIGHT',522,24,1,game.ready?'#ffff00':'#9ac8ff',true);
  tpBar(-(1-k)*80);
  if(defending)field(DR_GREEN);

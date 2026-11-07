@@ -68,6 +68,12 @@ def main():
                 d.rectangle(r, fill=(0, 0, 0))
         im = key(im)
         frames[name] = im if name in ('portrait', 'face', 'cloth', 'scarf', 'blade') else trim(im)
+        if name == 'portrait':
+            # Shrunk to half by block majority (whole pixels at 1x), then despeckled.
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+            from extract_sheets import shrink, despeckle
+            sm = shrink(trim(im), .5)
+            frames[name] = Image.fromarray(despeckle(np.array(sm)), 'RGBA')
     atlas, place = pack(frames)
     atlas.save(os.path.join(out, 'knight.png'), optimize=True)
     json.dump(place, open(os.path.join(out, 'knight.json'), 'w'))

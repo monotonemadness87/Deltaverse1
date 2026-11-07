@@ -4,6 +4,8 @@
 const FRAMES=__KNIGHT_FRAMES__;
 // The designer's sprite sheets: name_i -> [x, y, w, h, anchorX, anchorY].
 const ANIM=__ANIM_FRAMES__;
+// The designer's side-on battle set (left-facing), for the Deltarune half.
+const SIDE=__SIDE_FRAMES__;
 const SETH=__SETH_FRAMES__;
 // DELTARUNE's battle UI, cut from the designer's reference videos at native scale (tools/extract_dr_ui.py).
 const DRUI=__DRUI_FRAMES__;
@@ -11,7 +13,7 @@ const GERSON=__GERSON_FRAMES__;
 const ROOMS=__ROOMS__;
 const img=src=>{const i=new Image();i.src=src;return i;};
 class KnightArt{
- constructor(ctx){this.ctx=ctx;this.sheet=img("__KNIGHT_PNG__");this.animSheet=img("__ANIM_PNG__");this.uiSheet=img("__DRUI_PNG__");this.seth=img("__SETH_PNG__");this.gersonSheet=img("__GERSON_PNG__");this.rooms={};for(const [k,v] of Object.entries(ROOMS))this.rooms[k]=img(v);}
+ constructor(ctx){this.ctx=ctx;this.sheet=img("__KNIGHT_PNG__");this.animSheet=img("__ANIM_PNG__");this.sideSheet=img("__SIDE_PNG__");this.uiSheet=img("__DRUI_PNG__");this.seth=img("__SETH_PNG__");this.gersonSheet=img("__GERSON_PNG__");this.rooms={};for(const [k,v] of Object.entries(ROOMS))this.rooms[k]=img(v);}
  ready(i){return i.complete&&i.naturalWidth;}
  has(name){return !!FRAMES[name];}
  size(name){const f=FRAMES[name];return f?{w:f[2],h:f[3]}:{w:0,h:0};}
@@ -26,9 +28,11 @@ class KnightArt{
  }
  // One frame of an animation from an atlas whose entries carry their anchor; rot turns it about the anchor.
  drawAnim(sheet,table,name,x,y,scale=1,{flip=false,alpha=1,tint=null,rot=0,smooth=false}={}){
-  const f=table[name];if(!f||!this.ready(sheet))return false;const c=this.ctx,[sx,sy,w,h,ax,ay]=f;
-  // Effect sprites drawn well below their size are smoothed, so they don't break up.
-  c.save();c.imageSmoothingEnabled=smooth||scale<.6;c.globalAlpha*=alpha;c.translate(Math.round(x),Math.round(y));if(rot)c.rotate(rot);c.scale(flip?-scale:scale,scale);
+  const f=table[name];if(!f||!this.ready(sheet))return false;const c=this.ctx,[sx,sy,w,h,ax,ay,pre]=f;
+  // Whole pixels only: an effect stored pre-shrunk (pre) is drawn at the remaining scale, and every scale is rounded
+  // to a whole number, so no sprite is ever resampled.
+  if(pre)scale/=pre;scale=Math.max(1,Math.round(scale));
+  c.save();c.imageSmoothingEnabled=false;c.globalAlpha*=alpha;c.translate(Math.round(x),Math.round(y));if(rot)c.rotate(rot);c.scale(flip?-scale:scale,scale);
   if(tint){const t=this.scratch??=document.createElement('canvas');t.width=w;t.height=h;const x2=t.getContext('2d');x2.clearRect(0,0,w,h);x2.drawImage(sheet,sx,sy,w,h,0,0,w,h);x2.globalCompositeOperation='source-atop';x2.fillStyle=tint;x2.fillRect(0,0,w,h);x2.globalCompositeOperation='source-over';c.drawImage(t,0,0,w,h,-ax,-ay,w,h);}
   else c.drawImage(sheet,sx,sy,w,h,-ax,-ay,w,h);
   c.restore();return true;
@@ -41,18 +45,20 @@ class KnightArt{
  // The Knight's animations (and its effect sprites), frame i of the family.
  anim(family,i,x,y,scale=1,o={}){return this.drawAnim(this.animSheet,ANIM,family+'_'+Math.max(0,Math.min(this.frames(family)-1,i)),x,y,scale,o);}
  frames(family){let n=0;while(ANIM[family+'_'+n])n++;return n;}
+ side(family,i,x,y,scale=2,o={}){let n=0;while(SIDE[family+'_'+n])n++;if(!n)return false;return this.drawAnim(this.sideSheet,SIDE,family+'_'+Math.max(0,Math.min(n-1,i)),x,y,scale,o);}
+ hasSide(family){return !!SIDE[family+'_0'];}
  // Human Seth (the designer's pack): body animations anchored at his feet, effects centred, eight portraits.
  sethAnim(family,i,x,y,scale=2,o={}){return this.drawAnim(this.seth,SETH,family+'_'+(((i%8)+8)%8),x,y,scale,o);}
  sethFx(family,i,x,y,scale=1,o={}){let n=0;while(SETH[family+'_'+n])n++;return this.drawAnim(this.seth,SETH,family+'_'+Math.max(0,Math.min(n-1,i)),x,y,scale,o);}
- sethFace(face,x,y,size){const f=SETH['face_'+face]||SETH.face_neutral;if(!f||!this.ready(this.seth))return;const c=this.ctx;c.save();c.imageSmoothingEnabled=false;c.drawImage(this.seth,f[0],f[1],f[2],f[3],Math.round(x),Math.round(y),size,Math.round(size*f[3]/f[2]));c.restore();}
+ sethFace(face,x,y,size){const f=SETH['face_'+face]||SETH.face_neutral;if(!f||!this.ready(this.seth))return;const c=this.ctx,k=Math.max(1,Math.round(size/f[2]));c.save();c.imageSmoothingEnabled=false;c.drawImage(this.seth,f[0],f[1],f[2],f[3],Math.round(x),Math.round(y),f[2]*k,f[3]*k);c.restore();}
  // The walk: front, back and left walks (right is the left walk mirrored).
- sethFrame(dir,moving,t,x,y,scale=1.25,alpha=1){
+ sethFrame(dir,moving,t,x,y,scale=1,alpha=1){
   const fam={down:'walk_front',up:'walk_back',left:'walk_left',right:'walk_left'}[dir]||'walk_front',i=moving?Math.floor(t*11):0;
   this.sethAnim(!moving&&dir==='down'?'idle':fam,!moving&&dir==='down'?Math.floor(performance.now()/120):i,x,y,scale,{flip:dir==='right',alpha});
  }
  gerson(name,x,y,scale=1){const f=GERSON[name];if(!f||!this.ready(this.gersonSheet))return;const c=this.ctx;c.save();c.imageSmoothingEnabled=false;c.drawImage(this.gersonSheet,f[0],f[1],f[2],f[3],Math.round(x-f[2]*scale/2),Math.round(y-f[3]*scale),Math.round(f[2]*scale),Math.round(f[3]*scale));c.restore();}
- gersonFace(x,y,size){const f=GERSON.face;if(!f||!this.ready(this.gersonSheet))return;const c=this.ctx;c.save();c.imageSmoothingEnabled=true;c.drawImage(this.gersonSheet,f[0],f[1],f[2],f[3],Math.round(x),Math.round(y),size,Math.round(size*f[3]/f[2]));c.restore();}
- portrait(x,y,size){const f=FRAMES.portrait;if(!f||!this.ready(this.sheet))return;const c=this.ctx;c.save();c.imageSmoothingEnabled=false;c.drawImage(this.sheet,f[0],f[1],f[2],f[3],Math.round(x),Math.round(y),size,Math.round(size*f[3]/f[2]));c.restore();}
+ gersonFace(x,y,size){const f=GERSON.face;if(!f||!this.ready(this.gersonSheet))return;const c=this.ctx;c.save();c.imageSmoothingEnabled=false;c.drawImage(this.gersonSheet,f[0],f[1],f[2],f[3],Math.round(x),Math.round(y),f[2],f[3]);c.restore();}
+ portrait(x,y,size){const f=FRAMES.portrait;if(!f||!this.ready(this.sheet))return;const c=this.ctx;c.save();c.imageSmoothingEnabled=false;c.drawImage(this.sheet,f[0],f[1],f[2],f[3],Math.round(x),Math.round(y),f[2],f[3]);c.restore();}
  px(x,y,w,h,col){const c=this.ctx;c.fillStyle=col;c.fillRect(Math.round(x/2)*2,Math.round(y/2)*2,Math.max(2,Math.round(w/2)*2),Math.max(2,Math.round(h/2)*2));}
  // An echo flower: a pale cyan bloom on a stem, glowing; bright right after it speaks.
  echoFlower(x,y,t,lit){const c=this.ctx,glow=.18+.08*Math.sin(t*1.8+x)+lit*.5,g=c.createRadialGradient(x,y-34,2,x,y-34,40);g.addColorStop(0,`rgba(120,220,255,${glow})`);g.addColorStop(1,'rgba(120,220,255,0)');c.fillStyle=g;c.fillRect(x-40,y-74,80,80);

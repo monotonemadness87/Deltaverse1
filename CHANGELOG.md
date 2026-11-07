@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-07 — The White Roaring Knight: side-on sprites, clean pixels, Seth facing the Knight
+
+- **Side-on Knight:** the Deltarune half uses the designer's new side-on battle set (16 animations), facing Seth.
+- **Seth faces the Knight** on the Deltarune side (his pack's poses are mirrored).
+- **Clean pixels:** no sprite is resampled any more. Everything is drawn at a whole-number scale; the front Knight sheets and Seth's pack are snapped to flat palettes (the side set's own 28 colours for the Knight) with stray speckle pixels removed, and effects are pre-shrunk to the size they're drawn at. Portraits are drawn at 1x.
+
 ## 2026-11-07 — The White Roaring Knight: DELTARUNE's real UI, supplied sounds only, the crystal room
 
 - **The Deltarune half uses DELTARUNE's own UI,** cut from the designer's reference videos at native scale and laid out where the game puts it: Kris's command icons, the TP glyphs and slanted bar, the HP and MERCY labels, PRESS, and Seth's own party head icons from his pack. His party row rises into his panel on his turn and stays open while picking a target or an ACT; ACT and ITEM are two-column lists with the description and TP cost on the right; text is the game's size; the Knight's turn is narrated one heart at a time.
