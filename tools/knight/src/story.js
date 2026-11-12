@@ -5,7 +5,7 @@
 // hearts in one knight (a human's blade, a monster's wild heart, a prince's hope). It fights because the dream
 // always had a fight in it; it also tries to heal and spare Seth. It is also a glimpse into another world, which is
 // where its attacks (and, halfway through, the whole battle UI) come from.
-const N=text=>({speaker:'narrator',text});
+const N=(text,fx)=>({speaker:'narrator',text,fx});
 const SETH=(text,face='talking')=>({speaker:'seth',text,face});
 const G=(text,face='face')=>({speaker:'gerson',text,face});
 // The Knight speaks as one, but each heart has its own voice colour: blade (cyan), wild (pink), hope (green).
@@ -101,12 +101,12 @@ const FINALE_INTRO=[K('YOU HAVE SPARED US. WE HAVE SPARED YOU.'),K('ONE MORE THI
 const FINALE_END=[K('...TOGETHER.'),N('* The Knight is SPARING you.\n* (SPARE it back.)')];
 // The Knight's own turn: what each heart does, Deltarune-style, before its bullets.
 const HEART_ACTS={
- encircle:'* The blade heart draws its swords around you.',swordrain:'* The blade heart lets its swords fall.',volley:'* The blade heart throws a volley!',dash:'* The blade heart dashes!',
+ encircle:'* The blade heart draws its swords around you.',swordrain:'* The blade heart sets its swords in rows.',volley:'* The blade heart throws its swords, one by one!',dash:'* The blade heart dashes!',
  crescent:'* The wild heart swings wide!',eruption:'* The wild heart cracks the floor open!',bars:'* The wild heart tears the light into bars!',rudebuster:'* The wild heart used RUDE BUSTER!',
  cone:'* The hope heart raises its light.',healprayer:'* The hope heart cast HEAL PRAYER on SETH!',pacify:'* The hope heart tried to PACIFY SETH!'
 };
 const ARRIVAL_NAMES=['THE ANGEL ARRIVES','CRYSTAL TEETH','THREE HEARTS','THE HALO'];
-const UNIFIED_NAMES=['* The night sky opens.\n* Stars bloom in the Knight\'s light.','* The ground cracks.\n* The light tears into bars.','* A hammer rings somewhere far away.\n* The Knight remembers an old hero.','* The box splits along a seam.\n* Blue light cuts through.'];
+const UNIFIED_NAMES=['* The night sky opens.\n* Stars bloom in the Knight\'s light.','* The light tears into bars.\n* Then the ground cracks.','* A hammer rings somewhere far away.\n* The Knight remembers an old hero.','* The box splits along a seam.\n* Blue light cuts through.'];
 const FINALE_NAME='* A NEW WORLD.';
 
 // ACTs. Undertale half: CHECK, WISH, LISTEN, ROAR BACK. Deltarune half adds the spell PERSEVERE (TP).
@@ -147,7 +147,7 @@ const SPARED=[
  K('YOU FOUGHT THE WAY THE STORIES SAID.','wild'),
  K('AND YOU WERE KIND. THE STORIES SAID THAT TOO.','hope'),
  K('WHEN THE ANGEL COMES... WE WILL BE WAITING. WE ALWAYS HAVE BEEN.'),
- N('* The Knight folds back into the crystal.'),
+ N('* The Knight folds back into the crystal.','vanish'),
  N('* Somewhere on the old path, an echo flower whispers:\n* "a new world. together."')
 ];
 

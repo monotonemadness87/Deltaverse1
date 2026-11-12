@@ -23,7 +23,7 @@ class BattleEngine{
   this.scene='world';this.state='world';this.paused=false;this.clock=0;this.timer=0;this.deathAge=0;this.checkpoint=null;
   this.lv=1;this.maxHP=30;this.hp=30;this.enemyMax=1500;this.enemyHP=this.enemyMax;this.ui='ut';this.breakTime=0;
   this.turn=0;this.dodges=0;this.selected=0;this.option=0;this.knightMercy=0;this.sethMercy=0;this.tp=0;this.unifiedCount=0;this.finaleDone=false;this.ready=false;this.unifiedTold=false;
-  this.counts={};this.defending=false;this.persevere=false;this.spareTries=0;this.tiredTold=false;this.pendingDR=null;this.sleepy=0;
+  this.counts={};this.vanishAt=null;this.split=false;this.splitGap=0;this.splitTarget=0;this.recenter=0;this.defending=false;this.persevere=false;this.spareTries=0;this.tiredTold=false;this.pendingDR=null;this.sleepy=0;
   this.items=[{name:'SEA TEA',heal:10,count:3},{name:'ASTRONAUT FOOD',heal:21,count:2},{name:'ABANDONED QUICHE',heal:34,count:1}];
   this.arena={...MENU_BOX};this.targetArena={...MENU_BOX};this.bullets=[];this.timeline=[];this.effects=[];this.soul={x:320,y:300};
   this.boss={x:320,y:224,pose:'idle',poseTime:0,hurt:0};this.invulnerability=0;this.shake=0;this.attackTime=0;this.duration=0;this.plan=null;this.attackName='';this.config=this.config_();
@@ -35,7 +35,7 @@ class BattleEngine{
  random(){this.seed=(this.seed*1664525+1013904223)>>>0;return this.seed/4294967296;}
  // ------------------------------------------------------------ dialogue
  message(pages,next='menu'){this.pages=(Array.isArray(pages)?pages:[pages]).map(p=>typeof p==='string'?S.N(p):p);this.next=next;this.showPage();}
- showPage(){const p=this.pages.shift();if(!p){this.finishDialogue();return;}this.state='dialogue';this.text=p.text;this.speaker=p.speaker;this.heart=p.heart||'all';this.face=p.face||'face';this.displayChars=0;this.timer=0;this.emit('text');}
+ showPage(){const p=this.pages.shift();if(!p){this.finishDialogue();return;}this.state='dialogue';this.text=p.text;this.speaker=p.speaker;this.heart=p.heart||'all';this.face=p.face||'face';this.displayChars=0;this.timer=0;if(p.fx==='vanish'&&this.vanishAt===null){this.vanishAt=this.clock;this.effects.push({type:'flash',life:.35,color:'#ffffff'});this.emit('vanish');}this.emit('text');}
  finishDialogue(){const n=this.next;this.next=null;if(typeof n==='function'){this.state=this.scene==='world'?'world':'menu';n();return;}if(n==='defend')this.startAttack();else if(n==='menu')this.toMenu();else if(n==='world')this.state='world';else{this.state=n;this.timer=0;this.emit('end');}}
  // ------------------------------------------------------------ battle setup
  startBattle(skip=false){
@@ -66,7 +66,7 @@ class BattleEngine{
   if(this.state==='world'){this.world.interact();return;}
   if(this.state==='dialogue'){if(this.displayChars<this.text.length){this.displayChars=this.text.length;return;}if(this.pages.length)this.showPage();else this.finishDialogue();return;}
   if(this.state==='dead'){this.retry();return;}
-  if(this.state==='spared'){if(this.timer>1.2)this.reset();return;}
+  if(this.state==='spared'){if(this.timer>1.6)this.reset();return;}
   if(this.state==='menu'){
    const label=this.menuLabels()[this.selected];this.option=0;this.emit('select');
    if(label==='FIGHT'){this.state=this.dr?'drtarget':'target';this.pendingDR='fight';return;}
@@ -98,10 +98,11 @@ class BattleEngine{
  }
  drStrike(){const q=this.drCursor<=0?0:clamp(1-Math.abs(this.drCursor-.14)*3.2,0,1);if(q<=0){this.message([S.N('* SETH missed!')],'defend');return;}this.strike(q);}
  act(name){
+  if(name==='PERSEVERE'&&this.tp<TP_COST){this.message(S.NO_TP,'act');return;}
   const c=this.counts[name]=(this.counts[name]||0)+1;
   this.sethAct({CHECK:'point_lecture',WISH:'read_notebook',LISTEN:'adjust_glasses','ROAR BACK':'proud_laugh',PERSEVERE:'cast_glasses'}[name]||'idle',2);
   if(name==='CHECK'){this.message(S.CHECK,'defend');return;}
-  if(name==='PERSEVERE'){if(this.tp<TP_COST){this.message(S.NO_TP,'act');return;}this.tp-=TP_COST;this.persevere=true;this.hp=Math.min(this.maxHP,this.hp+6);this.emit('spell');this.mercyKnight(KMERCY.PERSEVERE);this.message([...S.PERSEVERE,S.N('* SETH recovered 6 HP.\n* Damage is halved this turn.')],'defend');return;}
+  if(name==='PERSEVERE'){this.tp-=TP_COST;this.persevere=true;this.hp=Math.min(this.maxHP,this.hp+6);this.emit('spell');this.mercyKnight(KMERCY.PERSEVERE);this.message([...S.PERSEVERE,S.N('* SETH recovered 6 HP.\n* Damage is halved this turn.')],'defend');return;}
   const bank={WISH:S.WISH,LISTEN:S.LISTEN,'ROAR BACK':S.ROAR}[name];
   // Repeating the same ACT is worth less after the third time.
   this.mercyKnight(Math.round(KMERCY[name]*(c>3?.6:1)));if(name==='ROAR BACK')this.emit('roar');
@@ -128,7 +129,7 @@ class BattleEngine{
   this.turn++;this.config=this.config_();const plan=force||planWave(this);this.plan=plan;
   this.attackName=plan.kind==='triple'?plan.picks.map(p=>S.HEART_ACTS[p]).join('\n'):plan.name;
   this.state='warning';this.timer=0;this.attackTime=0;this.bullets=[];this.effects=this.effects.filter(e=>['damage','mercy'].includes(e.type));this.timeline=[];this.boss.pose='idle';
-  this.mode='red';this.split=false;this.voidMode=false;this.prevIn={};this.setArena(plan.box,true);this.soul={x:plan.box.x+plan.box.w/2,y:plan.box.y+plan.box.h/2};this.invulnerability=.4;this.sleepy=0;
+  this.mode='red';this.split=false;this.splitGap=0;this.splitTarget=0;this.recenter=0;this.voidMode=false;this.prevIn={};this.setArena(plan.box,true);this.soul={x:plan.box.x+plan.box.w/2,y:plan.box.y+plan.box.h/2};this.invulnerability=.4;this.sleepy=0;
   // The arena is set before the wave is built, so the moves aim inside the right box.
   this.targetArena={...plan.box};this.duration=buildWave(this,plan);this.timeline.sort((a,b)=>a.at-b.at);this.emit('warning');
  }
@@ -149,7 +150,14 @@ class BattleEngine{
  finishBreak(){this.ui='dr';this.selected=0;this.saveCheckpoint();this.hp=this.maxHP;this.message(S.AFTER_BREAK,'menu');this.emit('drStart');}
  // ------------------------------------------------------------ spawners (used by attacks.js)
  // In the Deltarune half the box spins into each new shape, as the Knight's does.
- setArena(a,spin=false){this.targetArena={...a};if(spin&&this.ui==='dr')this.boxSpin=.45;}
+ setArena(a,spin=false){
+  const o=this.targetArena||a,moved=Math.abs(o.x+o.w/2-a.x-a.w/2)+Math.abs(o.y+o.h/2-a.y-a.h/2)+Math.abs(o.w-a.w)+Math.abs(o.h-a.h)>6;
+  this.targetArena={...a};
+  // In the Deltarune half the box spins into each new shape and the SOUL is carried to its middle, as the Knight's does.
+  if(spin&&this.ui==='dr'&&moved){this.boxSpin=.45;if(this.state==='defend'){this.recenter=.4;this.invulnerability=Math.max(this.invulnerability,.55);}}
+ }
+ // Between two moves: whatever is still flying fades out (gifts stay).
+ clearHazards(){for(const b of this.bullets)if(!['gift','zee'].includes(b.kind)&&b.x!==undefined&&!['bar','laser','cone','ray','slash','buster','eruption','spike','tooth','tsword','rb'].includes(b.kind))this.effects.push({type:'puff',x:b.x,y:b.y,life:.25});this.bullets=this.bullets.filter(b=>b.kind==='gift'||b.kind==='zee');this.split=false;this.splitTarget=0;}
  at(t,fn){this.timeline.push({at:t,action:fn,done:false});}
  spawn(b){const o={age:0,vx:0,vy:0,...b};this.bullets.push(o);return o;}
  // The Knight plays one of its animations (by name in the sprite sheets) for a while.
@@ -167,23 +175,27 @@ class BattleEngine{
  }
  // margin > 0 asks "is the SOUL within margin of it?" (the graze test).
  hitTest(b,s,m=0){
-  if(b.kind==='gift'||b.kind==='zee'||b.kind==='scarf'||b.kind==='arrow'||b.kind==='eruption')return false;
+  if(['gift','zee','arrow','eruption','cone','ray'].includes(b.kind)||b.harmless)return false;
   if(b.delay&&b.age<b.delay)return false;
-  if(b.kind==='dashline'){if(b.age<b.warn||b.age>b.warn+b.live)return false;return Math.abs(s.y-b.y)<b.w/2+3+m;}
-  if(b.kind==='sword'){if(b.age<b.warn)return false;const top=b.vy>0?b.y-b.len:b.y,bot=b.vy>0?b.y:b.y+b.len;return Math.abs(s.x-b.x)<b.w/2+3+m&&s.y>top-3-m&&s.y<bot+3+m;}
-  if(b.kind==='bar'){if(Math.abs(s.x-b.x)>b.w/2+3+m)return false;if(b.blue)return !m&&this.moved;return Math.abs(s.y-b.gapY)>b.gapH/2-3-m;}
-  if(b.kind==='laser'){if(b.age<b.warn||b.age>b.warn+b.live)return false;const cx=Math.cos(b.angle),cy=Math.sin(b.angle),rx=s.x-b.ox,ry=s.y-b.oy;return rx*cx+ry*cy>0&&Math.abs(rx*cy-ry*cx)<b.w/2+3+m;}
-  // The cone of light never hurts (in the reference the SOUL sits inside it): the stars that bloom in it do.
-  if(b.kind==='cone')return false;
-  // A thrown sword: a short blade along its flight line.
-  if(b.kind==='thrown'){const L=Math.hypot(b.vx,b.vy)||1;return segDist(s.x,s.y,b.x,b.y,b.x-b.vx/L*22,b.y-b.vy/L*22)<5+m;}
+  // A standing blade on the top or bottom edge of the box (it grows in before it can reach anything).
+  if(b.kind==='tooth'){const A=this.arena,L=b.len*Math.min(1,b.age/b.grow);if(Math.abs(s.x-b.x)>7+m)return false;return b.top?s.y<A.y+L+3+m:s.y>A.y+A.h-L-3-m;}
+  // The tracking sword: only once it stabs. y is its point; the blade trails behind it.
+  if(b.kind==='tsword'){if(b.age<b.track+b.lock)return false;const top=b.up?b.y:b.y-b.len,bot=b.up?b.y+b.len:b.y;return Math.abs(s.x-b.x)<7+m&&s.y>top-3-m&&s.y<bot+3+m;}
+  if(b.kind==='bar'){if(Math.abs(s.x-b.x)>b.w/2+2+m)return false;if(b.blue)return !m&&this.moved;return Math.abs(s.y-b.gapY)>b.gapH/2-3-m;}
+  // A beam: a whole line through its point (full), or a ray from it.
+  if(b.kind==='laser'){if(b.age<b.warn||b.age>b.warn+b.live)return false;const cx=Math.cos(b.angle),cy=Math.sin(b.angle),rx=s.x-b.ox,ry=s.y-b.oy;return(b.full||rx*cx+ry*cy>0)&&Math.abs(rx*cy-ry*cx)<b.w/2+3+m;}
+  // A ring sword hurts once it has left the ring: a blade along its flight line.
+  if(b.kind==='orbitsword'){if(!b.launched)return false;const c=Math.cos(b.ang),n=Math.sin(b.ang),h=this.ui==='dr'?18:11;return segDist(s.x,s.y,b.x-c*h,b.y-n*h,b.x+c*h,b.y+n*h)<6+m;}
+  // A thrown sword: a blade behind its point, along its flight line.
+  if(b.kind==='thrown'){if(b.age<b.spin)return false;const L=Math.hypot(b.vx,b.vy)||1,h=this.ui==='dr'?40:24;return segDist(s.x,s.y,b.x,b.y,b.x-b.vx/L*h,b.y-b.vy/L*h)<6+m;}
   // RUDE BUSTER: the chevron's bright head (the trail behind it is harmless). tip = its leading point, heading left.
   if(b.kind==='rb'){if(b.age<b.warn)return false;const dx=s.x-b.tip,dy=Math.abs(s.y-b.y);if(dy>b.half+3+m)return false;const front=dy*b.k;return dx>front-4-m&&dx<front+b.thick+m;}
   if(b.kind==='spike'){if(b.age<b.warn)return false;const L=b.cur||0;if(L<4)return false;const rx=s.x-b.x,ry=s.y-b.y,t=rx*b.dx+ry*b.dy,perp=Math.abs(rx*b.dy-ry*b.dx);if(t<-3-m||t>L+2+m)return false;return perp<(b.w*.32)*(1-t/L*.7)+4+m;}
   if(b.kind==='slash'){if(b.age<b.warn||b.age>b.warn+b.live)return false;return segDist(s.x,s.y,b.x1,b.y1,b.x2,b.y2)<b.w/2+3+m;}
-  if(b.kind==='lance'){if(b.age<b.warn)return false;const cx=Math.cos(b.angle),cy=Math.sin(b.angle),rx=s.x-b.tx,ry=s.y-b.ty,t=-(rx*cx+ry*cy),perp=Math.abs(rx*cy-ry*cx);return t>-6-m&&t<b.len+m&&perp<b.w/2+3+m;}
-  if(b.kind==='buster'){if(b.age<b.warn)return false;const d=Math.hypot(s.x-b.x,s.y-b.y);if(Math.abs(d-b.R)>b.thick/2+3+m)return false;return Math.abs(angleDiff(Math.atan2(s.y-b.y,s.x-b.x),b.facing))<b.span+(m?.08:0);}
-  if(b.kind==='ribbon'){const a=this.arena;if(s.x<b.x||s.x>b.x+b.wd)return false;if(Math.abs(s.x-b.gap)<b.gapW/2-m)return false;return Math.abs(s.y-ribbonY(b,s.x))<b.w/2+3+m;}
+  // A crescent: the band of its arc (a little short of the tips, which taper).
+  if(b.kind==='buster'){if(b.age<b.warn)return false;const d=Math.hypot(s.x-b.x,s.y-b.y);if(Math.abs(d-b.R)>b.thick/2+3+m)return false;return Math.abs(angleDiff(Math.atan2(s.y-b.y,s.x-b.x),b.facing))<b.span*.94+(m?.06:0);}
+  if(b.kind==='star6'&&b.bloom&&b.age<b.bloom)return false;
+  if(b.kind==='shard'&&b.hold&&b.age<b.hold)return false;
   return Math.hypot(s.x-b.x,s.y-b.y)<(b.r||4)+4+m;
  }
  update(dt,input={}){
@@ -195,6 +207,7 @@ class BattleEngine{
   if(this.state==='encounter'){this.encounter+=dt;if(this.encounter>1.55){this.toMenu();}return;}
   if(this.state==='uibreak'){this.breakTime+=dt;if(this.breakTime>4.6)this.finishBreak();return;}
   for(const k of ['x','y','w','h']){const d=this.targetArena[k]-this.arena[k];this.arena[k]+=Math.abs(d)<.3?d:d*Math.min(1,dt*12);}
+  this.boxSpin=Math.max(0,(this.boxSpin||0)-dt);
   if(this.state==='dialogue'){this.displayChars=Math.min(this.text.length,this.displayChars+dt*40);return;}
   if(this.state==='fight'){this.attackCursor+=this.attackDir*330*dt;if(this.attackCursor>584||this.attackCursor<56){this.attackCursor=clamp(this.attackCursor,56,584);this.attackDir*=-1;}return;}
   if(this.state==='drfight'){this.drCursor-=dt*1.05;if(this.drCursor<=-.08){this.drCursor=0;this.drStrike();}return;}
@@ -202,6 +215,8 @@ class BattleEngine{
   if(this.state!=='defend')return;
   this.attackTime+=dt;this.invulnerability=Math.max(0,this.invulnerability-dt);this.sleepy=Math.max(0,this.sleepy-dt);
   for(const e of this.timeline)if(!e.done&&this.attackTime>=e.at){e.done=true;e.action();}
+  // The seam of a split box opens and closes smoothly.
+  this.splitGap+=((this.splitTarget||0)-this.splitGap)*Math.min(1,dt*11);if(!this.splitTarget&&this.splitGap<.5)this.splitGap=0;
   const s=this.soul,a=this.arena,sx=Number(!!input.right)-Number(!!input.left),sy=Number(!!input.down)-Number(!!input.up),n=Math.hypot(sx,sy)||1,speed=190*(input.slow?.5:1)*(this.sleepy>0?.55:1);
   const ox=s.x,oy=s.y;
   if(this.mode==='green'){
@@ -210,38 +225,42 @@ class BattleEngine{
    if(input.touch){const dx=input.touch.x-(a.x+a.w/2),dy=input.touch.y-(a.y+a.h/2);if(Math.hypot(dx,dy)>18)this.shield=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');}
    this.prevIn={up:!!input.up,down:!!input.down,left:!!input.left,right:!!input.right};s.x=a.x+a.w/2;s.y=a.y+a.h/2;
   }else{
-   s.x+=sx/n*speed*dt;s.y+=sy/n*speed*dt;if(input.touch){const tx=input.touch.x-s.x,ty=input.touch.y-s.y,m=Math.hypot(tx,ty),step=Math.min(m,250*dt);if(m){s.x+=tx/m*step;s.y+=ty/m*step;}}
+   // A box that has just jumped somewhere else carries the SOUL to its middle before play goes on.
+   if(this.recenter>0){this.recenter-=dt;const T=this.targetArena,k=Math.min(1,dt*14);s.x+=(T.x+T.w/2-s.x)*k;s.y+=(T.y+T.h/2-s.y)*k;}
+   else{s.x+=sx/n*speed*dt;s.y+=sy/n*speed*dt;if(input.touch){const tx=input.touch.x-s.x,ty=input.touch.y-s.y,m=Math.hypot(tx,ty),step=Math.min(m,250*dt);if(m){s.x+=tx/m*step;s.y+=ty/m*step;}}}
    s.x=clamp(s.x,a.x+10,a.x+a.w-10);s.y=clamp(s.y,a.y+10,a.y+a.h-10);
    // A split box: two halves with a gap between them that the SOUL can't cross.
-   if(this.split){const G=(this.splitGap||24)/2+9;if(this.split==='h'){const cy=a.y+a.h/2;if(Math.abs(s.y-cy)<G)s.y=oy<cy?cy-G:cy+G;}else{const cx=a.x+a.w/2;if(Math.abs(s.x-cx)<G)s.x=ox<cx?cx-G:cx+G;}}
+   if(this.split&&this.splitGap>1){const G=this.splitGap/2+9;if(this.split==='h'){const cy=a.y+a.h/2;if(Math.abs(s.y-cy)<G)s.y=oy<cy?cy-G:cy+G;}else{const cx=a.x+a.w/2;if(Math.abs(s.x-cx)<G)s.x=ox<cx?cx-G:cx+G;}}
   }
-  // Blue bars hurt only a SOUL that is moving.
-  this.moved=Math.hypot(s.x-ox,s.y-oy)>.2;this.boxSpin=Math.max(0,(this.boxSpin||0)-dt);
+  // Blue bars hurt only a SOUL that is moving (being carried by the box doesn't count).
+  this.moved=this.recenter<=0&&Math.hypot(s.x-ox,s.y-oy)>.2;
   const born=[];let grazing=false;
   for(const b of this.bullets){
    b.age+=dt;
    if(b.kind==='spike'){const t=b.age-b.warn;b.cur=t<0?0:t<b.rise?b.len*t/b.rise:t<b.rise+b.live?b.len:Math.max(0,b.len*(1-(t-b.rise-b.live)/b.fall));if(t>=0&&!b.sounded){b.sounded=true;this.emit('spike');}if(t>b.rise+b.live+b.fall)b.gone=true;}
-   else if(b.kind==='slash'){if(b.age>=b.warn&&!b.sounded){b.sounded=true;this.emit('slash');this.shake=Math.max(this.shake,.06);}if(b.age>b.warn+b.live+.2)b.gone=true;}
-   else if(b.kind==='lance'){const t=b.age-b.warn;b.tip=t<0?-22*Math.min(1,b.age/b.warn):t*b.speed;b.tx=b.x+Math.cos(b.angle)*b.tip;b.ty=b.y+Math.sin(b.angle)*b.tip;if(t>=0&&!b.sounded){b.sounded=true;this.emit('lunge');}if(b.tip>700)b.gone=true;}
-   else if(b.kind==='buster'){if(b.age>=b.warn){if(!b.sounded){b.sounded=true;this.emit('buster');}b.x+=b.vx*dt;}if(b.age>b.life)b.gone=true;}
-   else if(b.kind==='ribbon'){b.y+=b.vy*dt;if(b.y>this.arena.y+this.arena.h+20)b.gone=true;}
-   else if(b.kind==='axe'){const u=clamp(b.age/b.dur,0,1),k=Math.sin(Math.PI*u);b.x=b.x0+b.ux*b.dist*k;b.y=b.y0+b.uy*b.dist*k;if(u>=1)b.gone=true;}
-   else if(b.kind==='orbitblade'){const u=b.age/b.close;b.radius=u<1?b.r0*(1-.65*u):b.r0*.35+(b.age-b.close)*160*this.config.speed;b.theta+=b.spin*dt*(u<1?1:.3);b.x=b.cx+Math.cos(b.theta)*b.radius;b.y=b.cy+Math.sin(b.theta)*b.radius;}
+   else if(b.kind==='slash'){if(b.age>=b.warn&&!b.sounded){b.sounded=true;this.emit('slash');this.shake=Math.max(this.shake,b.wide?.1:.06);}if(b.age>b.warn+b.live+.25)b.gone=true;}
+   else if(b.kind==='buster'){if(b.age>=b.warn)b.x+=b.vx*dt;if(b.x<-b.R-140)b.gone=true;}
    else if(b.kind==='star'){b.x+=b.vx*dt;b.y+=b.vy*dt;if(b.fuse&&b.age>=b.fuse){b.gone=true;for(let k=0;k<4;k++){const an=k*Math.PI/2+Math.PI/4;born.push({kind:'shard',x:b.x,y:b.y,vx:Math.cos(an)*90*this.config.speed,vy:Math.sin(an)*90*this.config.speed,r:3,age:0,life:3});}this.emit('pop');}}
    else if(b.kind==='zee'){b.x+=b.vx*dt;b.y+=b.vy*dt+Math.sin(b.age*3+b.wob)*12*dt;}
-   else if(b.kind==='orbitsword'){if(b.age<b.aimAt){b.theta+=b.spin*dt;b.x=b.cx+Math.cos(b.theta)*b.radius;b.y=b.cy+Math.sin(b.theta)*b.radius;b.ang=Math.atan2(s.y-b.y,s.x-b.x);}else{if(!b.launched){b.launched=true;b.vx=Math.cos(b.ang)*b.speed;b.vy=Math.sin(b.ang)*b.speed;this.emit('lunge');}b.x+=b.vx*dt;b.y+=b.vy*dt;}}
-   else if(b.kind==='sword'){if(b.age>=b.warn)b.y+=b.vy*dt;}
-   else if(b.kind==='dashline'){if(b.age>=b.warn&&!b.sounded){b.sounded=true;this.emit('slash');this.shake=Math.max(this.shake,.1);}if(b.age>b.warn+b.live+.25)b.gone=true;}
-   else if(b.kind==='eruption'){if(b.age>=b.warn){b.gone=true;const d=b.down?1:-1;born.push({kind:'spike',out:true,x:b.x,y:b.y,dx:0,dy:d,w:b.w,len:b.len,warn:0,rise:.08,live:b.live,fall:.15,age:0,vx:0,vy:0});
-    // The crystal bursts and sprays diamond shards that tumble down (or up, from the ceiling) through the room.
-    for(let k=0;k<9;k++){const an=(b.down?Math.PI/2:-Math.PI/2)+(k-4)*.32,v=(110+this.random()*90)*this.config.speed;born.push({kind:'shard',out:true,big:true,x:b.x,y:b.y+d*b.len*(.3+.5*this.random()),vx:Math.cos(an)*v,vy:Math.sin(an)*v*.8,g:b.down?60:200,r:4,age:0,life:4});}
+   else if(b.kind==='orbitsword'){if(b.age<b.aimAt){b.theta+=b.spin*dt;b.x=b.cx+Math.cos(b.theta)*b.rx;b.y=b.cy+Math.sin(b.theta)*b.ry;b.ang=Math.atan2(s.y-b.y,s.x-b.x);}else{if(!b.launched){b.launched=true;b.vx=Math.cos(b.ang)*b.speed;b.vy=Math.sin(b.ang)*b.speed;this.emit('lunge');}b.x+=b.vx*dt;b.y+=b.vy*dt;}}
+   else if(b.kind==='tsword'){
+    const A=this.arena,home=b.up?A.y+A.h+16:A.y-16;
+    if(b.age<b.track){b.x+=(s.x-b.x)*Math.min(1,dt*9);b.x=clamp(b.x,A.x+8,A.x+A.w-8);b.y=home;}
+    else if(b.age<b.track+b.lock){b.y=home+(b.up?1:-1)*10*Math.min(1,(b.age-b.track)/b.lock);}
+    else{if(!b.sounded){b.sounded=true;this.emit('lunge');this.shake=Math.max(this.shake,.05);}b.y+=(b.up?-1:1)*b.speed*dt;if(b.up?b.y<A.y-b.len-70:b.y>A.y+A.h+b.len+70)b.gone=true;}
+   }
+   else if(b.kind==='tooth'){b.x+=b.vx*dt;if(b.x<this.arena.x-14)b.gone=true;}
+   else if(b.kind==='eruption'){if(b.age>=b.warn){b.gone=true;const d=b.down?1:-1;born.push({kind:'spike',out:true,crystal:true,x:b.x,y:b.y,dx:0,dy:d,w:b.w,len:b.len,warn:0,rise:.09,live:b.live,fall:.2,age:0,vx:0,vy:0});
+    // The crystal bursts and sprays diamond shards through the whole room.
+    for(let k=0;k<10;k++){const an=(b.down?Math.PI/2:-Math.PI/2)+(k-4.5)*.36+(this.random()-.5)*.2,v=(120+this.random()*110)*this.config.speed;born.push({kind:'shard',out:true,big:true,x:b.x,y:b.y+d*b.len*(.25+.6*this.random()),vx:Math.cos(an)*v,vy:Math.sin(an)*v*.85,g:b.down?40:120,r:5,age:0,life:4});}
     this.emit('spike');this.shake=Math.max(this.shake,.08);}}
-   else if(b.kind==='thrown'){if(b.age<b.spin){b.x+=b.vx*.15*dt;b.y+=b.vy*.15*dt;}else{if(!b.sounded){b.sounded=true;this.emit('lunge');}b.x+=b.vx*dt;b.y+=b.vy*dt;}b.trail=(b.trail||[]);if(b.age>=b.spin&&Math.floor(b.age*30)!==b.lastT){b.lastT=Math.floor(b.age*30);b.trail.push([b.x,b.y]);if(b.trail.length>9)b.trail.shift();}}
+   else if(b.kind==='thrown'){if(b.age<b.spin){b.x+=b.vx*.1*dt;b.y+=b.vy*.1*dt;}else{if(!b.sounded){b.sounded=true;this.emit('lunge');}b.x+=b.vx*dt;b.y+=b.vy*dt;}b.trail=(b.trail||[]);if(b.age>=b.spin&&Math.floor(b.age*30)!==b.lastT){b.lastT=Math.floor(b.age*30);b.trail.push([b.x,b.y]);if(b.trail.length>12)b.trail.shift();}}
    else if(b.kind==='rb'){if(b.age>=b.warn){if(!b.sounded){b.sounded=true;this.emit('buster');}b.tip+=b.vx*dt;if(!b.hitFx&&b.tip<this.arena.x){b.hitFx=true;this.effects.push({type:'rbhit',x:this.arena.x,y:b.y,life:.45});this.emit('spike');}if(b.tip<-60)b.gone=true;}}
-   else if(b.kind==='bar'){b.x+=b.vx*dt;if(b.x<this.arena.x-20)b.gone=true;}
-   else if(b.kind==='laser'){if(b.age>=b.warn){if(!b.sounded){b.sounded=true;this.emit('laser');}b.angle+=b.spin*dt;}if(b.age>b.warn+b.live+.2)b.gone=true;}
-   else if(b.kind==='cone'){if(b.age>=b.warn&&!b.sounded){b.sounded=true;this.emit('shine');}if(b.age>b.warn+b.live+.2)b.gone=true;}
-   else if(b.kind==='star6'){if(b.delay&&b.age<b.delay)continue;if(b.hover!==undefined&&!b.sought){if(b.age>=b.hover){b.sought=true;const d=Math.hypot(s.x-b.x,s.y-b.y)||1;b.vx=(s.x-b.x)/d*b.seek;b.vy=(s.y-b.y)/d*b.seek;}}else{b.x+=(b.vx||0)*dt;b.y+=(b.vy||0)*dt;}if(b.fuse&&b.age>=b.fuse){b.gone=true;this.effects.push({type:'starflash',x:b.x,y:b.y,life:.3});for(let k=0;k<(b.burst||5);k++){const an=k*6.283/(b.burst||5)+b.age;born.push({kind:'shard',x:b.x,y:b.y,vx:Math.cos(an)*110*this.config.speed,vy:Math.sin(an)*110*this.config.speed,r:3,age:0,life:3});}this.emit('pop');}}
+   else if(b.kind==='bar'){b.x+=b.vx*dt;if(b.x<-30)b.gone=true;}
+   else if(b.kind==='laser'){if(b.age>=b.warn){if(!b.sounded){b.sounded=true;this.emit('laser');this.shake=Math.max(this.shake,.06);}b.angle+=b.spin*dt;}if(b.age>b.warn+b.live+.2)b.gone=true;}
+   else if(b.kind==='cone'){if(b.age>b.warn+b.live+.2)b.gone=true;}
+   else if(b.kind==='ray'){}
+   else if(b.kind==='star6'){if(b.delay&&b.age<b.delay)continue;if(b.hover!==undefined&&!b.sought){if(b.age>=b.hover){b.sought=true;const d=Math.hypot(s.x-b.x,s.y-b.y)||1;b.vx=(s.x-b.x)/d*b.seek;b.vy=(s.y-b.y)/d*b.seek;}}else{b.x+=(b.vx||0)*dt;b.y+=(b.vy||0)*dt;}if(b.fuse&&b.age>=b.fuse){b.gone=true;this.effects.push({type:'starflash',x:b.x,y:b.y,big:b.big,life:.3});for(let k=0;k<(b.burst||5);k++){const an=k*6.283/(b.burst||5)+b.age;born.push({kind:'shard',out:b.big,big:b.big,small:true,x:b.x,y:b.y,vx:Math.cos(an)*110*this.config.speed,vy:Math.sin(an)*110*this.config.speed,r:3,age:0,life:3});}this.emit('pop');}}
    else if(b.kind==='arrow'){
     // A trick spear swings round the SOUL and comes in from the opposite side.
     if(b.flip!==undefined){b.flip+=dt;if(b.flip>=.38){b.side={up:'down',down:'up',left:'right',right:'left'}[b.side];b.flip=undefined;b.flipped=true;}}
@@ -249,8 +268,7 @@ class BattleEngine{
      else if(b.dist<30&&this.shield===b.side){b.gone=true;this.effects.push({type:'block',life:.25});this.emit('block');continue;}
      else if(b.dist<10){b.gone=true;this.hurt();if(this.state==='dead')return;continue;}}
    }
-   else if(b.kind==='shard'&&b.g){b.vy+=b.g*dt;b.x+=b.vx*dt;b.y+=b.vy*dt;}
-   else if(b.kind==='scarf'){b.x+=b.vx*dt;}
+   else if(b.kind==='shard'){if(b.hold&&b.age<b.hold)continue;if(b.g)b.vy+=b.g*dt;b.x+=b.vx*dt;b.y+=b.vy*dt;}
    else{b.x+=(b.vx||0)*dt;b.y+=(b.vy||0)*dt;}
    if(b.gone)continue;
    // Hearts and Zs are gifts: they never hurt.
@@ -261,12 +279,12 @@ class BattleEngine{
   }
   // Grazing (Deltarune half): passing close to a damaging bullet builds TP.
   this.grazeBlock=Math.max(0,(this.grazeBlock||0)-dt);
-  if(grazing&&this.grazeBlock<=0){this.tp=Math.min(100,this.tp+GRAZE_RATE*dt);this.grazeFx=(this.grazeFx||0)-dt;if(this.grazeFx<=0){this.grazeFx=.18;this.effects.push({type:'graze',life:.2});this.emit('graze');}}
+  if(grazing&&this.grazeBlock<=0&&this.recenter<=0){this.tp=Math.min(100,this.tp+GRAZE_RATE*dt);this.grazeFx=(this.grazeFx||0)-dt;if(this.grazeFx<=0){this.grazeFx=.18;this.effects.push({type:'graze',life:.2});this.emit('graze');}}
   this.bullets.push(...born);
-  this.bullets=this.bullets.filter(b=>{if(b.gone)return false;if(['spike','slash','lance','buster','ribbon','axe','orbitblade','scarf','rb','thrown','dashline','eruption','laser','cone','arrow','bar','sword'].includes(b.kind))return b.age<(b.life??30);return b.age<(b.life??6)&&b.x>-80&&b.x<720&&b.y>-80&&b.y<560;});
+  const TIMED=['spike','slash','buster','rb','thrown','eruption','laser','cone','ray','arrow','bar','tsword','tooth'];
+  this.bullets=this.bullets.filter(b=>{if(b.gone)return false;if(TIMED.includes(b.kind))return b.age<(b.life??30);return b.age<(b.life??6)&&b.x>-80&&b.x<720&&b.y>-80&&b.y<560;});
   if(this.attackTime>=this.duration)this.finishWave();
  }
  snapshot(){return{scene:this.scene,state:this.state,ui:this.ui,room:this.world.room,hp:this.hp,maxHP:this.maxHP,enemyHP:this.enemyHP,turn:this.turn,waves:this.dodges,knightMercy:this.knightMercy,sethMercy:this.sethMercy,tp:Math.round(this.tp),ready:this.ready,finaleDone:this.finaleDone,ending:this.ending,plan:this.plan?.kind};}
 }
-function ribbonY(b,x){return b.y+b.amp*Math.sin(x*b.k+b.age*b.spin);}
-Object.assign(exports,{BattleEngine,clamp,MENU_BOX,ribbonY,TP_COST});
+Object.assign(exports,{BattleEngine,clamp,MENU_BOX,TP_COST});

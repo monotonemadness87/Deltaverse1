@@ -4,7 +4,7 @@ const {NotebookVisual}=require("notebook-visual.js");
 const {battleButtons,drawBattleButton,battleSoul}=require("battle-ui.js");
 const {SoulBreak}=require("soul-break.js");
 const {SoulVisual}=require("soul-visual.js");
-const {BattleEngine,clamp,ribbonY,TP_COST}=require("engine.js");
+const {BattleEngine,clamp,TP_COST}=require("engine.js");
 const {pixelText}=require("font.js");
 const {StageAudio}=require("audio.js");
 const {KonamiCode}=require("konami.js");
@@ -16,7 +16,7 @@ let touch=null,drag=null,last=performance.now(),signature='',accumulator=0,reduc
 const soul=new Image();soul.src="__SOUL_PNG__";const soulVisual=new SoulVisual(ctx,soul);
 const konami=new KonamiCode(()=>{game.settings.invincible=!game.settings.invincible;game.effects.push({type:'cheat',life:2,text:game.settings.invincible?'INVINCIBILITY ON':'INVINCIBILITY OFF'});audio.effect('heal');syncUI();});
 // The three hearts' colours (Kris's blade, Susie's wild heart, Ralsei's hope), Seth's purple, Deltarune's orange.
-const HEART={blade:'#5ab8ff',wild:'#ff4aa8',hope:'#5ef29a',all:'#ffffff'},SETHC='#b249dc',DR_ORANGE='#ff7f27',DR_GREEN='#1ec51e';
+const HEART={blade:'#5ab8ff',wild:'#ff4aa8',hope:'#5ef29a',all:'#ffffff'},SETHC='#b249dc',DR_ORANGE='#ff7f27',DR_BORDER='#00c100';
 function box(x,y,w,h,color='#fff',line=4){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));ctx.fillStyle='#000';ctx.fillRect(Math.round(x+line),Math.round(y+line),Math.round(w-line*2),Math.round(h-line*2));}
 function heart(x,y,size=16,color='purple',alpha=1,angle=0){soulVisual.draw(x,y,size,color,alpha,angle);}
 const soulBreak=new SoulBreak(ctx,(x,y,size,alpha)=>heart(x,y,size,'purple',alpha,0));
@@ -62,51 +62,101 @@ function worldDialogue(w){
 
 // ======================================================================= hazards (both halves)
 function star4(x,y,r,col='#fff'){ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x,y-r);ctx.lineTo(x+r*.28,y-r*.28);ctx.lineTo(x+r,y);ctx.lineTo(x+r*.28,y+r*.28);ctx.lineTo(x,y+r);ctx.lineTo(x-r*.28,y+r*.28);ctx.lineTo(x-r,y);ctx.lineTo(x-r*.28,y-r*.28);ctx.closePath();ctx.fill();}
-// A sword: white blade, pale guard, pointing along angle (centre at x,y).
-function swordShape(x,y,angle,len,col){ctx.save();ctx.translate(Math.round(x),Math.round(y));ctx.rotate(angle);ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(len/2,0);ctx.lineTo(len/2-7,-3);ctx.lineTo(-len/2+6,-3);ctx.lineTo(-len/2+6,3);ctx.lineTo(len/2-7,3);ctx.closePath();ctx.fill();ctx.fillStyle='#8aa4ff';ctx.fillRect(-len/2+3,-7,3,14);ctx.fillRect(-len/2-3,-2,6,4);ctx.restore();}
 // The Knight's six-pointed star, outlined.
 function star6(x,y,r,col){ctx.save();ctx.translate(Math.round(x),Math.round(y));ctx.rotate(game.clock*(reduceMotion?0:2));ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();for(let k=0;k<12;k++){const rr=k%2?r*.5:r,an=k*Math.PI/6;k?ctx.lineTo(Math.cos(an)*rr,Math.sin(an)*rr):ctx.moveTo(Math.cos(an)*rr,Math.sin(an)*rr);}ctx.closePath();ctx.stroke();ctx.fillStyle=col;ctx.fillRect(-1,-1,2,2);ctx.restore();}
-// The Knight's crescent: a white moon-blade with afterimages trailing behind it.
-function moon(b){const warn=b.age<b.warn;ctx.save();ctx.lineCap='round';
- if(warn){ctx.globalAlpha=.3+.3*blink(14);ctx.strokeStyle='#ffffff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(b.x,b.y,b.R,b.facing-b.span,b.facing+b.span);ctx.stroke();ctx.restore();return;}
- for(let k=4;k>=0;k--){ctx.globalAlpha=k?.12*(5-k):1;ctx.strokeStyle=k?'#9ab8ff':'#ffffff';ctx.lineWidth=k?b.thick-2:b.thick;ctx.beginPath();ctx.arc(b.x-Math.sign(b.vx)*k*12,b.y,b.R,b.facing-b.span,b.facing+b.span);ctx.stroke();}
- ctx.globalAlpha=1;ctx.strokeStyle='#cfe0ff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(b.x,b.y,b.R-b.thick/2,b.facing-b.span*.9,b.facing+b.span*.9);ctx.stroke();ctx.restore();}
+// A star of the Knight's light: two hollow triangles, a gem in the middle, turning slowly.
+function hexStar(x,y,r,alpha=1,solid=false){ctx.save();ctx.globalAlpha=alpha;ctx.translate(Math.round(x),Math.round(y));ctx.rotate(reduceMotion?0:game.clock*.9+x*.01);ctx.lineWidth=2;ctx.strokeStyle='#ffffff';ctx.fillStyle=solid?'#ffffff':'rgba(40,44,120,.55)';
+ for(const o of [0,Math.PI]){ctx.beginPath();for(let k=0;k<3;k++){const an=o+k*2.0944-Math.PI/2;k?ctx.lineTo(Math.cos(an)*r,Math.sin(an)*r):ctx.moveTo(Math.cos(an)*r,Math.sin(an)*r);}ctx.closePath();ctx.fill();ctx.stroke();}
+ ctx.fillStyle='#ffffff';ctx.fillRect(-2,-2,4,4);ctx.restore();}
+// The Knight's swords are the designer's sprite: the large cut in the Deltarune half, the small one in the Undertale
+// half. ghost = a sword that is only showing itself (dim violet, as the Roaring Knight's are before they strike).
+const SWORD_VIOLET='rgba(120,110,255,1)';
+function sword(x,y,rot,{ghost=false,alpha=1,frame=null}={}){
+ const fam=game.dr?'sword_projectile_large':'sword_projectile',k=game.dr?.46:.3,i=frame??Math.floor(game.clock*8)%4;
+ // The sprite points down; rot is the direction it points, in canvas angles.
+ return art.anim(fam,i,x,y,k,{rot:rot-Math.PI/2,alpha:alpha*(ghost?.7:1),tint:ghost?SWORD_VIOLET:null});
+}
+// The Knight's crescent: a white moon-blade (a lune, thick in the middle and sharp at the tips) dragging grey
+// afterimages behind it, the size of the whole box and more.
+function lune(x,y,R,thick,span,col){
+ // Outer edge: a circle round (x, y). Inner edge: a wider circle pushed right that meets it at the two tips, so the
+ // blade is `thick` in the middle and tapers to points.
+ const Ro=R+thick/2,c=Math.cos(span),sn=Math.sin(span),d=thick*(2*Ro-thick)/(2*Math.max(1,Ro*(1-c)-thick)),Ri=d+Ro-thick,au=Math.atan2(-Ro*sn,-(Ro*c+d));
+ ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,Ro,Math.PI-span,Math.PI+span);ctx.arc(x+d,y,Ri,au,-au,true);ctx.closePath();ctx.fill();}
+function moon(b){const trail=reduceMotion?3:8;ctx.save();
+ for(let k=trail;k>=1;k--){const g=Math.round(190-k*19);lune(Math.round(b.x+k*11),Math.round(b.y),b.R,b.thick,b.span*(1-k*.012),`rgb(${g},${g},${g+6})`);}
+ lune(Math.round(b.x),Math.round(b.y),b.R,b.thick,b.span,'#ffffff');ctx.restore();}
 function spikePath(b,len){const px=-b.dy,py=b.dx,hw=b.w/2;ctx.beginPath();ctx.moveTo(b.x+px*hw,b.y+py*hw);ctx.lineTo(b.x+b.dx*len,b.y+b.dy*len);ctx.lineTo(b.x-px*hw,b.y-py*hw);ctx.closePath();}
+// A crystal spire bursting out of the floor (or down from the ceiling): white, with a grey afterimage and small
+// spikes crowding its base, and the designer's burst at its foot.
+function crystal(b){const L=b.cur,d=b.dy,x=Math.round(b.x),y0=b.y,hw=b.w/2;if(L<2)return;
+ const jag=(w,len,col,ox=0)=>{ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x+ox-w,y0);const n=5;for(let i=1;i<=n;i++){const t=i/(n+1);ctx.lineTo(x+ox-w*(1-t)-(i%2?3:0),y0+d*len*t);}ctx.lineTo(x+ox,y0+d*len);for(let i=n;i>=1;i--){const t=i/(n+1);ctx.lineTo(x+ox+w*(1-t)+(i%2?0:3),y0+d*len*t);}ctx.lineTo(x+ox+w,y0);ctx.closePath();ctx.fill();};
+ jag(hw+6,L*.96,'rgba(120,128,150,.55)',7);jag(hw*.55,L*.42,'#c8d0e6',-hw);jag(hw*.5,L*.34,'#c8d0e6',hw+2);
+ jag(hw,L,'#ffffff');jag(hw*.42,L*.9,'#cfdcf5',hw*.3);
+ if(!b.down&&b.dy<0){const t=b.age-b.warn;art.anim('ground_spike',Math.min(3,1+Math.floor(t*7)),x,y0-40,1,{alpha:Math.max(0,1-t*1.6)});}
+}
 function hazard(b){
  const t=game.clock;
  switch(b.kind){
-  case 'spike':{if(b.age<b.warn){ctx.save();ctx.globalAlpha=.35+(reduceMotion?.2:.25*Math.sin(b.age*30));ctx.strokeStyle='#9ad4ff';ctx.setLineDash([4,3]);spikePath(b,b.len);ctx.stroke();ctx.restore();return;}if(b.cur<1)return;ctx.save();ctx.fillStyle='#bfe6ff';spikePath(b,b.cur);ctx.fill();ctx.strokeStyle='#3a78d8';ctx.lineWidth=1;ctx.stroke();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(b.x+b.dx*2,b.y+b.dy*2);ctx.lineTo(b.x+b.dx*b.cur*.8,b.y+b.dy*b.cur*.8);ctx.stroke();ctx.restore();return;}
-  case 'slash':{ctx.save();if(b.age<b.warn){ctx.globalAlpha=.45+(reduceMotion?0:.2*Math.sin(b.age*28));ctx.strokeStyle=HEART.blade;ctx.lineWidth=1;ctx.setLineDash([6,4]);}else{ctx.globalAlpha=Math.max(0,1-(b.age-b.warn-b.live)/.2);ctx.strokeStyle=HEART.blade;ctx.lineWidth=b.w+4;ctx.beginPath();ctx.moveTo(b.x1,b.y1);ctx.lineTo(b.x2,b.y2);ctx.stroke();ctx.strokeStyle='#fff';ctx.lineWidth=b.w-3;}ctx.beginPath();ctx.moveTo(b.x1,b.y1);ctx.lineTo(b.x2,b.y2);ctx.stroke();ctx.restore();return;}
-  case 'lance':{const cx=Math.cos(b.angle),cy=Math.sin(b.angle);if(b.age<b.warn){ctx.save();ctx.strokeStyle=HEART.blade;ctx.globalAlpha=.55;ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(b.x+cx*700,b.y+cy*700);ctx.stroke();ctx.restore();}
-   if(game.dr&&art.anim('sword_projectile',Math.floor(game.clock*8)%4,b.x+cx*(b.tip-b.len/2),b.y+cy*(b.tip-b.len/2),b.len/110,{rot:b.angle+Math.PI/2}))return;
-   const tx=b.x+cx*b.tip,ty=b.y+cy*b.tip;ctx.save();ctx.translate(tx,ty);ctx.rotate(b.angle);ctx.fillStyle='#e8f4ff';ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-b.len,-b.w/2);ctx.lineTo(-b.len,b.w/2);ctx.closePath();ctx.fill();ctx.fillStyle=HEART.blade;ctx.fillRect(-b.len,-1,b.len-6,2);ctx.fillStyle='#3a78d8';ctx.fillRect(-b.len-14,-3,14,6);ctx.restore();return;}
-  case 'buster':{if(b.moon){moon(b);return;}ctx.save();const warn=b.age<b.warn;ctx.globalAlpha=warn?.3+(reduceMotion?0:.2*Math.sin(b.age*30)):1;ctx.lineCap='round';
-   if(!warn){ctx.strokeStyle='rgba(176,58,216,.45)';ctx.lineWidth=b.thick+10;ctx.beginPath();ctx.arc(b.x-Math.sign(b.vx)*12,b.y,b.R,b.facing-b.span,b.facing+b.span);ctx.stroke();}
-   ctx.strokeStyle=warn?HEART.wild:'#ff4aa8';ctx.lineWidth=warn?2:b.thick;ctx.beginPath();ctx.arc(b.x,b.y,b.R,b.facing-b.span,b.facing+b.span);ctx.stroke();
-   if(!warn){ctx.strokeStyle='#ffd0ec';ctx.lineWidth=3;ctx.beginPath();ctx.arc(b.x,b.y,b.R+b.thick*.2,b.facing-b.span*.9,b.facing+b.span*.9);ctx.stroke();}ctx.restore();return;}
-  case 'ribbon':{ctx.save();ctx.strokeStyle='#ff4aa8';ctx.lineWidth=b.w;ctx.beginPath();let on=false;for(let x=b.x;x<=b.x+b.wd;x+=4){const inGap=Math.abs(x-b.gap)<b.gapW/2,y=ribbonY(b,x);if(inGap){on=false;continue;}if(!on){ctx.moveTo(x,y);on=true;}else ctx.lineTo(x,y);}ctx.stroke();
-   ctx.fillStyle='#b03ad8';for(let x=b.x;x<b.x+b.wd;x+=12){if(Math.abs(x-b.gap)<b.gapW/2)continue;const y=ribbonY(b,x);ctx.fillRect(Math.round(x),Math.round(y+b.w/2-1),4,3+((x*7)%5));}ctx.restore();return;}
-  case 'axe':{ctx.save();ctx.translate(b.x,b.y);ctx.rotate(reduceMotion?0:b.age*14);ctx.fillStyle='#7a3a9a';ctx.fillRect(-2,-10,4,20);ctx.fillStyle='#ff4aa8';ctx.beginPath();ctx.moveTo(2,-10);ctx.lineTo(11,-6);ctx.lineTo(11,2);ctx.lineTo(2,-2);ctx.closePath();ctx.fill();ctx.restore();return;}
-  case 'orbitblade':{ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.theta+Math.PI/2);ctx.fillStyle='#e8f4ff';ctx.beginPath();ctx.moveTo(0,-9);ctx.lineTo(4,0);ctx.lineTo(0,9);ctx.lineTo(-4,0);ctx.closePath();ctx.fill();ctx.fillStyle=HEART.blade;ctx.fillRect(-1,-6,2,12);ctx.restore();return;}
-  case 'star':{if(art.anim('star_projectile',Math.floor(b.age*10)%4,b.x,b.y,.17))return;const r=b.fuse&&b.age>b.fuse-.3&&blink(14)?7:5;star4(b.x,b.y,r+1,HEART.blade);star4(b.x,b.y,r-1,'#fff');return;}
-  case 'shard':{if(b.big&&art.anim('diamond_shard',Math.floor(b.age*8)%4,b.x,b.y,.16))return;if(b.big){ctx.fillStyle='#dfe8ff';ctx.beginPath();ctx.moveTo(b.x,b.y-8);ctx.lineTo(b.x+5,b.y);ctx.lineTo(b.x,b.y+8);ctx.lineTo(b.x-5,b.y);ctx.closePath();ctx.fill();return;}star4(b.x,b.y,3,'#bfe6ff');return;}
+  case 'spike':{if(b.crystal){crystal(b);return;}
+   if(b.age<b.warn){const u=b.age/b.warn,w=Math.round(b.w*(.5+.5*u));ctx.save();ctx.fillStyle=blink(12)&&u>.6?'#ffffff':'#9aa6c8';ctx.fillRect(Math.round(b.x-w/2),Math.round(b.y+(b.dy<0?-3:1)),w,2);ctx.globalAlpha=.3;ctx.strokeStyle='#9ad4ff';ctx.setLineDash([3,3]);spikePath(b,b.len);ctx.stroke();ctx.restore();return;}
+   if(b.cur<1)return;ctx.save();ctx.fillStyle='#ffffff';spikePath(b,b.cur);ctx.fill();ctx.fillStyle='#bcd0f2';ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(b.x+b.dx*b.cur,b.y+b.dy*b.cur);ctx.lineTo(b.x+b.w/2,b.y);ctx.closePath();ctx.fill();ctx.restore();return;}
+  // The Knight's slash: a thin double line first, then the cut.
+  case 'slash':{const dx=b.x2-b.x1,dy=b.y2-b.y1,L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L;ctx.save();
+   if(b.age<b.warn){ctx.globalAlpha=.55+(reduceMotion?0:.25*Math.sin(b.age*30));for(const [o,c] of [[-2,'#ffffff'],[2,'#7a8cff']]){ctx.strokeStyle=c;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(b.x1+nx*o,b.y1+ny*o);ctx.lineTo(b.x2+nx*o,b.y2+ny*o);ctx.stroke();}}
+   else{const u=clamp((b.age-b.warn)/(b.live+.25),0,1);ctx.globalAlpha=1-u*u;ctx.strokeStyle='#8a9cff';ctx.lineWidth=(b.w+8)*(1-u*.5);ctx.beginPath();ctx.moveTo(b.x1,b.y1);ctx.lineTo(b.x2,b.y2);ctx.stroke();ctx.strokeStyle='#ffffff';ctx.lineWidth=Math.max(2,b.w*(1-u*.6));ctx.beginPath();ctx.moveTo(b.x1,b.y1);ctx.lineTo(b.x2,b.y2);ctx.stroke();}
+   ctx.restore();return;}
+  case 'buster':{moon(b);return;}
+  case 'star':{if(art.anim('star_projectile',Math.floor(b.age*10)%4,b.x,b.y,.2))return;star4(b.x,b.y,6,HEART.blade);star4(b.x,b.y,4,'#fff');return;}
+  case 'shard':{if(b.big){const held=b.hold&&b.age<b.hold;if(game.dr&&!b.small&&art.anim('diamond_shard_large',held?0:Math.floor(b.age*8)%4,b.x,b.y,.24,{alpha:held?.6+.4*blink(10):1}))return;if(art.anim('diamond_shard',Math.floor(b.age*8)%4,b.x,b.y,.16))return;}star4(b.x,b.y,3,b.age>1.2?'#9ab0ff':'#ffffff');return;}
   case 'gift':{if(!art.anim('heal_heart',Math.floor(b.age*6)%4,b.x,b.y,.17))battleSoul(ctx,b.x,b.y,14,blink(5)?HEART.hope:'#a8ffd0');return;}
   case 'zee':{ctx.save();ctx.globalAlpha=.85;text('Z',b.x,b.y-7,1.5,'#c8f0ff',true);ctx.restore();return;}
-  case 'orbitsword':{if(!art.anim('sword_projectile',Math.floor(game.clock*8)%4,b.x,b.y,.27,{rot:(b.ang??0)+Math.PI/2,alpha:b.launched?1:.85}))swordShape(b.x,b.y,b.ang??0,24,'#fff');return;}
-  case 'sword':{if(b.age<b.warn){const A=game.arena,y=b.vy>0?A.y+10:A.y+A.h-10;art.anim('twinkle',Math.floor(b.age*10),b.x,y,.3);return;}const cy=b.y-(b.vy>0?b.len/2:-b.len/2);if(!art.anim('sword_projectile',Math.floor(game.clock*8)%4,b.x,cy,.32,{rot:b.vy>0?Math.PI:0}))swordShape(b.x,cy,b.vy>0?Math.PI/2:-Math.PI/2,b.len,'#fff');return;}
-  case 'eruption':{const u=clamp(b.age/b.warn,0,1),rx=Math.round(b.w*(.5+.5*u)),ry=Math.round(4+3*u);ctx.save();ctx.fillStyle='#0a0a14';ctx.beginPath();ctx.ellipse(b.x,b.y,rx,ry,0,0,6.283);ctx.fill();ctx.strokeStyle=blink(12)&&u>.6?'#ffffff':'#b8c0e0';ctx.lineWidth=2;ctx.stroke();ctx.restore();return;}
-  case 'bar':{ctx.fillStyle=b.blue?'#3a6aff':'#ffffff';const x=Math.round(b.x-b.w/2);if(b.blue)ctx.fillRect(x,b.y0,b.w,b.y1-b.y0);else{ctx.fillRect(x,b.y0,b.w,Math.round(b.gapY-b.gapH/2-b.y0));ctx.fillRect(x,Math.round(b.gapY+b.gapH/2),b.w,Math.round(b.y1-b.gapY-b.gapH/2));}return;}
-  case 'star6':{if(b.delay&&b.age<b.delay)return;if(!art.anim('star_projectile',Math.floor(b.age*10)%4,b.x,b.y,.24,{tint:b.fuse&&b.age>b.fuse-.25&&blink(14)?'rgba(255,232,160,1)':null}))star6(b.x,b.y,b.r+3,'#fff');return;}
-  case 'dashline':{const warn=b.age<b.warn;ctx.save();if(warn){ctx.globalAlpha=.45+.3*blink(14);ctx.fillStyle='#ffffff';ctx.fillRect(0,Math.round(b.y),640,1);}else{ctx.globalAlpha=Math.max(0,1-(b.age-b.warn-b.live)/.25);ctx.fillStyle='#bfe6ff';ctx.fillRect(0,Math.round(b.y-b.w/2-3),640,b.w+6);ctx.fillStyle='#fff';ctx.fillRect(0,Math.round(b.y-b.w/2),640,b.w);}ctx.restore();return;}
-  case 'laser':{const cx=Math.cos(b.angle),cy=Math.sin(b.angle),L=1200;ctx.save();if(b.age<b.warn){ctx.globalAlpha=.5;ctx.strokeStyle=b.col;ctx.lineWidth=1;ctx.setLineDash([6,4]);}else{ctx.globalAlpha=Math.max(0,Math.min(1,(b.warn+b.live+.2-b.age)/.2));ctx.strokeStyle=b.col;ctx.lineWidth=b.w+6;ctx.beginPath();ctx.moveTo(b.ox,b.oy);ctx.lineTo(b.ox+cx*L,b.oy+cy*L);ctx.stroke();ctx.strokeStyle='#ffffff';ctx.lineWidth=Math.max(2,b.w-6);}ctx.beginPath();ctx.moveTo(b.ox,b.oy);ctx.lineTo(b.ox+cx*L,b.oy+cy*L);ctx.stroke();ctx.restore();return;}
-  case 'cone':{const live=true,a1=b.angle-b.half,a2=b.angle+b.half;ctx.save();ctx.globalAlpha=Math.max(0,Math.min(.6,(b.warn+b.live+.4-b.age)*2,b.age*4));const g=ctx.createLinearGradient(b.ox,b.oy,b.ox+Math.cos(b.angle)*b.len,b.oy+Math.sin(b.angle)*b.len);g.addColorStop(0,'#ffffff');g.addColorStop(.4,live?'#8a9cff':'#4a5aaa');g.addColorStop(1,live?'#5a6cff':'#2a3466');ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(b.ox,b.oy);ctx.lineTo(b.ox+Math.cos(a1)*b.len,b.oy+Math.sin(a1)*b.len);ctx.lineTo(b.ox+Math.cos(a2)*b.len,b.oy+Math.sin(a2)*b.len);ctx.closePath();ctx.fill();ctx.restore();return;}
-  case 'thrown':{const L=Math.hypot(b.vx,b.vy)||1,ang=b.age<b.spin?b.age*24:Math.atan2(b.vy,b.vx);
-   if(b.trail)b.trail.forEach(([x,y],i)=>{ctx.save();ctx.globalAlpha=.12+i*.05;ctx.fillStyle='#6a7ad8';ctx.fillRect(Math.round(x)-2,Math.round(y)-2,4,4);ctx.restore();});
-   if(!art.anim('sword_projectile',0,b.x-b.vx/L*11,b.y-b.vy/L*11,.3,{rot:ang+Math.PI/2}))swordShape(b.x,b.y,ang,22,'#fff');return;}
+  case 'orbitsword':{sword(b.x,b.y,b.ang??0,{ghost:!b.launched&&b.age<b.aimAt-.22});return;}
+  // The tracking sword: dim while it follows, bright with a thin line down its path once it locks, then the stab.
+  case 'tsword':{const A=game.arena,dir=b.up?-1:1,locked=b.age>=b.track,going=b.age>=b.track+b.lock,cy=b.y-dir*b.len/2;
+   if(locked&&!going){ctx.save();ctx.globalAlpha=.75;ctx.fillStyle='#ffffff';ctx.fillRect(Math.round(b.x),A.y-30,1,A.h+60);ctx.restore();}
+   if(going&&!reduceMotion){ctx.save();ctx.fillStyle='#5a66c8';for(let k=1;k<=7;k++){ctx.globalAlpha=.5-k*.06;ctx.fillRect(Math.round(b.x)-2,Math.round(b.y-dir*(b.len+k*16)),4,10);}ctx.restore();}
+   sword(b.x,cy,b.up?-Math.PI/2:Math.PI/2,{ghost:!locked,frame:going?0:null});return;}
+  // A standing blade on the box's top or bottom edge.
+  case 'tooth':{const A=game.arena,L=Math.round(b.len*Math.min(1,b.age/b.grow)),x=Math.round(b.x);if(L<2)return;ctx.save();ctx.fillStyle='#ffffff';ctx.beginPath();
+   if(b.top){ctx.moveTo(x-5,A.y);ctx.lineTo(x+5,A.y);ctx.lineTo(x+5,A.y+L-8);ctx.lineTo(x,A.y+L);ctx.lineTo(x-5,A.y+L-8);}else{const y=A.y+A.h;ctx.moveTo(x-5,y);ctx.lineTo(x+5,y);ctx.lineTo(x+5,y-L+8);ctx.lineTo(x,y-L);ctx.lineTo(x-5,y-L+8);}
+   ctx.closePath();ctx.fill();ctx.fillStyle='#b8c4ea';if(b.top)ctx.fillRect(x+2,A.y,3,Math.max(0,L-8));else ctx.fillRect(x+2,A.y+A.h-L+8,3,Math.max(0,L-8));ctx.restore();return;}
+  // The shadow a crystal comes out of.
+  case 'eruption':{const u=clamp(b.age/b.warn,0,1),rx=Math.round(b.w*(.45+.55*u)),ry=Math.round(4+3*u),y=b.down?4:b.y;ctx.save();ctx.fillStyle=u>.7&&blink(14)?'#e8e8f0':'#6a6c78';ctx.beginPath();ctx.ellipse(Math.round(b.x),y,rx,ry,0,0,6.283);ctx.fill();ctx.fillStyle='#000';ctx.beginPath();ctx.ellipse(Math.round(b.x),y,Math.round(rx*.55),Math.max(1,ry-3),0,0,6.283);ctx.fill();
+   if(u>.72&&!b.down)art.anim('ground_spike',0,b.x,y-40,1);ctx.restore();return;}
+  // A blade of the bar curtain: floor to ceiling, with the corridor cut out of it (blue ones are whole).
+  case 'bar':{const x=Math.round(b.x-b.w/2),w=b.w,H=game.dr?326:396,tipL=9;ctx.save();
+   const blade=(y0,y1,down)=>{ctx.beginPath();if(down){ctx.moveTo(x,y0);ctx.lineTo(x+w,y0);ctx.lineTo(x+w,y1-tipL);ctx.lineTo(x+w/2,y1);ctx.lineTo(x,y1-tipL);}else{ctx.moveTo(x,y1);ctx.lineTo(x+w,y1);ctx.lineTo(x+w,y0+tipL);ctx.lineTo(x+w/2,y0);ctx.lineTo(x,y0+tipL);}ctx.closePath();ctx.fill();};
+   if(b.blue){ctx.fillStyle='#2a3cff';ctx.fillRect(x,0,w,H);ctx.fillStyle='#7f8cff';ctx.fillRect(x+3,0,4,H);}
+   else{ctx.fillStyle='#ffffff';blade(0,Math.round(b.gapY-b.gapH/2),true);blade(Math.round(b.gapY+b.gapH/2),H,false);ctx.fillStyle='#b4bcd8';ctx.fillRect(x+w-5,0,3,Math.max(0,Math.round(b.gapY-b.gapH/2)-tipL));ctx.fillRect(x+w-5,Math.round(b.gapY+b.gapH/2)+tipL,3,H);}
+   ctx.restore();return;}
+  // A star of the Knight's light: it blooms (harmless) before it is solid, and flares just before it bursts.
+  case 'star6':{if(b.delay&&b.age<b.delay)return;const fam=b.big?'star_projectile_large':'star_projectile',k=b.big?.34:.2,blooming=b.bloom&&b.age<b.bloom,last=b.fuse&&b.age>b.fuse-.3;
+   if(b.big&&b.bloom){const u=blooming?b.age/b.bloom:1;if(last&&!reduceMotion){ctx.save();ctx.globalAlpha=.8;ctx.fillStyle='#ffffff';const L=30*(1-(b.fuse-b.age)/.3)+8;ctx.fillRect(Math.round(b.x-L),Math.round(b.y),L*2,1);ctx.fillRect(Math.round(b.x),Math.round(b.y-L),1,L*2);ctx.restore();}
+    hexStar(b.x,b.y,(5+11*u)*(last&&blink(14)?1.25:1),blooming?.4+.3*blink(16):1,last&&blink(14));return;}
+   if(last&&!reduceMotion){ctx.save();ctx.globalAlpha=.8;ctx.fillStyle='#ffffff';const L=(b.big?26:16)*(1-(b.fuse-b.age)/.3)+6;ctx.fillRect(Math.round(b.x-L),Math.round(b.y),L*2,1);ctx.fillRect(Math.round(b.x),Math.round(b.y-L),1,L*2);ctx.restore();}
+   if(!art.anim(fam,Math.floor(b.age*10)%4,b.x,b.y,k,{alpha:blooming?.35+.3*blink(16):1,tint:last&&blink(14)?'rgba(255,255,255,1)':null}))star6(b.x,b.y,b.r+3,'#fff');return;}
+  // A beam: a thin line first; then blue light across the whole screen, pale at its heart.
+  case 'laser':{const cx=Math.cos(b.angle),cy=Math.sin(b.angle),L=1300,x1=b.full?b.ox-cx*L:b.ox,y1=b.full?b.oy-cy*L:b.oy;ctx.save();
+   if(b.age<b.warn){ctx.globalAlpha=.6+(reduceMotion?0:.3*Math.sin(b.age*26));ctx.strokeStyle='#ffffff';ctx.lineWidth=1;ctx.setLineDash([5,3]);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(b.ox+cx*L,b.oy+cy*L);ctx.stroke();}
+   else{const u=clamp((b.age-b.warn)/(b.live+.2),0,1);ctx.globalAlpha=u<.7?1:Math.max(0,(1-u)/.3);ctx.strokeStyle=b.col;ctx.lineWidth=(b.w+8)*(1-u*.3);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(b.ox+cx*L,b.oy+cy*L);ctx.stroke();ctx.strokeStyle=b.col==='#ff2a3a'?'#ffd0d0':'#a8b0ff';ctx.lineWidth=Math.max(2,(b.w-6)*(1-u*.5));ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(b.ox+cx*L,b.oy+cy*L);ctx.stroke();}
+   ctx.restore();return;}
+  // The line from the Knight's sword that the light opens along.
+  case 'ray':{ctx.save();ctx.globalAlpha=b.bright?Math.max(0,1-b.age/b.life):.9;ctx.strokeStyle='#ffffff';ctx.lineWidth=b.bright?6*(1-b.age/b.life)+1:2;ctx.beginPath();ctx.moveTo(b.ox,b.oy);ctx.lineTo(b.ox+Math.cos(b.angle)*900,b.oy+Math.sin(b.angle)*900);ctx.stroke();ctx.restore();return;}
+  // The cone of light: white as it opens, then violet-blue with paler bands turning in it.
+  case 'cone':{const a1=b.angle-b.half,a2=b.angle+b.half,open=clamp(b.age/.18,0,1),close=clamp((b.warn+b.live+.2-b.age)/.25,0,1),h=b.half*open*close;if(h<=0)return;
+   const path=(hh)=>{ctx.beginPath();ctx.moveTo(b.ox,b.oy);ctx.lineTo(b.ox+Math.cos(b.angle-hh)*b.len,b.oy+Math.sin(b.angle-hh)*b.len);ctx.lineTo(b.ox+Math.cos(b.angle+hh)*b.len,b.oy+Math.sin(b.angle+hh)*b.len);ctx.closePath();};
+   ctx.save();const white=clamp(1-(b.age-.1)/.3,0,1);path(h);ctx.fillStyle='#4a50e8';ctx.globalAlpha=.82;ctx.fill();
+   // Paler bands inside the light.
+   ctx.clip();ctx.globalAlpha=.3;ctx.strokeStyle='#9aa4ff';ctx.lineWidth=26;const ph=reduceMotion?0:b.age*.5;for(let k=0;k<4;k++){ctx.beginPath();ctx.ellipse(b.ox-150-k*120,b.oy+Math.sin(ph+k)*40,90+k*30,60+k*36,ph+k*.7,0,6.283);ctx.stroke();}
+   if(white>0){ctx.globalAlpha=white;ctx.fillStyle='#ffffff';ctx.fillRect(0,0,640,480);}ctx.restore();return;}
+  // A thrown sword: it shows itself turning (dim), then flies, leaving a dotted trail.
+  case 'thrown':{const L=Math.hypot(b.vx,b.vy)||1,ang=Math.atan2(b.vy,b.vx),h=game.dr?28:18,spinning=b.age<b.spin;
+   if(b.trail&&!reduceMotion)b.trail.forEach(([x,y],i)=>{ctx.save();ctx.globalAlpha=.1+i*.04;ctx.fillStyle='#6a7ad8';ctx.fillRect(Math.round(x-b.vx/L*h)-2,Math.round(y-b.vy/L*h)-2,4,4);ctx.restore();});
+   sword(b.x-b.vx/L*h,b.y-b.vy/L*h,ang,{ghost:spinning&&b.age<b.spin-.15});return;}
   case 'rb':{const A=game.arena;if(b.age<b.warn){ctx.save();ctx.globalAlpha=.18+.2*blink(12);ctx.fillStyle='#b040ff';ctx.fillRect(A.x+3,Math.round(b.y-b.half),A.w-6,b.half*2);ctx.restore();return;}
    // The real RUDE BUSTER frames from the Gerson fight, mirrored to fly left; it grows its trail as it goes.
    const k=Math.min(7,Math.floor((b.age-b.warn)*16)),[w,h]=art.uiSize('rb_'+k);art.uiFlip('rb_'+k,Math.round(b.tip),Math.round(b.y-h/2));return;}
-  case 'scarf':{const a=game.arena;ctx.save();ctx.globalAlpha=.4;ctx.strokeStyle=HEART.hope;ctx.lineWidth=14;ctx.beginPath();for(let k=0;k<=12;k++){const x=b.x-k*12,y=b.y+Math.sin(k*.6+b.age*3)*b.amp*.4;k?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();ctx.restore();return;}
  }
 }
 function drawSoul(){
@@ -117,14 +167,14 @@ function drawSoul(){
   ctx.save();ctx.strokeStyle='rgba(67,231,80,.35)';ctx.beginPath();ctx.arc(s.x,s.y,24,0,6.283);ctx.stroke();ctx.restore();
   for(const e of game.effects)if(e.type==='block'&&!e.x)art.anim('ring_pulse',Math.floor((.25-e.life)*16),s.x+d[0]*24,s.y+d[1]*24,.35);
   if(!(game.invulnerability>0&&Math.floor(game.clock*15)%2)){heart(s.x,s.y,20,'purple');heart(s.x,s.y,14,'green');}
-  for(const e of game.effects)if(e.type==='block'&&!e.x){ctx.save();ctx.globalAlpha=e.life*4;ctx.strokeStyle='#b8ffc0';ctx.lineWidth=2;ctx.beginPath();ctx.arc(s.x+d[0]*24,s.y+d[1]*24,8+(.25-e.life)*30,0,6.283);ctx.stroke();ctx.restore();}
   return;
  }
- if(game.invulnerability>0&&Math.floor(game.clock*15)%2)return;
+ if(game.invulnerability>0&&game.recenter<=0&&Math.floor(game.clock*15)%2)return;
  heart(s.x,s.y,16,'purple');
  if(game.sleepy>0){ctx.save();ctx.globalAlpha=.7;text('z',s.x+10,s.y-20,1,'#c8f0ff');ctx.restore();}
  if(game.defending||game.persevere){ctx.save();ctx.globalAlpha=.6;ctx.strokeStyle=SETHC;ctx.lineWidth=2;ctx.beginPath();ctx.arc(s.x,s.y,13,0,Math.PI*2);ctx.stroke();ctx.restore();}
- for(const e of game.effects)if(e.type==='graze'){ctx.save();ctx.globalAlpha=e.life*4;ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(s.x,s.y,12+(.2-e.life)*30,0,Math.PI*2);ctx.stroke();ctx.restore();}
+ // Grazing: DELTARUNE's white outline round the SOUL.
+ for(const e of game.effects)if(e.type==='graze'){ctx.save();ctx.globalAlpha=Math.min(1,e.life*6);ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();const r=15;for(let k=0;k<6;k++){const an=k*Math.PI/3-Math.PI/2;k?ctx.lineTo(s.x+Math.cos(an)*r,s.y+Math.sin(an)*r):ctx.moveTo(s.x+Math.cos(an)*r,s.y+Math.sin(an)*r);}ctx.closePath();ctx.stroke();ctx.restore();}
 }
 // A spear for the green SOUL: in from its side; a trick (gold) one swings round the SOUL to the far side.
 function drawArrow(b,s){
@@ -133,67 +183,93 @@ function drawArrow(b,s){
  const x=s.x+Math.cos(an)*dist,y=s.y+Math.sin(an)*dist;ctx.save();ctx.translate(x,y);ctx.rotate(an+Math.PI);ctx.fillStyle=b.trick&&!b.flipped?'#ffd040':'#ffffff';ctx.beginPath();ctx.moveTo(9,0);ctx.lineTo(-4,-6);ctx.lineTo(-2,0);ctx.lineTo(-4,6);ctx.closePath();ctx.fill();ctx.fillRect(-14,-1,12,2);ctx.restore();
 }
 // The Knight's star void (the finale): the box is gone; colours wash through behind turning stars.
-function starVoid(){const t=game.clock,hue=(t*30)%360,g=ctx.createRadialGradient(320,166,10,320,166,360);g.addColorStop(0,`hsla(${hue},70%,55%,.55)`);g.addColorStop(.5,`hsla(${(hue+60)%360},60%,25%,.45)`);g.addColorStop(1,'rgba(0,0,0,.9)');ctx.fillStyle=g;ctx.fillRect(0,0,640,332);
- ctx.save();ctx.globalAlpha=.25;for(let i=0;i<26;i++){const an=i*2.4+t*(reduceMotion?0:.15),r=60+(i*37)%260;star6(320+Math.cos(an)*r,166+Math.sin(an)*r*.7,9,'#ffffff');}ctx.restore();}
+function starVoid(){const t=game.clock,hue=(t*30)%360,g=ctx.createRadialGradient(320,166,10,320,166,360);g.addColorStop(0,`hsla(${hue},70%,55%,.55)`);g.addColorStop(.5,`hsla(${(hue+60)%360},60%,25%,.45)`);g.addColorStop(1,'rgba(0,0,0,.9)');ctx.fillStyle=g;ctx.fillRect(0,0,640,326);
+ ctx.save();ctx.globalAlpha=.25;for(let i=0;i<26;i++){const an=i*2.4+t*(reduceMotion?0:.15),r=60+(i*37)%260;star6(320+Math.cos(an)*r,Math.min(316,166+Math.sin(an)*r*.7),9,'#ffffff');}ctx.restore();}
+// The box's frame (one box, or two halves with the seam between them).
+function boxFrame(a,border,line,fill=true){
+ const draw=(x,y,w,h)=>{x=Math.round(x);y=Math.round(y);w=Math.round(w);h=Math.round(h);if(fill){ctx.fillStyle='#000';ctx.fillRect(x,y,w,h);}ctx.fillStyle=border;ctx.fillRect(x,y,w,line);ctx.fillRect(x,y+h-line,w,line);ctx.fillRect(x,y,line,h);ctx.fillRect(x+w-line,y,line,h);};
+ const G=game.split?game.splitGap:0;
+ if(game.split==='h'&&G>1){const hh=(a.h-G)/2;draw(a.x,a.y,a.w,hh);draw(a.x,a.y+hh+G,a.w,hh);}else if(game.split&&G>1){const hw=(a.w-G)/2;draw(a.x,a.y,hw,a.h);draw(a.x+hw+G,a.y,hw,a.h);}else draw(a.x,a.y,a.w,a.h);
+}
+// Kinds that live inside the box (clipped to it); everything else crosses the whole field.
+const INSIDE=['star','gift','zee','rb','tooth'];
 function field(border='#fff'){
- const a=game.arena,dr=game.dr;
+ const a=game.arena,dr=game.dr,H=dr?326:396,line=dr?3:4;
  if(game.mode==='green'&&!reduceMotion)art.anim('hammer',Math.floor(game.clock*5)%4,a.x+a.w+46,a.y+a.h/2,.5);
+ const clipField=()=>{ctx.beginPath();ctx.rect(0,0,640,H);ctx.clip();};
  if(game.voidMode){starVoid();art.anim('vortex_ring',Math.floor(game.clock*6)%4,320,166,1,{alpha:.55});}
- else{const spin=dr&&!reduceMotion?clamp((game.boxSpin||0)/.45,0,1):0;ctx.save();if(spin>0){const cx=a.x+a.w/2,cy=a.y+a.h/2;ctx.translate(cx,cy);ctx.rotate(spin*Math.PI/2);ctx.scale(1-spin*.35,1-spin*.35);ctx.translate(-cx,-cy);}
-  if(game.split==='h'){const G=game.splitGap||24,hh=(a.h-G)/2;box(a.x,a.y,a.w,hh,border,3);box(a.x,a.y+hh+G,a.w,hh,border,3);}else if(game.split){const G=game.splitGap||24,hw=(a.w-G)/2;box(a.x,a.y,hw,a.h,border,3);box(a.x+hw+G,a.y,hw,a.h,border,3);}else box(a.x,a.y,a.w,a.h,border,dr?3:4);ctx.restore();}
- if(game.bullets.some(b=>b.kind==='laser'&&b.age<b.warn)){ctx.save();ctx.globalAlpha=.22;ctx.fillStyle='#2a3aff';ctx.fillRect(a.x+3,a.y+3,a.w-6,a.h-6);ctx.restore();}
- const outside=['lance','laser','cone','dashline','orbitsword','thrown'];
- // The cone of light falls behind everything else.
- ctx.save();ctx.beginPath();ctx.rect(0,0,640,dr?332:396);ctx.clip();for(const b of game.bullets)if(b.kind==='cone')hazard(b);ctx.restore();
- ctx.save();ctx.beginPath();ctx.rect(a.x+3,a.y+3,a.w-6,a.h-6);ctx.clip();
- for(const b of game.bullets)if(b.kind==='scarf')hazard(b);
- for(const b of game.bullets)if(!b.out&&!['lance','scarf','slash','laser','cone','dashline','orbitsword','arrow','thrown'].includes(b.kind))hazard(b);
- for(const b of game.bullets)if(b.kind==='slash')hazard(b);
+ else{
+  // The box spins into its new shape in the Deltarune half, trailing fading copies of itself.
+  const spin=dr&&!reduceMotion?clamp((game.boxSpin||0)/.45,0,1):0,cx=a.x+a.w/2,cy=a.y+a.h/2;
+  if(spin>0){for(let k=3;k>=1;k--){const u=Math.min(1,spin+k*.12);ctx.save();ctx.globalAlpha=.22;ctx.translate(cx,cy);ctx.rotate(u*Math.PI*.75);ctx.scale(1-u*.5,1-u*.5);ctx.translate(-cx,-cy);boxFrame(a,border,2,false);ctx.restore();}
+   ctx.save();ctx.translate(cx,cy);ctx.rotate(spin*Math.PI/2);ctx.scale(1-spin*.3,1-spin*.3);ctx.translate(-cx,-cy);boxFrame(a,border,line);ctx.restore();}
+  else boxFrame(a,border,line);
+ }
+ // The cone of light falls over the box and under everything else.
+ ctx.save();clipField();for(const b of game.bullets)if(b.kind==='cone')hazard(b);ctx.restore();
+ // The box tints blue while the beams take aim, and a dark disc marks the point they cross.
+ const aim=game.bullets.find(b=>b.kind==='laser'&&b.full&&b.age<b.warn);
+ if(aim){ctx.save();ctx.beginPath();ctx.rect(a.x+line,a.y+line,a.w-line*2,a.h-line*2);ctx.clip();ctx.globalAlpha=.3;ctx.fillStyle='#1420c8';ctx.fillRect(a.x,a.y,a.w,a.h);ctx.globalAlpha=.55;ctx.fillStyle='#0a1090';ctx.beginPath();ctx.arc(aim.ox,aim.oy,22,0,6.283);ctx.fill();ctx.restore();}
+ // Inside the box.
+ ctx.save();ctx.beginPath();ctx.rect(a.x+line,a.y+line,a.w-line*2,a.h-line*2);ctx.clip();for(const b of game.bullets)if(INSIDE.includes(b.kind)||(b.kind==='shard'&&!b.out&&!b.big)||(b.kind==='star6'&&!b.big&&!game.voidMode&&b.hover===undefined)||(b.kind==='spike'&&!b.crystal))hazard(b);ctx.restore();
+ // Across the whole field.
+ ctx.save();clipField();for(const b of game.bullets){if(b.kind==='cone'||b.kind==='arrow'||INSIDE.includes(b.kind)||(b.kind==='shard'&&!b.out&&!b.big)||(b.kind==='star6'&&!b.big&&!game.voidMode&&b.hover===undefined)||(b.kind==='spike'&&!b.crystal))continue;hazard(b);}
+ // The frame stays readable over whatever crosses it.
+ if(!game.voidMode&&!(dr&&game.boxSpin>0&&!reduceMotion))boxFrame(a,border,line,false);
+ if(game.mode==='green')for(const b of game.bullets)if(b.kind==='arrow')drawArrow(b,game.soul);
  drawSoul();ctx.restore();
- // Lunges come in from outside the box.
- ctx.save();ctx.beginPath();ctx.rect(0,0,640,game.dr?332:396);ctx.clip();for(const b of game.bullets)if(b.out||outside.includes(b.kind)&&b.kind!=='cone')hazard(b);if(game.mode==='green')for(const b of game.bullets)if(b.kind==='arrow')drawArrow(b,game.soul);ctx.restore();
- for(const e of game.effects){if(e.type==='gift'){ctx.save();ctx.globalAlpha=e.life*2;star4(e.x,e.y-(.5-e.life)*20,6,HEART.hope);ctx.restore();}if(e.type==='zee'){ctx.save();ctx.globalAlpha=e.life;text('z z',e.x,e.y-(.6-e.life)*30,1,'#c8f0ff',true);ctx.restore();}}
+ for(const e of game.effects){if(e.type==='gift'){ctx.save();ctx.globalAlpha=e.life*2;star4(e.x,e.y-(.5-e.life)*20,6,HEART.hope);ctx.restore();}if(e.type==='zee'){ctx.save();ctx.globalAlpha=e.life;text('z z',e.x,e.y-(.6-e.life)*30,1,'#c8f0ff',true);ctx.restore();}
+  if(e.type==='block'){const s=game.soul,d={up:[0,-1],right:[1,0],down:[0,1],left:[-1,0]}[game.shield];ctx.save();ctx.globalAlpha=e.life*4;ctx.strokeStyle='#b8ffc0';ctx.lineWidth=2;ctx.beginPath();ctx.arc(s.x+d[0]*24,s.y+d[1]*24,8+(.25-e.life)*30,0,6.283);ctx.stroke();ctx.restore();}
+  if(e.type==='puff'){ctx.save();ctx.globalAlpha=e.life*3;star4(e.x,e.y,5+(.25-e.life)*20,'#c8d4ff');ctx.restore();}}
 }
 function effectsFX(){for(const e of game.effects){
- if(e.type==='starflash'){const k=Math.min(3,Math.floor((.3-e.life)*13));art.anim('impact_star',k,e.x,e.y,.35);}
+ if(e.type==='starflash'){const k=Math.min(3,Math.floor((.3-e.life)*13));if(e.big)art.anim('impact_star_large',k,e.x,e.y,.6);else art.anim('impact_star',k,e.x,e.y,.35);}
  else if(e.type==='rbhit'){const k=Math.min(3,Math.floor((.45-e.life)*9)),[w,h]=art.uiSize('rbhit_'+k);art.uiFlip('rbhit_'+k,Math.round(e.x-w/2),Math.round(e.y-h/2));}
- else if(e.type==='flash'&&!reduceMotion){ctx.save();ctx.globalAlpha=e.life*2;ctx.fillStyle=e.color||'#fff';ctx.fillRect(0,0,640,480);ctx.restore();}
+ else if(e.type==='flash'&&!reduceMotion){ctx.save();ctx.globalAlpha=Math.min(1,e.life*2.4);ctx.fillStyle=e.color||'#fff';ctx.fillRect(0,0,640,480);ctx.restore();}
  else if(e.type==='vignette'){const g=ctx.createRadialGradient(320,240,170,320,240,420);g.addColorStop(0,`rgba(${e.color},0)`);g.addColorStop(1,`rgba(${e.color},${Math.min(.5,e.life*1.4)})`);ctx.fillStyle=g;ctx.fillRect(0,0,640,480);}
  else if(e.type==='damage')text(e.text,e.x,e.y-(1.1-e.life)*18,3,'#df6a9a',true);
- else if(e.type==='mercy'){const [x,y]=e.who==='knight'?[522,96]:[112,150];text(e.text,x,y-(1.2-e.life)*16,1.5,'#ffff00',true);}
- else if(['cheat','instruction'].includes(e.type))text(e.text,320,Math.min(206,game.arena.y-24),1.5,'#ffff00',true);
+ else if(e.type==='mercy'){const [x,y]=e.who==='knight'?[KNIGHT_X,62]:[SETH_X,SETH_Y-92];text(e.text,x,y-(1.2-e.life)*16,1.5,'#ffff00',true);}
+ else if(['cheat','instruction'].includes(e.type))text(e.text,320,Math.max(8,Math.min(206,game.arena.y-22)),1.5,'#ffff00',true);
 }}
 // The Knight's animation, from the designer's sprite sheets: its phase idle, the move it is making, hurt,
 // the roar that breaks the battle, its vanish at the end. Returns [family, frame].
 const LOOP=8;// idle loops play at 8 frames a second; moves at 12
 function knightAnim(){
  const b=game.boss,t=game.clock;
- if(game.state==='uibreak')return['roar_transition',Math.floor(game.breakTime*7)];
- if(game.state==='spared'||game.ending==='spared')return['teleport_vanish',Math.floor((game.timer||0)*6)];
+ if(game.state==='uibreak'&&game.breakTime<3.1)return['roar_transition',Math.floor(game.breakTime*7)];
+ if(game.vanishAt!==null)return['teleport_vanish',Math.floor((t-game.vanishAt)*7)];
  if(b.hurt>0)return['hurt_stagger_kneel',Math.floor((.55-b.hurt)*10)];
  if(['defend','warning'].includes(game.state)&&b.pose&&b.pose!=='idle'&&art.frames(b.pose))return[b.pose,Math.min(art.frames(b.pose)-1,Math.floor((t-(b.poseStart||0))*12))];
- const fam=!game.dr?'idle':game.unifiedCount>0||game.finaleDone||game.plan?.kind==='unified'||game.plan?.kind==='finale'?'phase3_guard':'phase2_idle';
+ const fam=!game.dr&&game.state!=='uibreak'?'idle':game.unifiedCount>0||game.finaleDone||game.plan?.kind==='unified'||game.plan?.kind==='finale'?'phase3_guard':'phase2_idle';
  return[fam,Math.floor(t*LOOP)%8];
 }
 // In the Deltarune half the Knight is the designer's side-on set (facing left, toward Seth) at 2x; moves the side set
 // doesn't have (the roar, the finale's ascent, its vanish) use the front sprites.
 const SIDE_OF={phase3_guard:'phase3_idle',spin_multislash:'slash_diagonal',hurt_stagger_kneel:'hurt_stagger'};
-function drawKnight(x,y,scale=1,alpha=1){
- const b=game.boss,[fam0,i]=knightAnim(),bob=reduceMotion?0:Math.round(Math.sin(game.clock*1.8)*2),fam=game.dr?(SIDE_OF[fam0]||fam0):fam0,side=game.dr&&art.hasSide(fam);
+// Where the two of them stand in the Deltarune half (the Roaring Knight's layout: party left, Knight right, both
+// about the middle of the field).
+const SETH_X=112,SETH_Y=214,KNIGHT_X=536,KNIGHT_Y=268;
+function drawKnight(x,y,scale=1,alpha=1,sideOn=game.dr){
+ const b=game.boss,[fam0,i]=knightAnim();if(fam0==='teleport_vanish'&&i>7)return;
+ const bob=reduceMotion?0:Math.round(Math.sin(game.clock*1.8)*2),fam=sideOn?(SIDE_OF[fam0]||fam0):fam0,side=sideOn&&art.hasSide(fam);
  const g=ctx.createRadialGradient(x,y-70,6,x,y-70,130);g.addColorStop(0,`rgba(160,200,255,${.16+(reduceMotion?0:Math.sin(game.clock*2)*.04)})`);g.addColorStop(1,'rgba(160,200,255,0)');ctx.fillStyle=g;ctx.fillRect(x-150,y-220,300,260);
  // Side frames are anchored at the pack's origin (58 px above the feet at 2x); front frames at their feet.
  const draw=(dx,o)=>side?art.side(fam,i,x+dx,y+bob-58,2,o):art.anim(fam,i,x+dx,y+bob,scale,o);
- // The Roaring Knight's chromatic fringe, in the Deltarune half.
- if(game.dr&&!reduceMotion){const j=Math.round(Math.sin(game.clock*7)*1.5);draw(-3-j,{alpha:alpha*.45,tint:'rgba(255,50,110,1)'});draw(3+j,{alpha:alpha*.45,tint:'rgba(60,220,255,1)'});if(Math.floor(game.clock*3.3)%7===0)draw(6,{alpha:alpha*.3,tint:'rgba(255,230,80,1)'});}
+ // The Roaring Knight's rainbow: coloured afterimages streaming off behind it (to the right), in the Deltarune half.
+ if(sideOn&&!reduceMotion){const RAIN=['rgba(255,60,90,1)','rgba(255,170,40,1)','rgba(250,240,70,1)','rgba(70,230,110,1)','rgba(60,200,255,1)','rgba(150,90,255,1)'];
+  const moving=['defend','warning'].includes(game.state)&&b.pose&&b.pose!=='idle'?clamp(1-(game.clock-(b.poseStart||0))/.35,0,1):0;
+  for(let k=RAIN.length-1;k>=0;k--){const off=(k+1)*(4+moving*9)+Math.round(Math.sin(game.clock*5+k)*1.5);draw(off,{alpha:alpha*(.34-k*.035),tint:RAIN[(k+Math.floor(game.clock*6))%RAIN.length]});}}
  draw(0,{alpha,tint:b.hurt>.35&&!reduceMotion?'rgba(255,255,255,.8)':null});
+ // Its slash, as it fires the beams (the designer's crescent).
+ for(const e of game.effects)if(e.type==='kslash'&&e.life<.5&&sideOn)art.anim('crescent_slash',Math.min(3,Math.floor((.5-e.life)*10)),x-70,y-80,2,{alpha:Math.min(1,e.life*4)});
 }
 // Seth on the Deltarune side: his own animations from the designer's pack, with his glasses and notebook effects.
 function drawSethDR(x,y,alpha=1){
- const sp=game.sethPose,t=game.clock,active=sp&&t<sp.until,fam=active?sp.name:game.state==='spared'?'offer_hand_hug':'idle';
- const i=active||game.state==='spared'?Math.min(7,Math.floor((t-(sp?.t||0))*8)):Math.floor(t*6);
+ const sp=game.sethPose,t=game.clock,active=sp&&t<sp.until,fam=active?sp.name:game.ending==='spared'?'offer_hand_hug':'idle';
+ const i=active||game.ending==='spared'?Math.min(7,Math.floor((t-(sp?.t||0))*8)):Math.floor(t*6);
  // Kneeling to DEFEND holds the low frames; the hug holds its last.
  const frame=fam==='kneel_stand'?Math.min(i,3):i;
- if(game.invulnerability>0&&['defend','warning'].includes(game.state)&&Math.floor(t*15)%2&&!reduceMotion)alpha*=.5;
+ if(game.invulnerability>0&&game.state==='defend'&&game.recenter<=0&&Math.floor(t*15)%2&&!reduceMotion)alpha*=.5;
  // 1x: his pack is drawn at Deltarune party size already (about 68 px tall).
  art.sethAnim(fam,frame,x,y,1,{alpha,flip:true});
  if(active&&fam==='cast_glasses')art.sethFx('magic_glasses_formation',Math.floor((t-sp.t)*7),x+2,y-58,1,{alpha});
@@ -221,7 +297,7 @@ function utHud({hide=false}={}){
 function renderUT({hideUI=false}={}){
  const defending=['defend','warning'].includes(game.state);
  art.backdrop(.9);
- drawKnight(320,226,1);speechUT();
+ drawKnight(320,226,1,1,false);speechUT();
  text('KNIGHT',24,26,1,game.ready?'#ffff00':'#9ac8ff');
  if(game.enemyHP<game.enemyMax||game.state==='target'){ctx.fillStyle='#222';ctx.fillRect(256,232,128,3);ctx.fillStyle='#9ac8ff';ctx.fillRect(256,232,128*game.enemyHP/game.enemyMax,3);}
  if(hideUI)return;
@@ -258,7 +334,7 @@ function renderBreak(){
   for(let k=0;k<3;k++){const u=((t+k*.25)%1.2)/1.2;ctx.save();ctx.globalAlpha=(1-u)*.7;ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(320,140,30+u*300,0,Math.PI*2);ctx.stroke();ctx.restore();}
   if(t>.6){const u=clamp((t-.6)/.9,0,1);ctx.save();ctx.strokeStyle='#fff';ctx.lineWidth=2;for(const pts of cracks){const n=Math.max(1,Math.floor(pts.length*u));ctx.beginPath();pts.slice(0,n).forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.stroke();}ctx.restore();}
  }else if(t<3.1){
-  art.backdrop(Math.max(0,1-(t-1.6)/1.2));drawKnight(320+(reduceMotion?0:Math.round(Math.sin(t*40)*2)),226,1);
+  art.backdrop(Math.max(0,1-(t-1.6)/1.2));drawKnight(320+(reduceMotion?0:Math.round(Math.sin(t*40)*2)),226,1,1,false);
   const tau=t-1.6;for(const s of shards){const x=s.x+s.vx*tau,y=s.y+s.vy*tau+260*tau*tau;if(y>520)continue;ctx.save();ctx.translate(x+s.w/2,y+s.h/2);ctx.rotate(s.vr*tau);ctx.fillStyle=s.col;ctx.fillRect(-s.w/2,-s.h/2,s.w,s.h);ctx.restore();}
  }else renderDR({assemble:clamp((t-3.1)/1.4,0,1)});
  if(t>2.5&&t<3.5){ctx.save();ctx.globalAlpha=(reduceMotion?.35:1)*Math.max(0,1-Math.abs(t-3)/.5);ctx.fillStyle='#fff';ctx.fillRect(0,0,640,480);ctx.restore();}
@@ -277,7 +353,7 @@ function drListRects(n){return Array.from({length:n},(_,i)=>({x:30+(i%2)*230,y:3
 function bar(x,y,w,h,frac,col,bg=DR_DARKRED){ctx.fillStyle=bg;ctx.fillRect(x,y,w,h);ctx.fillStyle=col;ctx.fillRect(x,y,Math.round(w*clamp(frac,0,1)),h);}
 function speechDR(){
  if(game.state!=='dialogue'||game.speaker!=='boss')return;
- const lines=wrap(game.text,20,190,1.5),h=Math.max(52,20+lines.length*18),x=262,y=40;
+ const lines=wrap(game.text,20,190,1.5),h=Math.max(52,20+lines.length*18),x=226,y=34;
  ctx.fillStyle='#fff';ctx.fillRect(x,y,220,h);ctx.beginPath();ctx.moveTo(x+220,y+20);ctx.lineTo(x+240,y+28);ctx.lineTo(x+220,y+36);ctx.fill();
  if(game.heart==='all')hearts3(x+12,y+12);else battleSoul(ctx,x+12,y+12,10,HEART[game.heart]);
  typedLines(lines,game.text,shown()).forEach((l,i)=>text(l,x+12,y+20+i*18,1.5,'#000'));
@@ -330,40 +406,60 @@ function drTextBox(){
  const str=st==='warning'?turnLine():game.text;prose(str,st==='dialogue'?shown():Infinity,26,374,600,40,3,34,game.speaker==='seth'?'#d9a6ff':'#fff',3);
  if(st==='dialogue'&&game.displayChars>=game.text.length)text('Z',604,456,1,'#777');
 }
-// The Deltarune half's backdrop, after the Roaring Knight's: black, an arch overhead that changes colour every
-// turn, and violet fog rolling on the floor under the Knight.
-const ARCH=['#c01818','#d86a10','#c8b010','#30b030','#10a8b8','#2848d8','#8a28d0','#d02890'];
+// The Deltarune half's backdrop, after the Roaring Knight's: black, a great dark mouth overhead whose rim changes
+// colour every turn (bright on Seth's turn, nearly gone while the Knight attacks), and violet haze low on the right.
+const ARCH=[[200,40,60],[150,60,210],[210,200,40],[40,190,70],[40,150,210],[210,40,160],[220,120,30],[60,70,220]];
+let archGlow=1;
 function drBackdrop(t,k){
- ctx.save();ctx.globalAlpha=k;ctx.fillStyle='#000';ctx.fillRect(0,0,640,332);
- const col=ARCH[(game.turn+ARCH.length)%ARCH.length];ctx.lineWidth=34;ctx.strokeStyle=col;ctx.globalAlpha=k*.75;ctx.beginPath();ctx.ellipse(320,-30,120,96,0,0,Math.PI);ctx.stroke();
- ctx.lineWidth=10;ctx.globalAlpha=k*.35;ctx.beginPath();ctx.ellipse(320,-30,150,118,0,0,Math.PI);ctx.stroke();
- ctx.globalAlpha=k;ctx.fillStyle='#000';for(let i=0;i<9;i++){const x=226+i*24,hh=12+((i*7)%5)*5;ctx.fillRect(x,60,8,hh);}
- const f=ctx.createRadialGradient(520,320,10,520,320,260);f.addColorStop(0,'rgba(120,40,160,.55)');f.addColorStop(1,'rgba(40,0,60,0)');ctx.fillStyle=f;ctx.fillRect(220,160,420,172);
- if(!reduceMotion){ctx.globalAlpha=k*.18;ctx.fillStyle='#b070e0';for(let i=0;i<12;i++){const x=((i*83+t*12)%460)+200,y=250+((i*29)%70);ctx.fillRect(Math.round(x),Math.round(y),22,3);}}
+ ctx.save();ctx.globalAlpha=k;ctx.fillStyle='#000';ctx.fillRect(0,0,640,326);
+ const busy=['defend','warning'].includes(game.state);archGlow+=((busy?.16:1)-archGlow)*.06;
+ const [r,g,b]=ARCH[(game.turn+ARCH.length)%ARCH.length],col=(m)=>`rgb(${Math.round(r*m)},${Math.round(g*m)},${Math.round(b*m)})`;
+ ctx.save();ctx.globalAlpha=k*archGlow;ctx.beginPath();ctx.rect(166,0,290,90);ctx.clip();
+ // The rim, then the dark of the throat, then the teeth along its upper lip.
+ ctx.fillStyle=col(.9);ctx.beginPath();ctx.ellipse(311,34,150,120,0,0,6.283);ctx.fill();
+ ctx.fillStyle=col(.62);ctx.beginPath();ctx.ellipse(311,34,132,108,0,0,6.283);ctx.fill();
+ ctx.fillStyle=col(.2);ctx.beginPath();ctx.ellipse(311,36,112,96,0,0,6.283);ctx.fill();
+ ctx.fillStyle=col(.34);for(let i=0;i<13;i++){const x=214+i*15,w=9+((i*5)%4)*2,h=10+((i*7)%5)*5+(i%3===0?8:0);ctx.fillRect(x,6,w,h);ctx.fillRect(x+2,6+h,w-5,4);}
+ ctx.restore();
+ const f=ctx.createRadialGradient(540,300,10,540,300,250);f.addColorStop(0,'rgba(110,30,150,.42)');f.addColorStop(1,'rgba(40,0,60,0)');ctx.fillStyle=f;ctx.fillRect(250,150,390,176);
+ if(!reduceMotion){ctx.globalAlpha=k*.14;ctx.fillStyle='#b070e0';for(let i=0;i<12;i++){const x=((i*83+t*12)%440)+220,y=262+((i*29)%58);ctx.fillRect(Math.round(x),Math.round(y),22,3);}}
  ctx.restore();
 }
 function renderDR({assemble=1}={}){
  const k=ease(assemble),defending=['defend','warning'].includes(game.state),t=game.clock;
  drBackdrop(t,k);
- // Seth stands on the left like a party member; he steps in when he attacks.
- drawSethDR(Math.round(130-(1-k)*160),296,k);
- if(game.defending){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle=SETHC;ctx.lineWidth=3;ctx.beginPath();ctx.arc(150,240,40,-1,1);ctx.stroke();ctx.restore();}
- drawKnight(Math.round(320+(522-320)*k),300,1);
- text('WHITE ROARING KNIGHT',522,24,1,game.ready?'#ffff00':'#9ac8ff',true);
+ // Seth stands on the left like a party member; the Knight faces him from the right. In the finale the Knight rises
+ // to the middle of the void and the stars pour out of it.
+ const fin=game.plan?.kind==='finale'&&defending,v=fin?ease(Math.min(game.attackTime/1.1,(game.duration-game.attackTime)/1.1)):0;
+ const kx=Math.round(320+(KNIGHT_X-320)*k*(1-v)),ky=Math.round(226+(KNIGHT_Y-226)*k+(236-KNIGHT_Y)*v);
+ const knight=()=>{if(game.vanishAt===null||t-game.vanishAt<1.2)drawKnight(kx,ky,1,1,!(fin&&v>.5));};
+ if(!fin){drawSethDR(Math.round(SETH_X-(1-k)*190),SETH_Y,k);knight();}
  tpBar(-(1-k)*80);
- if(defending)field(DR_GREEN);
+ if(defending)field(DR_BORDER);
+ if(fin){drawSethDR(SETH_X,SETH_Y,1);knight();ctx.save();ctx.beginPath();ctx.rect(0,0,640,326);ctx.clip();for(const b of game.bullets)hazard(b);drawSoul();ctx.restore();}
  partyPanel(Math.round((1-k)*170));
  if(k>=1){drTextBox();speechDR();}
  effectsFX();
- if(game.state==='defend'){const a=game.arena;ctx.fillStyle='#1a2440';ctx.fillRect(a.x,a.y+a.h+8,a.w,2);ctx.fillStyle=DR_GREEN;ctx.fillRect(a.x,a.y+a.h+8,a.w*Math.max(0,1-game.attackTime/game.duration),2);}
+ if(game.state==='defend'){ctx.fillStyle='#1a2440';ctx.fillRect(0,323,640,2);ctx.fillStyle=DR_BORDER;ctx.fillRect(0,323,Math.round(640*Math.max(0,1-game.attackTime/game.duration)),2);}
 }
 
 // ======================================================================= frame
+// The end: the crystal room again, quiet, the crystal holding three small lights; then the card.
+function renderEnding(){
+ const w=game.world,t=game.clock,u=clamp(game.timer/1.4,0,1);
+ art.room('cavern',0);art.gems(t,0,640,5);for(const o of w.data.objects)if(o.id.startsWith('echo'))art.echoFlower(o.x,o.y,t,.5+.3*Math.sin(t*1.3+o.x));
+ art.crystal(320,346,t,.35);['blade','wild','hope'].forEach((h,k)=>{const an=k*Math.PI*2/3+t*(reduceMotion?0:.7);battleSoul(ctx,320+Math.cos(an)*12,250+Math.sin(an)*18,10,HEART[h]);});
+ art.sethFrame('up',false,0,320,384);
+ ctx.fillStyle=`rgba(0,0,0,${.45*u})`;ctx.fillRect(0,0,640,480);
+ if(u<1){ctx.fillStyle=`rgba(255,255,255,${1-u})`;ctx.fillRect(0,0,640,480);}
+ ctx.save();ctx.globalAlpha=u;text('A NEW WORLD',320,70,3,'#ffff00',true);text('TOGETHER.',320,112,2,'#fff',true);hearts3(299,146);ctx.restore();
+ if(game.timer>1.6)text('Z · PLAY AGAIN',320,446,1.5,'#aaa',true);
+}
 function renderBattle(){
  game.locationFX?.draw();
  if(game.state==='encounter'){const t=game.encounter,f=game.encFrom||{x:320,y:300};if(t<.45){game.scene='world';const st=game.state;game.state='frozen';renderWorld();game.state=st;game.scene='battle';const bob=reduceMotion?0:Math.round(Math.sin(t*30)*2);box(f.x-12,f.y-70+bob,24,28,'#fff',2);text('!',f.x,f.y-68+bob,2,'#fff',true);return;}ctx.fillStyle='#000';ctx.fillRect(0,0,640,480);if(t<.9){if(Math.floor((t-.45)*13)%2===0||reduceMotion)heart(f.x,f.y,16,'purple');}else{const kk=Math.min(1,(t-.9)/.55),e=kk*kk*(3-2*kk);heart(f.x+(320-f.x)*e,f.y+(300-f.y)*e,16,'purple');}return;}
  if(game.state==='uibreak'){renderBreak();return;}shards=null;
- if(game.state==='spared'){if(game.dr)renderDR();else renderUT();ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(0,0,640,480);text('A NEW WORLD',320,190,3,'#ffff00',true);text('TOGETHER.',320,236,2,'#fff',true);hearts3(299,280);if(game.timer>1.2)text('Z · PLAY AGAIN',320,330,1.5,'#777',true);return;}
+ if(game.state==='spared'){renderEnding();return;}
  if(game.dr)renderDR();else renderUT();
  if(game.settings.invincible)text('INVINCIBLE',24,46,1,'#ffff00');
 }
@@ -381,7 +477,7 @@ function syncUI(){
  audio.status(musicMode(),game.paused,game.state==='dead');
  $('phase').textContent=game.paused?'PAUSED':game.state==='dead'?'THE DREAM ISN\'T OVER':game.state==='spared'?'A NEW WORLD':game.scene==='world'?require("story.js").ROOMS[game.world.room]:(game.dr?'A NEW WORLD':'THE CRYSTAL')+' / TURN '+Math.max(1,game.turn)+(game.settings.invincible?' / INVINCIBLE':'');
  $('pause').textContent=game.paused?'▶':'Ⅱ';$('pause').setAttribute('aria-pressed',String(game.paused));
- const next=[game.scene,game.state,game.ui,game.paused,game.items.map(i=>i.count).join(','),game.ready,game.state==='dead'&&game.deathAge>=1.8,game.timer>1.2].join('/');if(signature===next)return;signature=next;const overlay=$('targets');overlay.replaceChildren();
+ const next=[game.scene,game.state,game.ui,game.paused,game.items.map(i=>i.count).join(','),game.ready,game.state==='dead'&&game.deathAge>=1.8,game.timer>1.6].join('/');if(signature===next)return;signature=next;const overlay=$('targets');overlay.replaceChildren();
  const target=(label,x,y,w,h,fn)=>{const b=document.createElement('button');b.setAttribute('aria-label',label);b.style.cssText=`left:${x/640*100}%;top:${y/480*100}%;width:${w/640*100}%;height:${h/480*100}%`;b.onclick=()=>{fn();syncUI();};overlay.append(b);};
  if(game.paused){target('Resume',0,0,640,480,()=>game.togglePause());return;}
  if(game.scene==='world'){if(game.state==='dialogue')target('Continue',0,0,640,480,()=>game.confirm());return;}

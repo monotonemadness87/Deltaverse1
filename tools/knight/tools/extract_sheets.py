@@ -48,6 +48,34 @@ def clean(im):
     return Image.fromarray(a, 'RGBA')
 
 
+def drop_bleed(im, edge=3, limit=600):
+    """Remove bits of a neighbouring cell that cross into this one: small parts that touch the cell's side edges and
+    are not joined to the figure."""
+    a = np.array(im)
+    mask = a[..., 3] > 0
+    h, w = mask.shape
+    seen = np.zeros_like(mask)
+    for y0 in range(h):
+        for x0 in list(range(0, edge)) + list(range(w - edge, w)):
+            if not mask[y0, x0] or seen[y0, x0]:
+                continue
+            stack, pix = [(y0, x0)], []
+            seen[y0, x0] = True
+            while stack:
+                y, x = stack.pop()
+                pix.append((y, x))
+                for dy in (-1, 0, 1):
+                    for dx in (-1, 0, 1):
+                        yy, xx = y + dy, x + dx
+                        if 0 <= yy < h and 0 <= xx < w and mask[yy, xx] and not seen[yy, xx]:
+                            seen[yy, xx] = True
+                            stack.append((yy, xx))
+            if len(pix) < limit:
+                for y, x in pix:
+                    a[y, x] = 0
+    return Image.fromarray(a, 'RGBA')
+
+
 def despeckle(a):
     """Replace an opaque pixel unlike all four neighbours with the colour most of them share (3 or 4 of them)."""
     out = a.copy()
@@ -102,6 +130,7 @@ def shrink(im, factor):
 # The size each effect is drawn at (the page draws these at scale 1 after the shrink).
 FX_SCALE = {'sword_projectile': .3, 'star_projectile': .2, 'diamond_shard': .16, 'heal_heart': .17, 'twinkle': .3, 'warning_reticle': .32,
             'ring_pulse': .35, 'hammer': .5, 'impact_star': .35}
+FX_LARGE = {'sword_projectile': .46, 'star_projectile': .34, 'diamond_shard': .24, 'impact_star': .6}
 
 
 def cells(sheet, n=8):
@@ -119,7 +148,9 @@ def union_crop(frames, anchor):
     x1, y1 = max(b[2] for b in boxes), max(b[3] for b in boxes)
     out = [f.crop((x0, y0, x1, y1)) for f in frames]
     w, h = x1 - x0, y1 - y0
-    return out, ((w // 2, h) if anchor == 'bottom' else (w // 2, h // 2))
+    # A body is anchored under the middle of its sheet cell (not of its crop), so every animation stands on the same
+    # spot whatever its silhouette.
+    return out, ((frames[0].width // 2 - x0, h) if anchor == 'bottom' else (w // 2, h // 2))
 
 
 def save_indexed(im, path):
@@ -162,7 +193,7 @@ def main():
     for fname, names in BODY.items():
         grid = cells(clean(Image.open(os.path.join(sheets, fname))))
         for r, name in enumerate(names):
-            frames, anc = union_crop(grid[r], 'bottom')
+            frames, anc = union_crop([drop_bleed(f) for f in grid[r]], 'bottom')
             for i, f in enumerate(frames):
                 named[f'{name}_{i}'] = (snap(f, kpal), anc)
     grid = cells(clean(Image.open(os.path.join(sheets, 'fx.png'))))
@@ -177,6 +208,12 @@ def main():
                     named[f'{name}_{i}'] = (f, (f.width // 2, f.height // 2, k))
                 else:
                     named[f'{name}_{i}'] = (f, anc)
+            # A second, larger cut of a few projectiles (the Deltarune half draws them at the Roaring Knight's scale).
+            if name in FX_LARGE:
+                kk = FX_LARGE[name]
+                for i, f in enumerate(frames):
+                    g = shrink(snap(f, kpal), kk)
+                    named[f'{name}_large_{i}'] = (g, (g.width // 2, g.height // 2, kk))
     atlas, place = pack(named, 2000)
     save_indexed(atlas, os.path.join(out, 'knight-anim.png'))
     json.dump(place, open(os.path.join(out, 'knight-anim.json'), 'w'), separators=(',', ':'))

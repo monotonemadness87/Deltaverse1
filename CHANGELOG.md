@@ -1,5 +1,22 @@
 # Changelog
 
+## Knight: full audit against the reference (in progress)
+
+- Found the earlier reference frames of the Kaizo Roaring Knight video were cropped 107 px too far left (the game sits
+  at x 320-1280 of the video), which hid the Knight's side of the screen. Re-studied all 22 enemy turns.
+- Deltarune half laid out as the reference: Seth mid-left, the Knight mid-right, 150 px box at (246, 96), a box
+  shape per move (tall by Seth for crescents, wide for bars, small for thrown swords), the coloured mouth overhead.
+- Attacks rewritten: screen-wide crescents with afterimages, floor-to-ceiling bar curtain, crystal spires from floor
+  shadows with shards through the room, beams through one point, tracking swords that lock and stab, standing blade
+  rows, thrown swords from every side, dash lines ending in a web, the cone shining through the box with hollow
+  stars, split box whose halves slide apart. Undertale wave 2 now raises its crystals inside the box.
+- Fixed: the Knight's vanish replaying on every ending line, PERSEVERE counting without TP, the Knight popping from
+  front to side sprite after the break, the Knight hidden under the finale's void, neighbouring-frame scarf bits
+  bleeding into Knight frames, poses standing on different spots (anchors now at the sheet cell centre).
+- The ending returns to the crystal room.
+- Not finished: unified waves and the walk were not re-screenshotted after the rewrite; HANDOFF/README still describe
+  the older attacks; Hard got harder (bot deaths 0-2, hits ~50-70 vs ~35 on Normal) and needs tuning.
+
 ## 2026-11-07 — The White Roaring Knight: attacks re-studied frame by frame, the real RUDE BUSTER
 
 Every enemy turn of the Kaizo Roaring Knight video was re-watched as 4 fps filmstrips, and the attacks that had been misread were rebuilt:

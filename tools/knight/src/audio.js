@@ -54,7 +54,7 @@ class StageAudio{
   const map={
    select:()=>S('select',{gain:.5,offset:.07,duration:.4}),
    hurt:()=>S('damage',{gain:.9}),heal:()=>S('ding',{gain:.7,rate:1.2}),dead:()=>S('heavy',{gain:.8,rate:.8}),
-   spare:()=>{S('ding',{gain:.8,rate:.9});S('teleport',{gain:.6,delay:.4});},
+   spare:()=>S('ding',{gain:.8,rate:.9}),vanish:()=>{S('teleport',{gain:.7});S('ding',{gain:.5,rate:.6,delay:.3});},
    // Seth's own slash for his FIGHT; the Knight's swords use UNDERTALE's.
    attack:()=>S('sethslash',{gain:.75}),
    slash:()=>S('slash',{gain:.45,rate:1.2,every:.05}),lunge:()=>S('slash',{gain:.4,rate:1.45,every:.05}),swing:()=>S('slash',{gain:.3,rate:.8,every:.08}),
