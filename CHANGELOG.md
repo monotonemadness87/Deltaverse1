@@ -1,5 +1,23 @@
 # Changelog
 
+## Muffet: pixel-exact text
+
+- **Why it looked blurry:** this fight drew its text with the canvas at in-between sizes (21 px, 17 px, 15 px...).
+  Determination is a pixel font on a 12 px grid, and its letter spacing is fractional, so every edge was smeared to
+  grey (about 45% of the text's pixels were grey, even before the last update).
+- **Fix:** all of this fight's canvas text now goes through a pixel-exact renderer. Each string is set once at
+  12 px, one glyph at a time on whole pixels, hardened to on/off, tinted and cached, then drawn at a whole-number
+  scale (12, 24, 36, 48 or 60 px). No grey pixels are left in the dialogue box.
+- **Sizes moved onto that grid:** dialogue, the status row (SETH / LV / HP, Aqua), menu choices, instructions under
+  the box, titles and the game-over and ending screens are 24 px or larger; small labels are 12 px.
+- **The menu box is Undertale's wide box** (the same width as the dialogue box), so the choices fit at full size in
+  two columns. The battle box now shrinks into place from that wide box at the start of each attack.
+- The four buttons are drawn on whole pixels (icons at 2x, labels at 24 px). The dialogue box has the same 5 px
+  white frame as the battle box.
+- During an attack its name is a small label at the top left; the instruction under the box is full size.
+- Not changed: the Notebook's own strike panel ("TORN NOTEBOOK") still uses the shared module's text.
+- Verified: captures of every state at 1x and on a phone-sized 3x screen; god-mode bot reaches turn 60 with no errors.
+
 ## Muffet: the pet's turn rebuilt on the references; Undertale-weight box and buttons
 
 Compared the fight again with the two reference videos (Undertale's Muffet and TS!Underswap's). The biggest gap was
