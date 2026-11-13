@@ -1,5 +1,32 @@
 # Changelog
 
+## Muffet: the pet's turn rebuilt on the references; Undertale-weight box and buttons
+
+Compared the fight again with the two reference videos (Undertale's Muffet and TS!Underswap's). The biggest gap was
+the pet: in both references it is the set piece (a rocking box with the pet's mouth at one end and the silk running
+into it), and ours was a spider stomping on circles.
+
+- **The pet's turn is now the climb.** The box turns into a tall strip (200 x 348) that rocks a few degrees. The pet
+  rises into the bottom of it, and the six strings run steadily down into its mouth, faster as the turn goes on, then
+  slow and stop before the tail. Spiders cross the strings above the SOUL, quickening, and line up three-and-three
+  for a finisher. A SOUL carried into the mouth is bitten (8) and tossed two strings up. The layout the turn started
+  on comes back afterwards. Turn length is unchanged. Aqua steers clear of the mouth on her own.
+- The old stomp, its donuts and its target circles are gone. Anti-camp responses are off for this turn (the silk
+  moves campers by itself), as they already are for SIT TIGHT.
+- **The box is Undertale's:** a 5 px white frame that the nest's darkness no longer dims (the dark still takes the
+  silk and what walks on it).
+- **FIGHT / ACT / ITEM / MERCY stay on screen** through dialogue and attacks, as in the game, instead of vanishing
+  when the menu closes. The status row and attack captions moved up to make room.
+- The SOUL is drawn at its native 16 px (it was squeezed to 13 px, which made its pixels uneven).
+- Reduced motion: the box does not rock and the pet does not chew.
+- **Balance (pet turn only, bot play, old -> new damage a turn):** a wandering player 14 -> 16 on turn 3, 17 -> 16 on
+  turn 27, 21 -> 25 on turn 47; a player who climbs well 17 -> 8, 19 -> 12, 21 -> 17. Beyond +/-50%: on the full web
+  (turn 13) the old stomp was nearly harmless and the wandering player goes 7 -> 14; a player who stands still takes
+  less than before on turns 13 and 27 (29 -> 11, 34 -> 14) because the 28-damage anti-camp bite no longer fires here.
+  Aqua takes about the same and was never lost. Every other turn is untouched.
+- **Verified:** god-mode bot reaches turn 60 on both seeds with no errors; normal-play deaths match the previous
+  build; captures of every state (title, dialogue, menu, aim, each layout, Aqua active).
+
 ## Knight: full audit against the reference (in progress)
 
 - Found the earlier reference frames of the Kaizo Roaring Knight video were cropped 107 px too far left (the game sits

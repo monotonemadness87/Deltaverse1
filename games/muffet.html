@@ -200,7 +200,7 @@ class NestArt{
  }
  soul(x,y,size=13,alpha=1,aqua=false,angle=0){
   const c=this.ctx,im=this.raster('soul.png');if(!im)return;c.save();c.translate(x,y);c.rotate(angle);c.globalAlpha*=alpha;
-  if(aqua){c.filter='brightness(0) saturate(100%) invert(92%) sepia(98%) saturate(1000%) hue-rotate(116deg)';c.drawImage(im,-(size+5)/2,-(size+5)/2,size+5,size+5);}
+  if(aqua){c.filter='brightness(0) saturate(100%) invert(92%) sepia(98%) saturate(1000%) hue-rotate(116deg)';c.drawImage(im,-(size+4)/2,-(size+4)/2,size+4,size+4);}
   c.filter='brightness(0) saturate(100%) invert(36%) sepia(99%) saturate(1950%) hue-rotate(247deg) brightness(105%)';c.drawImage(im,-size/2,-size/2,size,size);c.restore();
  }
  character(id,x,bottom,{face='grin',cannon=false,scale=.67,alpha=1}={}){
@@ -905,11 +905,14 @@ const INVENTORY=[{name:'Snowdin roll',heal:28,count:1},{name:'Crab apple',heal:2
 const NORMAL={x:144,y:263,w:480,h:154},FULL={x:30,y:44,w:708,h:426};
 const BOSS={maxHP:1420,withdrawalHP:180};
 const FIGHT_TARGETS=[['muffet','Muffet'],['light','Covered lava lamp'],['aqua','Aqua’s restraints'],['arm','NEO arm silk'],['tenna','Tenna’s wrapping'],['exit','Exit anchor']];
-const TITLES={spiders:['Silk commuters','Crossed invitations','The little procession'],pet:['Second helping','Pet landing','Dinner bell'],whiteTea:['White-tea curtain','The tipping pot','Three sharp pours'],grab:['Hand to mouth','Cupped trap','The serving hand'],denyRescue:['Hands off the wrapping','Silk sentries','Guarding the meal'],greenTea:['A little pity','Something to drink','Not finished yet'],rethread:['Fresh strings','A changed table','Tightened knots'],chase:['The girls’ circle','Lost in the silk','The last dance'],sitTight:['SIT TIGHT','SIT TIGHT — smaller still'],fatalSitTight:['SIT TIGHT — the final press']};
+const TITLES={spiders:['Silk commuters','Crossed invitations','The little procession'],pet:['Second helping','Feeding time','Dinner bell'],whiteTea:['White-tea curtain','The tipping pot','Three sharp pours'],grab:['Hand to mouth','Cupped trap','The serving hand'],denyRescue:['Hands off the wrapping','Silk sentries','Guarding the meal'],greenTea:['A little pity','Something to drink','Not finished yet'],rethread:['Fresh strings','A changed table','Tightened knots'],chase:['The girls’ circle','Lost in the silk','The last dance'],sitTight:['SIT TIGHT','SIT TIGHT — smaller still'],fatalSitTight:['SIT TIGHT — the final press']};
 TITLES.hipBump=['HIP CHECK','Across the table','A little nudge'];
 TITLES.boxSpin=['Turn the table','A twist of silk','Round and round'];TITLES.handSmash=['Bug on a thread','A palm for a heart','The closing fist'];
 // Every turn ends on a clean, empty box: the last hazard finishes this long before the box regrows.
 const TAIL=.6;
+// The pet's turn (after the pet set piece in Undertale's and TS!Underswap's Muffet fights): a tall box whose strings
+// run steadily down into the pet's mouth at the bottom. Six strings, one gap apart; the lowest is recycled to the top.
+const PET_BOX={x:284,y:70,w:200,h:348},PET_LANES=6,PET_GAP=.115,PET_TOP=.03,PET_BITE=.7,PET_DAMAGE=8;
 // SIT TIGHT landings, phrased: three steady, a held hover, a quick run, a hover, a quick finish.
 // The fatal press holds its last hover while every knot closes.
 const SIT_GAPS=[.92,.92,1.4,.7,.7,.92,.92,1.4,.7,.7],FATAL_GAPS=[.92,.92,.92,.92,.92,1.6],SIT_ACCENTS=[4,8,11];
@@ -939,7 +942,7 @@ class MuffetGame{
   this.teaBreak=false;this.deathCause='';this.capture=null;this.checkpoint=null;this.totalBossDamage=0;this.peakTargetThreat=0;this.safeCue=0;
   this.junctions=clone(this.memory.muffet?.junctions||{});this.lastJunction={};this.nextRetarget=3;
   this.arenaAngle=0;this.sitBodyLift=0;this.lastSlam=-1;this.shake=0;this.shakeAmp=4;
-  this.phrase=[];this.rests=[];this.flashes=[];this.pet=null;this.petNudge=null;this.silkBow=null;this.twang=null;this.ringShow=null;this.spinTurns=null;this.potTarget=null;
+  this.phrase=[];this.rests=[];this.flashes=[];this.pet=null;this.silkBow=null;this.twang=null;this.ringShow=null;this.spinTurns=null;this.potTarget=null;
   this.campPressure={};this.pressureCursor={};this.antiCheeseSpawning=false;this.hipCast=null;this.hipSerial=0;
   this.allyAI=new AquaNestAlly({rivalry:this.memory.aqua?.rivalry,learning:this.memory.aqua?.learning,random:this.rand});
   this.muffetAI=new MuffetNestAI({learning:this.memory.muffet?.learning,random:this.rand});
@@ -1206,7 +1209,7 @@ class MuffetGame{
   const previousBox={...this.arena},family=this.intent.family;this.boxMorph=null;this.hipCast=null;for(const actor of [this.seth,this.aqua]){delete actor.hipImpulse;actor.forcedHop=false;actor.grabbedThisTurn=false;}this.state='attack';this.waveAge=0;this.liveAge=0;this.warmup=family==='fatalSitTight'||family==='rethread'||this.turn%10===0?1.8:1.15;
   this.waveDuration=family==='chase'?16:family==='hipBump'?11.8:family==='sitTight'?15:family==='fatalSitTight'?9:10+Math.min(2,Math.floor(this.turn/20));
   this.spawnCount=0;this.nextSpawn=0;this.nextHip=.25;this.nextGrab=.7;this.nextClose=2.4;this.nextRetarget=3.5;this.bullets=[];this.casts=[];this.closures=[];this.hands=this.intent.hands;this.circleRadius=0;this.chaseStarted=false;this.aquaReplan=0;this.aquaSitControl=null;
-  this.phrase=[];this.rests=[];this.pet=null;this.petNudge=null;this.silkBow=null;this.twang=null;this.ringShow=null;this.spinTurns=null;this.potTarget=null;
+  this.phrase=[];this.rests=[];this.pet=null;this.silkBow=null;this.twang=null;this.ringShow=null;this.spinTurns=null;this.potTarget=null;
   if(this.intent.state)this.setupLayout(this.intent.state);else {this.arena={...this.baseArena};W.place(this.seth,this.graph,{x:this.seth.x,y:this.seth.y});if(['active','fleeing'].includes(this.aqua.status))W.place(this.aqua,this.graph,{x:this.aqua.x,y:this.aqua.y});}
   if(family==='chase'&&this.mode!=='web')this.setupLayout('web');
   if(this.mode==='web'){this.baseArena={...FULL};this.arena={...FULL};this.measureEdges();}
@@ -1214,12 +1217,17 @@ class MuffetGame{
   if(family==='boxSpin'&&this.mode==='web')this.setupLayout('grid');
   if(family==='sitTight'||family==='fatalSitTight'){this.preSitMode=this.mode;this.sitInitialLanes=this.graph.lanes?.length||6;this.graph=W.makeWeb('horizontal',this.turn,this.sitInitialLanes);if(family==='sitTight')this.mode='horizontal';this.lastSlam=-1;this.sitBodyLift=0;W.place(this.seth,this.graph,this.seth);W.place(this.aqua,this.graph,this.aqua);this.preSitArena={...this.baseArena};const width=Math.min(400,this.baseArena.w);this.baseArena={x:(768-width)/2,y:263,w:width,h:NORMAL.h};this.arena={...this.baseArena};}
   if(family==='boxSpin'){this.preSpinArena={...this.baseArena};this.arena=this.baseArena={x:272,y:249,w:224,h:112};}this.arenaAngle=0;
+  if(family==='pet'){
+   this.prePetMode=this.mode;this.prePetArena={...this.baseArena};this.mode='horizontal';this.graph=W.makeWeb('horizontal',this.turn,PET_LANES);
+   this.pet={age:0,offset:0,rise:0,speed:0,biteAge:9};this.setPetLanes();this.baseArena={...PET_BOX};this.arena={...PET_BOX};
+   W.place(this.seth,this.graph,{x:.5,y:PET_TOP+2*PET_GAP});W.place(this.aqua,this.graph,{x:.72,y:PET_TOP+PET_GAP});this.aquaPath=null;this.measureEdges();
+  }
   if(this.progress.exit>=90&&!this.exitSealed){const joint=W.exitNode(this.graph);this.graph.nodes.push({id:'exit',x:1.055,y:joint.y});this.graph.edges.push({from:joint.id,to:'exit',oneWay:true,only:'aqua',blocked:false});this.exitJoint=joint.id;}
   this.variantIndex=(this.turn+this.familyHistory.filter(f=>f===family).length)%3;const titles=TITLES[family]||['The nest'];this.attackName=titles[this.variantIndex%titles.length];
   if(family==='chase')this.attackName=TITLES.chase[this.turn===10?0:this.turn===30?1:2];
   if(family==='greenTea')this.lastGreen=this.turn;
   this.lastFamily=family;this.face=family==='grab'?'HUNGRY':family==='chase'?'FERAL':family==='fatalSitTight'?'SAVORING':'TEASING';
-  const focus=this.screen(this.actor(this.intent.target));this.presence.moveTo(family==='chase'?{x:this.arena.x+this.arena.w/2,y:this.arena.y+this.arena.h/2}:{x:clamp(focus.x+this.faceSide*85,120,648),y:Math.min(174,this.arena.y-58)});
+  const focus=this.screen(this.actor(this.intent.target));this.presence.moveTo(family==='pet'?{x:384+this.faceSide*212,y:150}:family==='chase'?{x:this.arena.x+this.arena.w/2,y:this.arena.y+this.arena.h/2}:{x:clamp(focus.x+this.faceSide*85,120,648),y:Math.min(174,this.arena.y-58)});
   if(!['sitTight','fatalSitTight'].includes(family)){this.boxMorph={from:previousBox,to:{...this.arena}};this.arena={...previousBox};}
   this.buildPhrase();
   this.attackStartHP={seth:this.seth.hp,aqua:this.aqua.hp,aquaStatus:this.aqua.status};this.message=this.attackInstruction();this.emit('attack',{family,name:this.attackName});
@@ -1227,6 +1235,7 @@ class MuffetGame{
  attackInstruction(){
   const family=this.intent?.family;
   if(family==='fatalSitTight')return 'The web is finished. Every crossing knots shut.';
+  if(family==='pet')return 'Climb! The silk runs down into her pet’s mouth.';
   if(family==='chase')return 'The ring closes. Follow the silk. Turn at junctions.';
   if(family==='sitTight')return 'Landings kick you up strings. Keep moving; avoid the crushing top.';
   if(family==='hipBump')return 'Watch the marked patch. Bumps throw the box and both souls along silk.';
@@ -1260,7 +1269,7 @@ class MuffetGame{
  projectileFired(){
   // SIT already dislodges campers physically. Extra spiders can seal its last
   // string at the same time as a landing, so it has no projectile response.
-  if(this.state!=='attack'||['fatalSitTight','sitTight'].includes(this.intent?.family))return;
+  if(this.state!=='attack'||['fatalSitTight','sitTight','pet'].includes(this.intent?.family))return;
   for(const actor of [this.seth,this.aqua]){
    if(actor.id!=='seth'&&!['active','fleeing'].includes(actor.status))continue;
    const row=this.campPressure[actor.id]??={shots:0,dx:0,dy:0};row.shots++;
@@ -1326,35 +1335,37 @@ class MuffetGame{
  }
  spawnDonut(index,speed=205){const a=this.arena,vertical=this.mode==='vertical',reverse=index%2,r=11,q=vertical?{x:.35,y:reverse?1-r/a.h:r/a.h}:{x:reverse?1-r/a.w:r/a.w,y:.35},p=this.screen(q),angle=this.arenaAngle||0,lx=vertical?(index%3?145:-145):(reverse?-speed:speed),ly=vertical?(reverse?-speed:speed):(index%3?145:-145);return this.spawn('donut',p.x,p.y,lx*Math.cos(angle)-ly*Math.sin(angle),lx*Math.sin(angle)+ly*Math.cos(angle),r,{warning:.4,spin:2,damage:4,exitAxis:vertical?'y':'x',exitSign:reverse?-1:1});}
 
- // The pet's perch: on the box's top edge near one end (side 1 = right, -1 = left).
- petPerch(){const side=this.pet?.side||1,p=this.screen({x:side>0?.86:.14,y:0});return {x:p.x,y:Math.max(34,p.y-16)};}
- castPet({donuts=0,prev=null,finisher=false}={}){
-  const a=this.arena,target=this.actor(this.intent.target),p=this.screen(target),stage=Math.floor((this.turn-1)/10);
-  let aim=this.predicted(target,{x:p.x,y:a.y-70},160,1);
-  if(prev){
-   // The double stomp's second landing: the next string over, toward the soul or the box's middle.
-   const g=this.graph,lanes=g.lanes,stepX=g.mode==='vertical'&&lanes?(lanes[1]-lanes[0])*a.w:g.mode==='horizontal'?0:62,stepY=g.mode==='horizontal'&&lanes?(lanes[1]-lanes[0])*a.h:0;
-   const toward=(d,q,c)=>Math.sign(Math.abs(q-d)>4?q-d:c-d)||1;
-   aim={x:clamp(prev.x+stepX*toward(prev.x,aim.x,a.x+a.w/2),a.x+12,a.x+a.w-12),y:clamp(prev.y+stepY*toward(prev.y,aim.y,a.y+a.h/2),a.y+8,a.y+a.h-8)};
-  }
-  const cast={kind:'pet',x:aim.x,y:aim.y,r:32+stage*1.2,age:0,warning:1.05,live:.3,done:false,donuts,prev,finisher};this.casts.push(cast);return cast;
+ // The pet's strings: lane 0 is always the top one. Node rows follow their lane; the exit knot follows its joint.
+ setPetLanes(){
+  const g=this.graph,P=this.pet;g.lanes=Array.from({length:PET_LANES},(_,i)=>PET_TOP+P.offset+i*PET_GAP);
+  for(const n of g.nodes)if(n.id!=='exit')n.y=g.lanes[Number(n.id.split('_')[0])];
+  const exit=g.nodes.find(n=>n.id==='exit'),joint=exit&&g.nodes.find(n=>n.id===this.exitJoint);if(joint)exit.y=joint.y;
  }
- petLanded(cast){
-  const a=this.arena,side=this.pet?.side||1,stage=Math.floor((this.turn-1)/10),speed=(300+stage*28)*.85,perch=this.petPerch(),q=W.local(this,perch);
-  // Donuts come from the pet's perch and roll away from it, out of the far end.
-  for(let j=0;j<cast.donuts;j++){
-   const r=11,lx=-side*speed*(1-.1*j),ly=120+48*j,angle=this.arenaAngle||0,x=clamp(q.x+side*.015*j,r/a.w,1-r/a.w),y=r/a.h+.01;
-   const s=this.screen({x,y});this.spawn('donut',s.x,s.y,lx*Math.cos(angle)-ly*Math.sin(angle),lx*Math.sin(angle)+ly*Math.cos(angle),r,{warning:.4,spin:2,damage:4,exitAxis:'x',exitSign:-side,fromPet:true});
+ // The climb. The pet rises into the bottom of the box; the silk runs down into its mouth, faster as the turn goes on,
+ // and slows to a stop before the tail. Souls and spiders ride their strings. A soul carried into the mouth is bitten
+ // and tossed two strings up.
+ petClimb(dt){
+  const P=this.pet,g=this.graph,t=this.liveAge,D=this.waveDuration,stage=Math.floor((this.turn-1)/10),stop=D-TAIL-.15;
+  P.rise=clamp(t/.8)*clamp((D-t)/.45);P.biteAge+=dt;
+  const v0=.088+stage*.004,v1=.124+stage*.006,k=clamp((t-1.6)/Math.max(.1,stop-2.9));
+  P.speed=(v0+(v1-v0)*k)*clamp((t-.9)/.7)*clamp((stop-t)/1.1)*(this.tennaDistraction>0?.8:1);
+  // The box rocks a few degrees, as the pet tugs at it.
+  this.arenaAngle=this.presence.reduced?0:Math.sin(t*2.5)*.06*clamp((t-.8)/1.2)*clamp((stop-t)/.8);
+  const dy=P.speed*dt,actors=[this.seth,this.aqua].filter(a=>a.id==='seth'||['active','fleeing'].includes(a.status));
+  if(dy>0){
+   P.offset+=dy;const wrapped=P.offset>=PET_GAP;if(wrapped)P.offset-=PET_GAP;this.setPetLanes();
+   for(const a of actors){if(a.hopTime>0){a.hopFrom.y+=dy;a.hopTo.y+=dy;}else a.y+=dy;}
+   for(const b of this.bullets){if(!b.thread)continue;b.rider.y+=dy;
+    // The lowest string has gone into the mouth and comes back as the top one: every string is now one lower.
+    if(wrapped){const lane=Number(b.route[0].split('_')[0])+1;if(lane>=PET_LANES){b.dead=true;continue;}b.route=b.route.map(id=>lane+'_'+id.split('_')[1]);}}
   }
-  this.silkBow={x:cast.x,y:cast.y,age:0,life:.2,amp:3};this.shake=Math.max(this.shake,.12);this.shakeAmp=3;
-  if(!this.hipCast&&!this.presence.reduced){if(this.petNudge)this.translateHipArena({...this.petNudge.home});this.petNudge={home:{...this.arena},dx:side*4,age:0};}
-  if(cast.finisher)this.bigFlash(.2);
-  this.emit('petLand',{finisher:cast.finisher});
- }
- updatePetNudge(dt){
-  const n=this.petNudge;if(!n)return;if(this.hipCast){this.petNudge=null;return;}n.age+=dt;
-  const f=n.age<.06?n.age/.06:Math.max(0,1-(n.age-.06)/.3);
-  if(n.age>=.36){this.translateHipArena({...n.home});this.petNudge=null;}else this.translateHipArena({...n.home,x:n.home.x+n.dx*f});
+  for(const a of actors){
+   if(a.hopTime>0||a.y<PET_BITE||P.rise<1)continue;
+   if(this.hurt(a,PET_DAMAGE,'Muffet’s pet')){P.biteAge=0;this.shake=Math.max(this.shake,.12);this.shakeAmp=3;this.emit('petLand',{finisher:false});}
+   if(this.state!=='attack')return;
+   const to=g.lanes[Math.max(0,PET_LANES-3)];a.hopFrom={x:a.x,y:a.y};a.hopTo={x:a.x,y:to};a.hopTime=a.hopDur=.2;a.laneCooldown=.2;a.edge=null;a.forcedHop=true;
+   if(a.id==='aqua'){this.aquaPath=null;this.aquaReplan=0;}
+  }
  }
  bigFlash(alpha=.18,life=.06){if(!this.presence.reduced)this.flashes.push({age:0,life,alpha});}
  castGrab(target=this.actor(this.intent.target),style=this.variantIndex,adjacent=false){
@@ -1372,7 +1383,6 @@ class MuffetGame{
  }
  castHip(target=this.actor(this.intent.target),direction,pressure=false){
   if(this.hipCast||['sitTight','fatalSitTight'].includes(this.intent?.family))return false;
-  if(this.petNudge){this.translateHipArena({...this.petNudge.home});this.petNudge=null;}
   const sign=direction==='SCREEN_LEFT'?-1:direction==='SCREEN_RIGHT'?1:(this.hipSerial++%2?-1:1);
   const p=W.local(this,this.predicted(target,this.boss,100,1.05));
   this.hipCast={direction:sign<0?'SCREEN_LEFT':'SCREEN_RIGHT',sign,local:{x:p.x,y:p.y},r:34,age:0,warning:1.05,live:.16,recovery:.88,phase:'WINDUP',hit:false,pressure,home:{...this.arena}};
@@ -1520,16 +1530,16 @@ class MuffetGame{
     for(const t of times)this.at(t,()=>{this.castGrab(target(),1);if(this.mode==='grid'||this.mode==='web')this.closeRoute(target());});
    }
   }else if(f==='pet'){
-   // The pet climbs onto the box edge, stomps faster and faster, finishes with a double stomp, then rests.
-   const n=this.oldBeats(Math.max(1.05,1.7-stage*.08)),W=1.05,live=.3,t0=.6,tLast=end-live-W-.35,events=Math.max(2,n-1),raw=[];
-   for(let j=0;j<events-1;j++)raw.push(1.9-.7*j/Math.max(1,events-2));
-   const k=(tLast-t0)/raw.reduce((a,b)=>a+b,0),times=[t0];for(const g of raw)times.push(times[times.length-1]+g*k);
-   this.pet={side:v%2?-1:1,age:0};
-   const life=box.w/(speed*.85)+.4,donutEvents=times.filter((t,j)=>j<times.length-1&&t+W+life<=end).length,per=clamp(Math.round(2*n/Math.max(1,donutEvents)),2,3);
-   times.forEach((t,j)=>{
-    const last=j===times.length-1,donuts=!last&&t+W+life<=end?per:0;
-    this.at(t,()=>{const c=this.castPet({donuts,finisher:false});if(last){c.finisher=false;this.at(this.liveAge+.35,()=>this.castPet({prev:c,finisher:true}));this.phrase.sort((a,b)=>a.t-b.t);}});
-   });
+   // The climb. Spiders cross the strings above the soul, quickening, with a second one on every fourth beat; the
+   // girls line up on two strings for a finisher; then the silk slows, stops, and the pet sinks away.
+   const sp=(165+stage*12)*slow,dmg=3+Math.floor(stage/3),last=end-1.25-span/sp-.5,offs=[-1,-2,0,-1,-2,-1,0,-2];let t=1.5,j=0;
+   while(t<=last-1.1){
+    const o=offs[j%offs.length],side=j%2;
+    this.at(t,()=>this.spawnThread('spider',this.spawnCount++,sp,{warning:.5,damage:dmg,lane:o,side}));
+    if(j%4===3)this.at(t+.18,()=>this.spawnThread('spider',this.spawnCount++,sp,{warning:.5,damage:dmg,lane:o-1,side:1-side}));
+    t+=.82-.34*clamp((t-1.5)/Math.max(.1,last-2.6));j++;
+   }
+   for(let q=0;q<3;q++){this.at(last-.7+q*.2,()=>this.spawnThread('spider',this.spawnCount++,sp,{warning:.5,damage:dmg,laneAbs:1,side:0,finisher:true}));this.at(last-.35+q*.2,()=>this.spawnThread('spider',this.spawnCount++,sp,{warning:.5,damage:dmg,laneAbs:3,side:1,finisher:true}));}
   }else if(f==='grab'||f==='handSmash'){
    const smash=f==='handSmash',n=this.oldBeats(Math.max(1.05,(smash?1.7:1.65)-stage*.1)),resolve=smash?1.26:v===1?1.37:1.1;
    const times=this.handCadence(n,.3,end-.4-resolve),spiderCut=end-.5-span/speed;let missing=0;
@@ -1592,6 +1602,7 @@ class MuffetGame{
   for(const c of this.casts){if(c.age<reactionLag||c.age>c.warning+c.live)continue;const d=c.kind==='stream'?Math.abs(p.x-c.x):Math.hypot(p.x-c.x,p.y-c.y),margin=c.r+22;if(d<margin)score+=(margin-d)*(c.kind==='grab'?75:c.kind==='smash'?40:28);}
   if(this.hipCast&&!this.hipCast.hit){const c=this.hipCast,q=this.screen(c.local),d=W.dist(p,q);if(d<c.r+25)score+=(c.r+25-d)*60;}
   if(this.intent?.family==='chase'&&this.liveAge>2){const d=Math.hypot(p.x-this.boss.x,p.y-this.boss.y);if(d<108)score+=(108-d)*28;}
+  if(this.intent?.family==='pet'&&this.pet){const q=W.local(this,p);if(q.y>.46)score+=(q.y-.46)*4200;}
   if(this.intent?.family==='sitTight'&&this.sitCompression>.1&&p.y-this.arena.y<13)score+=(13-p.y+this.arena.y)*95;
   if(this.circleRadius>0){const dx=(p.x-(this.arena.x+this.arena.w/2)),dy=(p.y-(this.arena.y+this.arena.h/2)),d=Math.hypot(dx,dy),delta=Math.abs(d-this.circleRadius);if(delta<32)score+=(32-delta)*20;if(this.liveAge<2.5&&d>this.circleRadius-18)score+=(d-this.circleRadius+18)*25;}
   return score;
@@ -1773,7 +1784,6 @@ class MuffetGame{
   this.aquaPath=null;this.aquaReplan=0;
  }
  castFired(cast){
-  if(cast.kind==='pet')this.petLanded(cast);
   // The palm lands: its string waves, a small white flash and a few silk fibres.
   if(cast.kind==='smash'){this.silkBow={x:cast.x,y:cast.y,age:0,life:.25,amp:3};if(!this.presence.reduced)this.effects.push({kind:'smash',x:cast.x,y:cast.y,age:0});}
  }
@@ -1783,7 +1793,7 @@ class MuffetGame{
    for(const actor of [this.seth,this.aqua]){
     if(actor.id==='aqua'&&!['active','fleeing'].includes(actor.status))continue;
     const p=this.screen(actor),hit=cast.kind==='stream'?Math.abs(p.x-cast.x)<cast.r+5:Math.hypot(p.x-cast.x,p.y-cast.y)<cast.r+6;
-    if(hit&&!cast.hitActors?.includes(actor.id)){(cast.hitActors??=[]).push(actor.id);if(cast.kind==='grab')this.captureActor(actor,{x:cast.x,y:cast.y,hand:cast.hand});else if(cast.kind==='smash')this.smashActor(actor,cast);else this.hurt(actor,cast.kind==='pet'?5:4,cast.kind);}
+    if(hit&&!cast.hitActors?.includes(actor.id)){(cast.hitActors??=[]).push(actor.id);if(cast.kind==='grab')this.captureActor(actor,{x:cast.x,y:cast.y,hand:cast.hand});else if(cast.kind==='smash')this.smashActor(actor,cast);else this.hurt(actor,4,cast.kind);}
    }
   }
   this.casts=this.casts.filter(c=>c.age<c.warning+c.live+.5);
@@ -1825,7 +1835,6 @@ class MuffetGame{
  die(cause){if(this.state==='dead'||this.state==='dying')return;const caught=['captured','smashed','fatalGrin'].includes(this.state);if(this.intent&&this.attackStartHP)this.muffetAI.recordOutcome(this.intent.family,{sethDamage:this.attackStartHP.seth-this.seth.hp,captured:caught});this.deathPoint=this.capture?.fatal?{x:384,y:310}:this.screen(this.seth);this.seth.hp=0;this.state='dying';this.timer=0;this.deathCause=cause;this.emit('soulBreak');this.persist('death');}
  endAttack(){
   if(this.hipCast)this.translateHipArena({...this.hipCast.home});this.hipCast=null;for(const actor of [this.seth,this.aqua]){delete actor.hipImpulse;actor.forcedHop=false;}
-  if(this.petNudge){this.translateHipArena({...this.petNudge.home});this.petNudge=null;}
   // Anything still on screen is swept out over a quarter second, never cut on one frame.
   const mid={x:this.arena.x+this.arena.w/2,y:this.arena.y+this.arena.h/2};for(const b of this.bullets)if(!b.dead){const l=Math.max(1,Math.hypot(b.x-mid.x,b.y-mid.y));this.effects.push({kind:'sweep',bullet:b.kind,r:b.r,x:b.x,y:b.y,dx:(b.x-mid.x)/l,dy:(b.y-mid.y)/l,age:0});}
   this.pet=null;this.spinTurns=null;
@@ -1833,7 +1842,7 @@ class MuffetGame{
   this.muffetAI.recordOutcome(this.intent.family,{sethDamage:this.attackStartHP.seth-this.seth.hp,aquaDamage:this.attackStartHP.aqua-this.aqua.hp,objectiveLost:this.attackStartHP.aquaStatus!=='escaped'&&this.aqua.status==='escaped'?1:0,captured:this.attackStartHP.aquaStatus!=='lost'&&this.aqua.status==='lost'});
   if(this.allyOutcome){this.allyAI.recordOutcome(this.allyOutcome.action,this.allyOutcome);this.allyOutcome=null;}
   this.aqua.stamina=Math.min(1,this.aqua.stamina+.022);this.aqua.guard=0;this.aquaDraw=0;this.peakTargetThreat*=.3;this.exposure=Math.max(0,this.exposure-1);this.tennaDistraction=Math.max(0,this.tennaDistraction-1);this.taunt=Math.max(0,this.taunt-1);
-  this.allyDamageHistory.push(Math.max(0,this.attackStartHP.aqua-this.aqua.hp));this.bodyPose=null;this.sitBodyLift=0;this.sitCompression=0;if(this.intent.family==='sitTight'&&this.preSitArena)this.baseArena={...this.preSitArena};if(this.intent.family==='boxSpin'&&this.preSpinArena)this.baseArena={...this.preSpinArena};if(this.intent.family==='sitTight'){this.mode=this.preSitMode;this.graph=W.makeWeb(this.mode,this.turn);W.place(this.seth,this.graph,this.seth);W.place(this.aqua,this.graph,this.aqua);}this.arenaAngle=0;this.arena={...this.baseArena};for(const e of this.graph.edges)e.blocked=false;
+  this.allyDamageHistory.push(Math.max(0,this.attackStartHP.aqua-this.aqua.hp));this.bodyPose=null;this.sitBodyLift=0;this.sitCompression=0;if(this.intent.family==='sitTight'&&this.preSitArena)this.baseArena={...this.preSitArena};if(this.intent.family==='boxSpin'&&this.preSpinArena)this.baseArena={...this.preSpinArena};if(this.intent.family==='pet'&&this.prePetArena){this.baseArena={...this.prePetArena};this.mode=this.prePetMode;this.graph=W.makeWeb(this.mode,this.turn);W.place(this.seth,this.graph,{x:.5,y:.82});W.place(this.aqua,this.graph,{x:.69,y:.78});}if(this.intent.family==='sitTight'){this.mode=this.preSitMode;this.graph=W.makeWeb(this.mode,this.turn);W.place(this.seth,this.graph,this.seth);W.place(this.aqua,this.graph,this.aqua);}this.arenaAngle=0;this.arena={...this.baseArena};for(const e of this.graph.edges)e.blocked=false;
   this.persist();if(this.bossHP<=this.withdrawalHP)this.withdraw();else this.menu();
  }
  withdraw(){
@@ -1867,7 +1876,7 @@ class MuffetGame{
   this.waveAge+=dt;const f=this.intent.family,fatal=f==='fatalSitTight';
   if(this.boxMorph){const u=clamp((this.waveAge/this.warmup-.5)*2),ease=u*u*(3-2*u);for(const key of ['x','y','w','h'])this.arena[key]=this.boxMorph.from[key]+(this.boxMorph.to[key]-this.boxMorph.from[key])*ease;if(u===1){this.arena={...this.boxMorph.to};this.boxMorph=null;}}
   if(this.waveAge<this.warmup)return;this.liveAge=this.waveAge-this.warmup;
-  if(f==='boxSpin')this.arenaAngle=this.spinAngle(this.liveAge);this.updatePetNudge(dt);
+  if(f==='boxSpin')this.arenaAngle=this.spinAngle(this.liveAge);if(f==='pet')this.petClimb(dt);if(this.state!=='attack')return;
   if(!fatal){const x=(input.right?1:0)-(input.left?1:0),y=(input.down?1:0)-(input.up?1:0);const before={x:this.seth.x,y:this.seth.y};if(!this.seth.hopTime&&!this.seth.hipImpulse)this.seth.forcedHop=false;if(!this.hipAdvance(this.seth,dt))W.advance(this.seth,this.graph,this.arena,dt,{x,y});this.campMotion(this.seth,before);if(!this.seth.hopTime&&!this.seth.hipImpulse)this.seth.forcedHop=false;this.aquaNavigate(dt);this.hopFeedback(this.seth);this.hopFeedback(this.aqua);}
   if(f==='grab'||f==='denyRescue'){const p=this.screen(this.actor(this.intent.target));this.headTo({x:clamp(p.x+this.faceSide*55,120,648),y:this.mode==='web'?clamp(p.y-70,this.arena.y+58,this.arena.y+this.arena.h-58):this.arena.y-58});}
   this.observeJunction(this.seth);this.muffetAI.observe('seth',this.view(this.seth),dt);if(['active','fleeing'].includes(this.aqua.status)){this.observeJunction(this.aqua);this.muffetAI.observe('aqua',this.view(this.aqua),dt);this.allyAI.observe({...this.view(this.aqua),soul:{x:this.boss.x,y:this.boss.y},enemy:this.screen(this.aqua)},dt);}
@@ -2142,7 +2151,7 @@ module.exports={MuffetPresence};
 const W=require('./web.cjs');
 const {battleButtons,drawBattleButton,battleSoul}=require('./battle-ui.cjs');
 const {handJobs,TURN_DEADLINE}=require('../ai/nest-ai.cjs');
-const PURPLE='#ae52e1',CYAN='#68eeee',GRAY='#9d90a7';
+const PURPLE='#ae52e1',CYAN='#68eeee',GRAY='#9d90a7',PET_BITE=.7;
 // Typewriter text: the whole text is laid out first and then only its first n characters are drawn, so a word being typed never jumps to the next line.
 function typedLines(lines,str,n){if(!(n<str.length))return lines;let at=0;return lines.map(l=>{const lead=l.length-l.trimStart().length;let seen=false;const words=l.slice(lead).split(' ').map(w=>{const s=str.indexOf(w,at);if(s<0)return w;at=s+w.length;if(s<n)seen=true;return w.slice(0,Math.max(0,n-s));});return seen?l.slice(0,lead)+words.join(' ').trimEnd():'';});}
 const textSafe=s=>String(s).replace(/[’‘]/g,"'").replace(/[“”]/g,'"').replace(/…/g,'...').replace(/—/g,'-');
@@ -2199,7 +2208,7 @@ class NestRenderer{
   return off;
  }
  web(g){
-  const c=this.c,a=g.arena;c.save();c.translate(a.x+a.w/2,a.y+a.h/2);c.rotate(g.arenaAngle||0);this.box(-a.w/2-4,-a.h/2-5,a.w+8,a.h+10,g.intent?.fatal?'#cd73d9':'#eee',3);c.restore();
+  const c=this.c,a=g.arena;this.frame(g);
   if(g.intent?.family==='sitTight'&&g.sitCompression>.12){this.line(a.x,a.y,a.x+a.w,a.y,'#f2a3ba',5);this.text('6 DMG',a.x+8,a.y-20,13,'#f2a3ba');}
   const sit=this.sitFrame(g),fatal=g.intent?.family==='fatalSitTight',blinkOn=this.reduced||Math.floor(g.clock*8)%2===0;
   // Before a landing that removes a string, the top string blinks; in the final hover every knot glows amber.
@@ -2235,7 +2244,10 @@ class NestRenderer{
  darkLight(g){
   if(g.state!=='attack'||g.mode==='web')return;const c=this.c,p=g.screen(g.seth),grad=c.createRadialGradient(p.x,p.y,30,p.x,p.y,185);
   grad.addColorStop(0,'rgba(0,0,0,0)');grad.addColorStop(1,'rgba(0,0,0,'+(g.isVisible()?.1:.52)+')');c.fillStyle=grad;c.fillRect(0,44,768,376);
+  // The darkness takes the silk and whatever walks on it, never the box itself.
+  this.frame(g);
  }
+ frame(g){const c=this.c,a=g.arena;c.save();c.translate(a.x+a.w/2,a.y+a.h/2);c.rotate(g.arenaAngle||0);this.box(-a.w/2-5,-a.h/2-6,a.w+10,a.h+12,g.intent?.fatal?'#cd73d9':'#fff',5);c.restore();}
  face(g){
   if(g.hipCast)return;
   if(g.bodyPose&&g.state!=='fatalGrin'&&g.state!=='dying'&&g.state!=='dead')return;
@@ -2323,7 +2335,7 @@ class NestRenderer{
   const c=this.c,u=g.waveAge/g.warmup;c.fillStyle='rgba(133,32,174,'+(Math.sin(u*Math.PI)*.75)+')';c.fillRect(0,38,768,387);
   for(let i=0;i<12;i++)this.art.prop('droplet-purple',i*68+23,50+u*410+(i%3)*29,22,{alpha:.4});
  }
- bigSpiders(g){return g.mode==='web'||(g.graph.lanes?.length||9)<=4;}
+ bigSpiders(g){return g.mode==='web'||g.intent?.family==='pet'||(g.graph.lanes?.length||9)<=4;}
  // One hazard sprite, at its true size: spiders are larger on roomy layouts (hitbox unchanged).
  bullet(g,b,x,y,alpha=1){
   const c=this.c;
@@ -2367,24 +2379,17 @@ class NestRenderer{
    }else this.bullet(g,e.b,e.p.x,e.p.y,.55+.35*e.u);
   }
  }
- // The pet perches on the box's top edge, crouches, leaps, falls onto its circle and climbs back.
+ // The pet waits at the bottom of the tall box: it rises into view, chews while the silk runs into its mouth, snaps
+ // up when it bites, and sinks away at the end. Drawn inside the box and turning with it.
  petSprite(g){
   if(!g.pet||g.intent?.family!=='pet'||g.state!=='attack'||g.waveAge<g.warmup)return;
-  const perch=g.petPerch(),side=g.pet.side,arc=(a,b,u,h)=>({x:a.x+(b.x-a.x)*u,y:a.y+(b.y-a.y)*u-Math.sin(u*Math.PI)*h});let p={...perch},sx=1,sy=1;
-  if(g.pet.age<.6){const u=clamp(g.pet.age/.6);p={x:perch.x+side*(1-u*u*(3-2*u))*90,y:perch.y};}
-  else{
-   const casts=g.casts.filter(c=>c.kind==='pet'&&c.age<c.warning+c.live+.4),chained=casts.find(c=>c.prev&&c.prev.age>=c.prev.warning),c=chained||casts.sort((x,y)=>y.age-x.age)[0];
-   if(c){const W=c.warning,t=c.age,spot={x:c.x,y:c.y-12};
-    if(chained&&t<W){const from={x:c.prev.x,y:c.prev.y-12},u=clamp((t-(W-.3))/.3);p=u>0?arc(from,spot,u,34):from;}
-    else if(t<.3){sy=.86;sx=1.08;}
-    else if(t<.75)p=arc(perch,{x:c.x,y:c.y-122},(t-.3)/.45,30);
-    else if(t<W){const u=(t-.75)/(W-.75);p={x:c.x,y:c.y-122+110*u*u};sy=1.08;sx=.94;}
-    else if(t<W+c.live){p=spot;if(t-W<.08){sy=.82;sx=1.15;}}
-    else p=arc(spot,perch,clamp((t-W-c.live)/.4),40);
-   }
-  }
-  if(this.reduced)sx=sy=1;
-  this.art.propCrisp('spider-pet',p.x,p.y,64,{sx,sy});
+  const c=this.c,a=g.arena,P=g.pet,h=128,bite=P.biteAge<.22,chew=this.reduced||!P.speed?0:Math.sin(g.clock*11);
+  c.save();c.translate(a.x+a.w/2,a.y+a.h/2);c.rotate(g.arenaAngle||0);c.beginPath();c.rect(-a.w/2,-a.h/2,a.w,a.h);c.clip();
+  const top=(PET_BITE-.5)*a.h+2+(1-P.rise)*(a.h*(1-PET_BITE)+8)-(bite&&!this.reduced?7:0);
+  // The edge of its mouth: where the silk ends.
+  if(P.rise>=1){c.save();c.globalAlpha=.75;c.setLineDash([5,5]);this.line(-a.w/2,(PET_BITE-.5)*a.h,a.w/2,(PET_BITE-.5)*a.h,'#f1bd63',1);c.restore();}
+  this.art.propCrisp('spider-pet',0,top+h/2,h,{sx:bite&&!this.reduced?1.06:1,sy:bite&&!this.reduced?.92:1+chew*.025});
+  c.restore();
  }
  hazards(g){
   const c=this.c,a=g.arena;c.save();c.translate(a.x+a.w/2,a.y+a.h/2);c.rotate(g.arenaAngle||0);c.beginPath();c.rect(-a.w/2,-a.h/2,a.w,a.h);c.clip();c.rotate(-(g.arenaAngle||0));c.translate(-a.x-a.w/2,-a.y-a.h/2);
@@ -2399,7 +2404,6 @@ class NestRenderer{
    const warn=cast.age<cast.warning,live=cast.age<cast.warning+cast.live,color=warn?'#f1bd63':'#fff',fraction=clamp(cast.age/cast.warning);
    if(!live)continue;
    if(cast.kind==='stream'){c.save();c.globalAlpha=warn?.5:1;this.line(cast.x,g.arena.y,cast.x,g.arena.y+g.arena.h,color,warn?2:16);c.restore();}
-   else if(cast.kind==='pet'){this.circle(cast.x,cast.y,cast.r+7,color,2);if(warn){c.save();c.strokeStyle=color;c.lineWidth=2;c.beginPath();c.arc(cast.x,cast.y,cast.r+3,-Math.PI/2,-Math.PI/2+fraction*Math.PI*2);c.stroke();c.restore();}}
    else{
     c.save();c.globalAlpha=warn?.68:1;c.fillStyle=warn?'#f1bd631f':'#e8b4ef44';c.beginPath();c.arc(cast.x,cast.y,cast.r,0,Math.PI*2);c.fill();c.restore();this.circle(cast.x,cast.y,cast.r+4,color,warn?2:4);
     if(warn){this.line(cast.origin.x,cast.origin.y,cast.x,cast.y,'#ad829d',1);this.text(cast.kind==='smash'?'SMASH':'GRAB',cast.x,cast.y-cast.r-22,14,color,'center');c.strokeStyle='#fff';c.lineWidth=3;c.beginPath();c.arc(cast.x,cast.y,cast.r+7,-Math.PI/2,-Math.PI/2+fraction*Math.PI*2);c.stroke();}
@@ -2410,7 +2414,7 @@ class NestRenderer{
   // The chase finisher: the girls' ring flickers back outside the web for a moment. A show of force; it cannot touch a string.
   if(g.ringShow){const center={x:g.arena.x+g.arena.w/2,y:g.arena.y+g.arena.h/2},k=g.ringShow.age/g.ringShow.life,alpha=(this.reduced?.55:Math.floor(g.ringShow.age*22)%2?.3:.85)*(1-k*k);for(let i=0;i<18;i++){const angle=i*Math.PI/9-g.liveAge*.3;this.art.propCrisp('spider-small',center.x+Math.cos(angle)*214,center.y+Math.sin(angle)*214,25,{alpha});}}
   c.restore();
-  this.entries(g);this.petSprite(g);
+  this.petSprite(g);this.entries(g);
  }
  souls(g){
   if(g.state==='captured'){
@@ -2423,8 +2427,8 @@ class NestRenderer{
   }
   if(g.state!=='attack')return;
   const p=g.screen(g.seth),blink=g.seth.invuln>0&&!this.reduced&&Math.floor(g.clock*18)%2===0;
-  this.squashed(g,g.seth,p,()=>this.art.soul(0,0,13,blink?.4:1));
-  if(['active','fleeing'].includes(g.aqua.status)){const q=g.screen(g.aqua),alpha=g.aqua.invuln>0&&Math.floor(g.clock*18)%2===0?.45:1;this.squashed(g,g.aqua,q,()=>this.art.soul(0,0,13,alpha,true));}
+  this.squashed(g,g.seth,p,()=>this.art.soul(0,0,16,blink?.4:1));
+  if(['active','fleeing'].includes(g.aqua.status)){const q=g.screen(g.aqua),alpha=g.aqua.invuln>0&&Math.floor(g.clock*18)%2===0?.45:1;this.squashed(g,g.aqua,q,()=>this.art.soul(0,0,16,alpha,true));}
  }
  // A string switch stretches the soul along the hop and squashes it for two frames on landing.
  squashed(g,actor,p,draw){
@@ -2446,16 +2450,14 @@ class NestRenderer{
   }
  }
  party(g){
-  const c=this.c,y=['menu','aim'].includes(g.state)?480:496;this.line(24,y-8,744,y-8,'#3f294d',1);
+  const c=this.c,menu=['menu','aim'].includes(g.state),y=menu?480:488;if(g.state!=='dialogue')this.line(24,y-8,744,y-8,'#3f294d',1);
   this.text('SETH',28,y,20);this.text('LV '+g.lv,105,y+3,15,GRAY);this.text('HP '+g.seth.hp+'/'+g.seth.maxHP,184,y+3,16);
   c.fillStyle='#5c1023';c.fillRect(295,y+4,63,13);c.fillStyle='#e8d953';c.fillRect(295,y+4,63*g.seth.hp/g.seth.maxHP,13);
   if(['active','fleeing'].includes(g.aqua.status)){
    this.text('AQUA',412,y,20,CYAN);this.text(g.aqua.hp+'/'+g.aqua.maxHP,490,y+3,16,CYAN);c.fillStyle='#153943';c.fillRect(574,y+4,66,13);c.fillStyle=CYAN;c.fillRect(574,y+4,66*g.aqua.hp/g.aqua.maxHP,13);
-   this.text(g.aqua.action,414,y+26,14,CYAN);this.text('ST',645,y+3,13,'#649799');c.fillStyle='#183a3b';c.fillRect(669,y+5,73,8);c.fillStyle='#478f9d';c.fillRect(669,y+5,73*g.aqua.stamina,8);
+   this.text(g.aqua.action,414,menu?y+26:y+20,menu?14:12,CYAN);this.text('ST',645,y+3,13,'#649799');c.fillStyle='#183a3b';c.fillRect(669,y+5,73,8);c.fillStyle='#478f9d';c.fillRect(669,y+5,73*g.aqua.stamina,8);
   }else this.text(g.aqua.status==='rescued'?'AQUA / RESCUED':g.aqua.status==='escaped'?'AQUA / ESCAPED':g.aquaDead?'AQUA / LOST':'AQUA / IN THE SILK',412,y+3,16,g.aquaDead?'#bb7889':'#74607f');
-  if(g.state==='menu'||g.state==='aim'){
-   for(const [i,r]of battleButtons(768,576).entries())drawBattleButton(c,r,r.label,i,g.state==='menu'&&!g.menuTab&&g.selected===i);
-  }else this.text(g.state==='attack'?'PURPLE / '+g.mode.toUpperCase():'THE DARK NEST',28,545,15,'#80628e');
+  if(!['won','dead'].includes(g.state))for(const [i,r]of battleButtons(768,576).entries())drawBattleButton(c,r,r.label,i,g.state==='menu'&&!g.menuTab&&g.selected===i,{soul:menu});
  }
  dialogue(g){
   const c=this.c;c.fillStyle='#000';c.fillRect(27,278,714,202);this.box(27,278,714,202,'#eee',3);
@@ -2528,9 +2530,10 @@ class NestRenderer{
   if(g.state==='aim')this.aim(g);
   if(g.state==='drink'){this.art.prop('teacup',g.presence.position.x+31,g.presence.position.y+60-18*clamp(g.timer/1.4),39);this.text('She drinks. The nest falls quiet.',384,443,20,'#b49bc6','center');}
   if(g.state==='attack'){
-   if(g.waveAge<g.warmup){const maximum=g.intent?.fatal||g.turn%10===0?5:3;this.text(g.attackName,384,g.mode==='web'?414:222,23,'#e8d1f3','center');this.text('READY '+Math.max(1,maximum-Math.floor(g.waveAge/g.warmup*maximum)),384,447,18,'#f4d591','center');}
-   else this.text(g.attackName+(g.aqua.status==='active'||g.aqua.status==='fleeing'?' / '+g.intent.target.toUpperCase():''),384,g.mode==='web'?474:438,g.mode==='web'?14:18,'#af85c8','center');
-   if(g.mode!=='web'&&g.allyMessageAge>0)this.text(g.allyMessage,384,465,15,CYAN,'center');else if(g.mode!=='web')this.text(g.message,384,465,15,'#baa3c8','center');
+   const pet=g.intent?.family==='pet';
+   if(g.waveAge<g.warmup){const maximum=g.intent?.fatal||g.turn%10===0?5:3;this.text(g.attackName,384,g.mode==='web'?414:pet?40:222,23,'#e8d1f3','center');this.text('READY '+Math.max(1,maximum-Math.floor(g.waveAge/g.warmup*maximum)),384,pet?430:440,18,'#f4d591','center');}
+   else this.text(g.attackName+(g.aqua.status==='active'||g.aqua.status==='fleeing'?' / '+g.intent.target.toUpperCase():''),384,g.mode==='web'?452:428,g.mode==='web'?14:18,'#af85c8','center');
+   if(g.mode!=='web'&&g.allyMessageAge>0)this.text(g.allyMessage,384,452,15,CYAN,'center');else if(g.mode!=='web')this.text(g.message,384,452,15,'#baa3c8','center');
   }
   if(g.state==='captured')this.text('THE FINGERS CLOSE.',384,441,23,'#e7bfe7','center');
   if(g.state==='won'){

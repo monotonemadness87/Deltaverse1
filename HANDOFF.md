@@ -199,6 +199,8 @@ Win by real persistent damage forcing Muffet to withdraw; she survives. Turn 60 
 
 Spamson's three finite NEO shots: 160 → 240 → 360. Reweb after every shot; later shots need renewed arm release/readiness. Tenna proof doesn't require complete rescue. Removed lamp webs stay removed. SIT TIGHT has damaging sweat and physical compression/kicks, **no spiders**. HIP CHECK tosses stage/souls along valid connected paths. Fatal last crush cuts to black then Game Over with Muffet's smile: no restored box, extra pose or face on the back of her head. Older fatal-grab proposals were superseded by accepted 28-damage bites/10-damage palms.
 
+The pet's turn is the climb (after the pet set piece in Undertale and TS!Underswap): a tall rocking box, the pet's mouth at the bottom, six strings running down into it. A SOUL carried into the mouth is bitten (8) and tossed two strings up. It replaces whatever layout the turn started on and restores it afterwards; anti-camp responses are off for it, as for SIT TIGHT. FIGHT / ACT / ITEM / MERCY stay drawn in every state, and the box frame is a 5 px white line that the darkness does not dim.
+
 Aqua chooses independently, forecasting current HP/supplies/damage, exit preparation and physical travel before the deadline. She may leave Seth; her escape does not automatically win his encounter. Preserve competent restored navigation and SIT TIGHT survival. Green pity tea requires no usable player healing items and Muffet strictly above 50% HP.
 
 ### Sans + Alphys — Misery Likes Company
